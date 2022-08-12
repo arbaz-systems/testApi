@@ -1,10 +1,19 @@
-CREATE COMPUTE MODULE getGetTestApi_Compute
+BROKER SCHEMA gen
+DECLARE ns NAMESPACE 'http://TestSoapApi';
+
+CREATE COMPUTE MODULE EmployeeDetails_Request_Response_Compute
 	CREATE FUNCTION Main() RETURNS BOOLEAN
 	BEGIN
 		-- CALL CopyMessageHeaders();
 		-- CALL CopyEntireMessage();
 		
-		set OutputRoot.JSON.Data.Status = 'Api working perfectly';
+		DECLARE EmployeeID INTEGER;
+		SET EmployeeID = InputRoot.XMLNSC.ns:EmployeeDetails.EmployeeID;
+		IF(EmployeeID < 10) THEN
+			SET OutputRoot.XMLNSC.ns:EmployeeDetailsResponse.EmployeeID = EmployeeID;
+		ELSE
+			SET OutputRoot.XMLNSC.ns:EmployeeDetailsResponse.EmployeeID = 'Employee ID must be less than 10';
+		END IF;
 		
 		RETURN TRUE;
 	END;

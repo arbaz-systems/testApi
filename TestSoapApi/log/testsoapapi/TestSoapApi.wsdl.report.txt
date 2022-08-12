@@ -1,0 +1,13 @@
+
+
+Importing file: D:\Practise\gitPractise\TestSoapApi\TestSoapApi.wsdl
+
+The WSDL import will proceed with bindings TestSoapApiHttpBinding.
+Creating wsdl schema document for platform:/resource/TestSoapApi/TestSoapApi.wsdl.
+Parsing wsdl binding {http://TestSoapApi}TestSoapApiHttpBinding.
+Parsing wsdl binding input EmployeeDetails.
+Parsing wsdl binding output EmployeeDetails.
+Processing doc style for operation EmployeeDetails.
+Populating WSDL schema TestSoapApi.xsd.
+Creating file TestSoapApi.xsd in the workspace.
+Copying source WSDL TestSoapApi.wsdl to TestSoapApi.wsdl.

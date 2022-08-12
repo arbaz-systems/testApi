@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="TestSoapApi" targetNamespace="http://TestSoapApi" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns="http://TestSoapApi" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:documentation>
+    <wsdl:appinfo source="WMQI_APPINFO">
+      <MRWSDLAppInfo imported="true">
+        <binding hasEncoding="false" imported="true" name="TestSoapApiHttpBinding" originalBindingStyle="document"/>
+        <generatedXSD location="TestSoapApi_InlineSchema1.xsd"/>
+      </MRWSDLAppInfo>
+    </wsdl:appinfo>
+  </wsdl:documentation>
+  
+  <wsdl:types>
+    
+        <xsd:schema targetNamespace="http://TestSoapApi" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions">
+      <xsd:include schemaLocation="TestSoapApi_InlineSchema1.xsd"/>
+    </xsd:schema>
+    </wsdl:types>
+  <wsdl:message name="EmployeeDetailsRequestMsg">
+    <wsdl:part element="tns:EmployeeDetails" name="EmployeeDetailsParameters"/>
+  </wsdl:message>
+  <wsdl:message name="EmployeeDetailsResponseMsg">
+    <wsdl:part element="tns:EmployeeDetailsResponse" name="EmployeeDetailsResult"/>
+  </wsdl:message>
+  <wsdl:portType name="TestSoapApi">
+    <wsdl:operation name="EmployeeDetails">
+      <wsdl:input message="tns:EmployeeDetailsRequestMsg" name="EmployeeDetailsRequest"/>
+      <wsdl:output message="tns:EmployeeDetailsResponseMsg" name="EmployeeDetailsResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="TestSoapApiHttpBinding" type="tns:TestSoapApi">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="EmployeeDetails">
+      <soap:operation soapAction="http://TestSoapApi/EmployeeDetails"/>
+      <wsdl:input name="EmployeeDetailsRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="EmployeeDetailsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    </wsdl:binding>
+  <wsdl:service name="TestSoapApiHttpService">
+    <wsdl:port binding="tns:TestSoapApiHttpBinding" name="TestSoapApiHttpPort">
+      <soap:address location="http://localhost:7800/TestSoapApi"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
