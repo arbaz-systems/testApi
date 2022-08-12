@@ -10,15 +10,15 @@
 
       <xsd:complexType name="Request">
       	<xsd:sequence>
-      		<xsd:element name="EmpID" type="xsd:int"></xsd:element>
-      		<xsd:element name="EmpName" type="xsd:string"></xsd:element>
+      		<xsd:element name="EmployeeID" type="xsd:int"></xsd:element>
+      		<xsd:element name="EmployeeName" type="xsd:string"></xsd:element>
       	</xsd:sequence>
       </xsd:complexType>
 
       <xsd:complexType name="Response">
       	<xsd:sequence>
 
-      		<xsd:element name="EmpID" type="xsd:int"></xsd:element>
+      		<xsd:element name="EmployeeId" type="xsd:int"></xsd:element>
       		<xsd:element name="ErrorMessage" type="xsd:string"></xsd:element>
       	</xsd:sequence>
       </xsd:complexType>

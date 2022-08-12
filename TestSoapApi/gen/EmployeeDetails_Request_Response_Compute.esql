@@ -7,12 +7,12 @@ CREATE COMPUTE MODULE EmployeeDetails_Request_Response_Compute
 		-- CALL CopyMessageHeaders();
 		-- CALL CopyEntireMessage();
 		
-		DECLARE EmployeeID INTEGER;
-		SET EmployeeID = InputRoot.XMLNSC.ns:EmployeeDetails.EmployeeID;
-		IF(EmployeeID < 10) THEN
-			SET OutputRoot.XMLNSC.ns:EmployeeDetailsResponse.EmployeeID = EmployeeID;
+		DECLARE Employeeid INTEGER;
+		SET Employeeid = InputRoot.XMLNSC.ns:EmployeeDetails.EmployeeID;
+		IF(Employeeid < 10) THEN
+			SET OutputRoot.XMLNSC.ns:EmployeeDetailsResponse.EmployeeId = Employeeid;
 		ELSE
-			SET OutputRoot.XMLNSC.ns:EmployeeDetailsResponse.EmployeeID = 'Employee ID must be less than 10';
+			SET OutputRoot.XMLNSC.ns:EmployeeDetailsResponse.ErrorMessage = 'Employee ID must be less than 10';
 		END IF;
 		
 		RETURN TRUE;
