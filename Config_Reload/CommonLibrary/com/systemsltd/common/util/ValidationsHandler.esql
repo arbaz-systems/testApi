@@ -1,0 +1,26 @@
+BROKER SCHEMA com.systemsltd.common.util
+
+--CREATE PROCEDURE validateDate( IN dateToValidate CHARACTER, IN dateFromat CHARACTER )
+--RETURNS BOOLEAN
+--LANGUAGE JAVA
+--EXTERNAL NAME "com.systemsltd.common.util.ValidationUtils.validateDate";
+
+
+CREATE PROCEDURE isValidDate( IN dateToValidate CHARACTER, IN dateFrmat CHARACTER)
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.systemsltd.common.util.ValidationUtils.isValidDate";
+
+CREATE PROCEDURE isValidFormat( IN stringToValidate CHARACTER, IN format CHARACTER)
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.systemsltd.common.util.ValidationUtils.isValidFormat";
+
+CREATE PROCEDURE isValidBase64( IN dateToValidate CHARACTER)
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.systemsltd.common.util.ValidationUtils.isValidBase64";
+
+CREATE PROCEDURE encodeBase64(IN bytesToEncode BLOB) RETURNS CHARACTER
+LANGUAGE JAVA
+EXTERNAL NAME "com.systemsltd.common.util.ValidationUtils.encodeBase64";

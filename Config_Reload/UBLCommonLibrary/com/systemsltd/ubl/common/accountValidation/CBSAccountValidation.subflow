@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" 
+xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:com_systemsltd_common_logging_LogMessage.subflow="com/systemsltd/common/logging/LogMessage.subflow" xmlns:com_systemsltd_ubl_common_ResponseMapping.subflow="com/systemsltd/ubl/common/ResponseMapping.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" 
+xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="com/systemsltd/ubl/common/accountValidation/CBSAccountValidation.subflow" 
+nsPrefix="com_systemsltd_ubl_common_accountValidation_CBSAccountValidation.subflow">
+<eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true">
+<eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.loggerName" name="loggerName" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.IIBDataSource" name="IIBDataSource"  defaultValueLiteral="IIBDSN">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.CBSDataSource" name="CBSDataSource" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<translation xmi:type="utility:TranslatableString" key="CBSAccountValidation" bundleName="com/systemsltd/ubl/common/accountValidation/CBSAccountValidation" pluginId="flowAPIgenerated"/>
+<colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj16/CBSAccountValidation.gif"/>
+<colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj30/CBSAccountValidation.gif"/>
+<composition>
+<nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="37,114">
+<translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="com/systemsltd/ubl/common/accountValidation/CBSAccountValidation" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="670,116">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="com/systemsltd/ubl/common/accountValidation/CBSAccountValidation" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="140,114" computeExpression="esql://routine/com.systemsltd.ubl.common.accountValidation#CBSAccountValidationRequest.Main">
+<translation xmi:type="utility:ConstantString" string="AccountValidationRequest"/>
+</nodes>
+<nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="472,115" computeExpression="esql://routine/com.systemsltd.ubl.common.accountValidation#CBSAccountValidationResponse.Main">
+<translation xmi:type="utility:ConstantString" string="AccountValidationResponse"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_3" location="333,115" decoration="CBS - Account Validation Request Prepared">
+<translation xmi:type="utility:ConstantString" string="Log CBS Request"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_4" location="645,40" decoration="CBS - Account Validation Response Prepared">
+<translation xmi:type="utility:ConstantString" string="Log CBS Response"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_ubl_common_ResponseMapping.subflow:FCMComposite_1" xmi:id="FCMComposite_1_5" location="635,193" hostSystem="CBS" hostSystemResponseCodePath="Root.XMLNSC.CBS_FINTECH_OUT.RESP_CODE" hostSystemResponseDetailsPath="Root.XMLNSC.CBS_FINTECH_OUT.RESP_MSG" mappedResponseCodePath="Environment.Variables.Transaction.ErrorCode" mappedResponseDescPath="Environment.Variables.Transaction.Error.Item">
+<translation xmi:type="utility:ConstantString" string="CBS Response Mapping"/>
+</nodes>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_1" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out2" targetTerminalName="InTerminal.Input"/>
+</composition>
+<propertyOrganizer>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.loggerName">
+<propertyName xmi:type="utility:TranslatableString" key="Property.loggerName" bundleName="com/systemsltd/common/logging/ProcessLogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" describedAttribute="Property.IIBDataSource">
+<propertyName xmi:type="utility:TranslatableString" key="Property.IIBDataSource" bundleName="com/systemsltd/ubl/common/CBSAccountValidation" pluginId="UBLCommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" describedAttribute="Property.CBSDataSource">
+<propertyName xmi:type="utility:TranslatableString" key="Property.CBSDataSource" bundleName="com/systemsltd/ubl/common/CBSAccountValidation" pluginId="UBLCommonLibrary"/>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyOrganizer>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_3 FCMComposite_1_4">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.IIBDataSource" overriddenNodes="FCMComposite_1_3 FCMComposite_1_4">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.dataSource"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.CBSDataSource" overriddenNodes="FCMComposite_1_1 FCMComposite_1_2">
+<overriddenAttribute href="ComIbmCompute.msgnode#Property.dataSource"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_5">
+<overriddenAttribute href="com/systemsltd/ubl/common/ResponseMapping.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.IIBDataSource" overriddenNodes="FCMComposite_1_5">
+<overriddenAttribute href="com/systemsltd/ubl/common/ResponseMapping.subflow#Property.MappingDatasource"/>
+</attributeLinks>
+<stickyBoard/>
+</eClassifiers>
+</ecore:EPackage>

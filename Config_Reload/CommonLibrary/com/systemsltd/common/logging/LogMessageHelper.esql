@@ -1,0 +1,101 @@
+BROKER SCHEMA com.systemsltd.common.logging
+
+PATH com.systemsltd.common;
+
+
+DECLARE LOG_OFFSET CONSTANT INTEGER 63;
+DECLARE CR CONSTANT CHAR CAST(CAST(X'0A' AS BLOB) AS CHAR CCSID 819);
+DECLARE NEW_SPACED_LINE CONSTANT CHARACTER (CR || SPACE(LOG_OFFSET));
+
+DECLARE loggerName EXTERNAL CONSTANT CHARACTER 'default';
+
+
+CREATE FUNCTION logDecoratedMessage(IN logLevel CHARACTER, IN decoration CHARACTER, IN inputRef REFERENCE)
+BEGIN
+	IF NOT logEnabled(loggerName, logLevel) THEN
+		RETURN;
+	END IF;
+	
+	DECLARE modelRef REFERENCE TO inputRef.[<];
+	DECLARE ccsId INTEGER COALESCE(inputRef.Properties.CodedCharSetId, 1208);
+	DECLARE messageSet CHARACTER inputRef.Properties.MessageSet;
+	DECLARE msgType CHARACTER FIELDNAME(modelRef.[1]);
+	
+	DECLARE START_DECORATION, END_DECORATION CHARACTER '';
+	DECLARE message, headerRequest, headerResponse CHARACTER '';
+	DECLARE headerRef REFERENCE TO inputRef.HTTPRequestHeader;
+	
+	IF (messageSet IS NOT NULL AND messageSet <> '') THEN 
+		SET message = CAST(ASBITSTREAM(modelRef CCSID ccsId SET messageSet) AS CHARACTER CCSID ccsId);
+	ELSE
+		SET message = CAST(ASBITSTREAM(modelRef CCSID ccsId) AS CHARACTER CCSID ccsId);	
+	END IF;
+	
+	IF LASTMOVE(headerRef) THEN
+		SET headerRequest = CAST(ASBITSTREAM(headerRef CCSID ccsId OPTIONS FolderBitStream) AS CHARACTER CCSID ccsId);
+	END IF;
+	
+	MOVE headerRef TO inputRef.HTTPResponseHeader;
+	IF LASTMOVE(headerRef) THEN
+		SET headerResponse = CAST(ASBITSTREAM(headerRef CCSID ccsId OPTIONS FolderBitStream) AS CHARACTER CCSID ccsId);
+	END IF;
+	 
+	IF decoration <> '' THEN
+		SET START_DECORATION = '************** ' || decoration || ' Start' || ' **************' || NEW_SPACED_LINE;
+		SET END_DECORATION   = '************** ' || decoration || ' End'   || ' **************' || NEW_SPACED_LINE;
+	END IF;
+	
+	DECLARE decoratedMessage CHARACTER START_DECORATION;
+	IF headerRequest <> '' THEN
+		SET decoratedMessage = decoratedMessage || 'HTTPRequestHeader : ' || headerRequest || NEW_SPACED_LINE;
+	END IF;
+	IF headerResponse <> '' THEN
+		SET decoratedMessage = decoratedMessage || 'HTTPResponseHeader : ' || headerResponse || NEW_SPACED_LINE;
+	END IF;
+	
+	SET decoratedMessage = decoratedMessage || msgType || ' : ' || message || NEW_SPACED_LINE || END_DECORATION;
+	CALL logMessage(loggerName, logLevel, decoratedMessage);
+END;
+
+
+CREATE FUNCTION logInfoDecoratedMessage(IN decoration CHARACTER, IN inputRef REFERENCE)
+BEGIN
+	CALL logDecoratedMessage('INFO', decoration, inputRef);
+END;
+
+
+CREATE FUNCTION logDebugDecoratedMessage(IN decoration CHARACTER, IN inputRef REFERENCE)
+BEGIN
+	CALL logDecoratedMessage('DEBUG', decoration, inputRef);
+END;
+
+
+CREATE FUNCTION logDebugMessage(IN message CHARACTER)
+BEGIN
+	CALL logMessage(loggerName, 'DEBUG', message || NEW_SPACED_LINE);
+END;
+
+
+CREATE FUNCTION logInfoMessage(IN message CHARACTER)
+BEGIN
+	CALL logMessage(loggerName, 'INFO', message || NEW_SPACED_LINE);
+END;
+
+
+CREATE FUNCTION logWarningMessage(IN message CHARACTER)
+BEGIN
+	CALL logMessage(loggerName, 'WARN', message || NEW_SPACED_LINE);
+END;
+
+
+CREATE FUNCTION logErrorMessage(IN message CHARACTER)
+BEGIN
+	CALL logMessage(loggerName, 'ERROR', message || NEW_SPACED_LINE);
+END;
+
+
+CREATE FUNCTION  logDebugEnabled() RETURNS BOOLEAN
+BEGIN
+	RETURN logEnabled(loggerName, 'DEBUG');
+END;	
+	

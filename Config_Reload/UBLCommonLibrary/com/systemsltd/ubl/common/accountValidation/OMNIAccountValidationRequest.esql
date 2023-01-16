@@ -1,0 +1,22 @@
+BROKER SCHEMA com.systemsltd.ubl.common.accountValidation
+PATH com.systemsltd.common.cache, com.systemsltd.ubl.common, com.systemsltd.ubl.common.config;
+
+CREATE COMPUTE MODULE OMNIAccountValidationRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot = InputRoot;
+		CREATE FIELD OutputRoot.XMLNSC.OMNI_ACCOUNT_VALIDATION_REQUEST;
+		DECLARE omniReq REFERENCE TO OutputRoot.XMLNSC.OMNI_ACCOUNT_VALIDATION_REQUEST;
+		DECLARE omniChannel CHARACTER getConfigProperty('OMNI_FINTECH_USERNAME');
+		DECLARE mappedChannel CHARACTER getChannelMapping(omniChannel, getOMNIHost());
+		DECLARE password CHARACTER getGroupConfigProperty(getOMNIHost(), mappedChannel, 'PASSWORD');
+		DECLARE channel CHARACTER getGroupConfigProperty(getOMNIHost(), mappedChannel, 'CHANNEL');
+		
+		SET omniReq.P_SEC_CHANNEL = omniChannel;
+		SET omniReq.P_SEC_PASSWORD = password;
+		SET omniReq.P_MOBILE_NUMBER = Environment.Variables.accountNo;
+		SET omniReq.P_IS_CARD_SEARCH = 'F';
+		SET omniReq.P_CHANNEL_CODE = InputRoot.JSON.[<].serviceHeader.channel;
+		RETURN TRUE;
+	END;
+END MODULE;

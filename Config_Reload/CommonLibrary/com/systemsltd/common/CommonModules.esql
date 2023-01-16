@@ -1,0 +1,537 @@
+BROKER SCHEMA com.systemsltd.common
+
+PATH com.systemsltd.common.logging, com.systemsltd.common.util, com.systemsltd.common.database;
+
+
+DECLARE SUCCESS_RESPONSE_CODE SHARED CONSTANT CHARACTER '00';
+DECLARE UNKNOWN_RESPONSE_CODE SHARED CONSTANT CHARACTER '99';
+
+DECLARE validationErrorCode CONSTANT CHARACTER '51'; -- To be decided
+DECLARE validationErrorMsg CONSTANT CHARACTER 'Mandatory Parameter ? missing or invalid';
+
+
+CREATE FUNCTION decimalToCharacter( value DECIMAL) RETURNS CHARACTER
+BEGIN
+	RETURN CAST(CAST(value AS INTEGER) AS CHARACTER);
+END;
+
+
+CREATE FUNCTION getValidationErrorMsg(missingElement CHARACTER) RETURNS CHARACTER
+BEGIN
+	RETURN REPLACE(validationErrorMsg, '?', missingElement);
+END;
+
+
+CREATE FUNCTION getValidationErrorCode( ) RETURNS CHARACTER
+BEGIN
+	RETURN validationErrorCode;
+END;
+
+
+DECLARE LOG_OFFSET CONSTANT INTEGER 63;
+DECLARE CR CONSTANT CHAR CAST(CAST(X'0A' AS BLOB) AS CHAR CCSID 819);
+DECLARE NEW_SPACED_LINE CONSTANT CHARACTER (CR || SPACE(LOG_OFFSET));
+
+DECLARE MAX_STAN SHARED CONSTANT INTEGER 999999;
+DECLARE stan SHARED INTEGER 0;
+
+
+CREATE FUNCTION getSuccessResponseCode() RETURNS CHARACTER
+BEGIN
+	RETURN SUCCESS_RESPONSE_CODE;
+END;
+
+
+CREATE FUNCTION generateSTAN() RETURNS CHARACTER
+BEGIN
+	DECLARE currentStan INTEGER;
+	
+	-- added atomic block to avoid duplicates
+	BEGIN ATOMIC 
+		SET stan = stan + 1;
+		
+		IF stan > MAX_STAN THEN
+			SET stan = 1;	
+		END IF;
+		
+		SET currentStan = stan;
+	END;
+			
+	RETURN CAST(currentStan AS CHARACTER FORMAT '000000');
+END;
+
+
+CREATE FUNCTION isEmptyString(givenValue CHARACTER) RETURNS BOOLEAN
+BEGIN
+	RETURN (givenValue IS NULL OR TRIM(givenValue) = '');
+END;
+
+
+CREATE FUNCTION fieldAndValueExists(givenRef REFERENCE, givenName CHARACTER) RETURNS BOOLEAN
+BEGIN
+	RETURN FIELDTYPE(givenRef) IS NOT NULL AND FIELDNAME(givenRef) = givenName AND NOT isEmptyString(CAST(givenRef AS CHARACTER));
+END;
+
+
+CREATE FUNCTION isFieldExistsAndEmpty(givenRef REFERENCE, givenName CHARACTER) RETURNS BOOLEAN
+BEGIN
+	RETURN isFieldExist(givenRef, givenName) AND isEmptyString(CAST(givenRef AS CHARACTER));
+END;
+
+
+CREATE FUNCTION prepareCorrelationId(givenId CHARACTER) RETURNS BLOB
+BEGIN
+	DECLARE idLength INTEGER LENGTH(givenId);
+	DECLARE correlId CHARACTER CASE 
+		WHEN idLength < 24 THEN givenId || REPLICATE('0', 24 - idLength)
+		WHEN idLength > 24 THEN SUBSTRING(givenId FROM (idLength - 24))
+		ELSE givenId 
+	END;
+	
+	RETURN CAST(correlId AS BLOB CCSID 1208);
+END;
+
+
+CREATE FUNCTION getExceptionDetails(exceptionRef REFERENCE) RETURNS CHARACTER
+BEGIN
+	DECLARE exceptionDetails CHARACTER '';
+	
+	WHILE LASTMOVE(exceptionRef) DO
+		IF exceptionRef.Number IS NOT NULL THEN
+			SET exceptionDetails = exceptionDetails || NEW_SPACED_LINE || FIELDNAME(exceptionRef) || ' [Number: ' || CAST(exceptionRef.Number AS CHARACTER) || ', Text: ' || exceptionRef.Text || ']' || NEW_SPACED_LINE;
+			
+			FOR details AS exceptionRef.Insert[] DO
+				IF (details.Text IS NOT NULL AND details.Text <> '') THEN
+					SET exceptionDetails = exceptionDetails || '-> ' || details.Text || NEW_SPACED_LINE;
+				END IF;
+			END FOR;
+		END IF;
+			
+		MOVE exceptionRef LASTCHILD;
+	END WHILE;
+	
+	RETURN exceptionDetails;
+END;
+
+
+CREATE PROCEDURE moveToLastException(INOUT exceptionList REFERENCE)
+BEGIN
+	MOVE exceptionList FIRSTCHILD;
+	
+	X : WHILE LASTMOVE(exceptionList) DO
+		IF (exceptionList.[<].Number IS NOT NULL) THEN
+			MOVE exceptionList LASTCHILD;
+		ELSE
+			LEAVE X;
+		END IF;
+	END WHILE;
+END;
+
+
+CREATE FILTER MODULE VerifyExceptionFilterModule 
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE exceptionRef REFERENCE TO ExceptionList.*[1];
+		RETURN LASTMOVE(exceptionRef);
+	END;
+END MODULE;
+
+
+CREATE FILTER MODULE LogAndSaveMessageFilterModule
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE messageModel CHARACTER FIELDNAME(Body.*[1]);
+		CALL logInfoDecoratedMessage('Received Message ' || messageModel, Root);
+		
+		SET Environment.Variables.{messageModel} = Body.*[1];
+		SET Environment.Variables.{messageModel || 'Properties'} = Properties;
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FUNCTION getDefaultTimestamp() RETURNS CHARACTER
+BEGIN
+	RETURN CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyy-MM-dd HH:mm:ss');
+END;
+
+
+CREATE FUNCTION timestampToCharacter(givenTime TIMESTAMP, format CHARACTER) RETURNS CHARACTER
+BEGIN
+	RETURN CAST(givenTime AS CHARACTER FORMAT format);
+END;
+
+
+CREATE FUNCTION characterTimestampToCharacter(givenTimeInStr CHARACTER, srcFormat CHARACTER, targetFormat CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE givenTime TIMESTAMP CAST(givenTimeInStr AS TIMESTAMP FORMAT srcFormat);
+	RETURN timestampToCharacter(givenTime, targetFormat);
+END;
+
+
+CREATE FUNCTION dateToCharacter(givenDate TIMESTAMP, format CHARACTER) RETURNS CHARACTER
+BEGIN
+	RETURN CAST(givenDate AS CHARACTER FORMAT format);
+END;
+
+
+CREATE FUNCTION characterDateToCharacter(givenDateInStr CHARACTER, srcFormat CHARACTER, targetFormat CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE givenTime TIMESTAMP CAST(givenDateInStr AS DATE FORMAT srcFormat);
+	RETURN timestampToCharacter(givenTime, targetFormat);
+END;
+
+
+CREATE FUNCTION serializeMessage(IN rootRef REFERENCE ) RETURNS CHARACTER
+BEGIN
+	DECLARE blobRef BLOB ASBITSTREAM(rootRef.[<].[<] OPTIONS FolderBitStream CCSID rootRef.Properties.CodedCharSetId);
+	DECLARE messageRef CHARACTER CAST(blobRef AS CHARACTER ENCODING rootRef.Properties.Encoding);
+
+	RETURN messageRef;
+END;
+
+
+CREATE FUNCTION serializeField(fieldRef REFERENCE, propRef REFERENCE) RETURNS CHARACTER
+BEGIN
+	DECLARE blobRef BLOB ASBITSTREAM(fieldRef OPTIONS FolderBitStream CCSID propRef.CodedCharSetId);
+	DECLARE messageRef CHARACTER CAST(blobRef AS CHARACTER ENCODING propRef.Encoding);
+
+	RETURN messageRef;
+END;
+
+
+CREATE FUNCTION emptyStringValue(IN element CHARACTER, IN value CHARACTER ) RETURNS CHARACTER
+BEGIN
+	IF isEmptyString(element) THEN
+		RETURN value;
+	ELSE
+		RETURN element;
+	END IF;
+END;
+
+
+CREATE PROCEDURE findItemInList (INOUT itemRef REFERENCE, IN key CHARACTER, IN value CHARACTER) --RETURNS CHARACTER
+BEGIN
+	X: WHILE LASTMOVE(itemRef) DO
+		IF itemRef.{key} = value THEN
+			LEAVE X;
+		END IF;
+		
+		MOVE itemRef NEXTSIBLING REPEAT NAME;
+	END WHILE;
+END;
+
+
+CREATE FUNCTION getExceptionResponseCode(inExceptionNo INTEGER, OUT outExceptionCode CHARACTER)
+BEGIN
+	SET outExceptionCode = CASE inExceptionNo 
+		WHEN '2322' THEN '01' -- Database Error
+		WHEN '2666' THEN '02' -- Queue doesn't exist
+		WHEN '5701' THEN '03' -- JSON Parsing Error
+		WHEN '12' THEN '04' -- Fault
+		WHEN '2951' THEN '05' --Invalid IBAN
+		WHEN '3701' THEN '06' -- Soap service not available
+		WHEN '2952' THEN '07'  --  App
+		WHEN '2953' THEN '08'  -- ccyRate validation check 
+		WHEN '09' THEN '09' --Bill Already Paid
+		WHEN '2906' THEN '10' -- No response received from the system
+	 	WHEN '3204' THEN '11' -- Invalid Date Format
+		WHEN  '13' THEN '13' --Respective Host not available
+		WHEN '71' THEN '71' --Duplicate Transaction
+		WHEN '72' THEN '72' --Record doesn't exist
+		WHEN '58' THEN '58'
+		WHEN '4019' THEN '14' -- Invalid Length for base64 string
+		WHEN '3150' THEN '13' -- No connection could be made because the target machine actively refused it
+		WHEN '3691' THEN '13'
+		WHEN '162' THEN '162'
+		WHEN '163' THEN '163'
+		WHEN '2920' THEN '01'
+		WHEN '3151' THEN '58'
+		WHEN '3165' THEN '13'
+		WHEN '2921' THEN '01'
+		WHEN '3713' THEN '164'
+		WHEN '3001' THEN '1640'
+		WHEN '2460' THEN '1641'
+		WHEN '2917' THEN '1642'
+		WHEN '2936' THEN '1642'
+		WHEN '5702' THEN '1643'
+		WHEN '2930' THEN '1644'
+		WHEN '5831' THEN '1645'
+		  
+	ELSE
+		'50'
+	END;
+END;
+
+
+CREATE FUNCTION getExceptionResponseDetail(inExceptionCode CHARACTER, OUT outExceptionDetail CHARACTER)
+BEGIN
+	SET outExceptionDetail = CASE inExceptionCode 
+		WHEN '01' THEN 'Database Error'
+		WHEN '02' THEN 'Queue does not exist'
+		WHEN '03' THEN 'JSON Parsing Error'
+		WHEN '04' THEN 'Soap fault occurred' --Fault reponse
+		WHEN '05' THEN 'Invalid IBAN'
+		WHEN '06' THEN 'Soap service not available'
+		WHEN '07' THEN 'App Code Missing or Invalid'
+		WHEN '08' THEN 'ccyRate must be Number'
+		WHEN '09' THEN 'Bill Already Paid'
+		WHEN '10' THEN 'No response received from the system'
+		WHEN '11' THEN 'Invalid Date format.'
+		WHEN '12' THEN ''
+		WHEN '13' THEN 'Respective Host not available'
+		WHEN '14' THEN 'Invalid Length for base64 string'
+		WHEN '71' THEN 'Duplicate record NOT allowed.'
+		WHEN '72' THEN 'Record doesnot exist.'
+		WHEN '05' THEN 'Invalid IBAN'
+		WHEN '162' THEN 'Invalid Content Type'
+		WHEN '163' THEN 'Invalid Content Type'
+		WHEN '164' THEN 'Received 400 Bad Request from SOAP service'
+		WHEN '1640' THEN 'IRIS TIMEOUT'
+		WHEN '1641' THEN 'DATE format is invalid'
+		WHEN '1642' THEN '1 Channel missing'
+		WHEN '1643' THEN 'JSON parsing errors'
+		WHEN '1644' THEN 'Invalid Data Type'
+		WHEN '1645' THEN 'REQUEST NOT VALID'
+		WHEN '58' THEN 'Time out'
+		
+	ELSE
+		'Unknown Error'
+	END;
+END;
+
+CREATE FUNCTION getExceptionResponseMapping(exceptionRef REFERENCE, OUT responseCode CHARACTER, OUT responseDetail CHARACTER)
+BEGIN
+	CALL moveToLastException(exceptionRef);
+	DECLARE exceptionNo INTEGER exceptionRef.Number;
+	CALL logDebugMessage('exception no: ' || CAST(COALESCE(exceptionNo, '') AS CHARACTER));
+	IF isPositiveInteger(exceptionNo) THEN
+		CALL getExceptionResponseCode(exceptionNo, responseCode);
+		CALL getExceptionResponseDetail(responseCode, responseDetail);
+	END IF;
+END;
+	
+	
+CREATE FUNCTION isPositiveInteger(value INTEGER) RETURNS BOOLEAN
+BEGIN
+	RETURN (value IS NOT NULL AND value >= 0);
+END;
+
+CREATE FUNCTION isFieldExist(givenRef REFERENCE, givenName CHARACTER) RETURNS BOOLEAN
+BEGIN
+	 RETURN FIELDTYPE(givenRef) IS NOT NULL AND FIELDNAME(givenRef) = givenName;
+END;
+
+CREATE FUNCTION populateAttributeItem(listRef REFERENCE, key CHARACTER, value CHARACTER) 
+BEGIN
+--	CREATE LASTCHILD OF listRef AS listRef NAME ('Item');
+--	SET listRef.attributeKey = key;
+--	SET listRef.attributeValue = value;
+	IF NOT isEmptyString(value) THEN
+		CALL populateKeyValuePair(listRef, 'attributeKey', 'attributeValue', key, value);
+	END IF;
+END;
+
+CREATE FUNCTION populateParameterItem(listRef REFERENCE, key CHARACTER, value CHARACTER)
+BEGIN
+	CALL populateKeyValuePair(listRef, 'name', 'value', key, value);
+END;
+
+CREATE FUNCTION populateKeyValuePair(listRef REFERENCE, keyName CHARACTER, valueKeyName CHARACTER, key CHARACTER, value CHARACTER)
+BEGIN
+	CREATE LASTCHILD OF listRef AS listRef NAME ('Item');
+	SET listRef.{keyName} = key;
+	SET listRef.{valueKeyName} = value;
+END;
+
+CREATE PROCEDURE PopulateSuccessResponseHeader(IN outputRef REFERENCE, IN responseDetails CHARACTER)
+BEGIN
+	CREATE LASTCHILD OF outputRef NAME 'responseHeader';
+	DECLARE responseHeaderRef REFERENCE TO outputRef.responseHeader;
+	SET responseHeaderRef.responseCode = getSuccessResponseCode();
+	
+	/* Response Details array logic starts */
+	CREATE FIELD responseHeaderRef.responseDetails IDENTITY (JSON.Array)responseDetails;
+	DECLARE respDetailsArrayRef REFERENCE TO responseHeaderRef.responseDetails;
+	
+	-- Define items Ref in Array
+	DECLARE respDetailsItemsRef REFERENCE TO respDetailsArrayRef.Item;
+	
+	-- while last move - Loop for multiple items if required
+	CREATE LASTCHILD OF respDetailsArrayRef AS respDetailsItemsRef NAME ('Item') VALUE responseDetails;
+	CREATE LASTCHILD OF respDetailsArrayRef AS respDetailsItemsRef NAME ('Item') VALUE '|';
+	/* Response Details array logic ends */
+END;
+
+
+CREATE FUNCTION logExceptionMessage(exceptionRef REFERENCE)
+BEGIN
+	DECLARE exceptionDetails CHARACTER 'Exception occured in ' || MessageFlowLabel || ' ';
+	
+	SET exceptionDetails = exceptionDetails || getExceptionDetails(exceptionRef);
+	CALL logErrorMessage(exceptionDetails);
+END;
+
+
+CREATE FILTER MODULE ValidationErrorExists
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		RETURN EXISTS(Environment.Variables.Transaction.Error.Item[]);
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareValidationErrorResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		CREATE FIELD OutputRoot.JSON.Data;
+
+		DECLARE responseRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO InputRoot.JSON.Data;
+
+		SET OutputRoot.Properties = InputProperties;
+		SET responseRef.serviceHeader = transactionRef.serviceHeader;
+		SET responseRef.transactionInfo = transactionRef.transactionInfo;
+		SET responseRef.groupHeader = transactionRef.groupHeader;
+		SET responseRef.responseHeader.responseCode = getValidationErrorCode();
+		CREATE FIELD responseRef.responseHeader.responseDetails IDENTITY (JSON.Array);
+		SET responseRef.responseHeader.responseDetails = Environment.Variables.Transaction.Error;
+		
+		--CALL updateTransactionStatus(Environment.Variables.Transaction.DetailId, 'TRANSACTION_DETAIL', 'FAILURE');
+		RETURN TRUE;
+	END;
+END MODULE;
+
+CREATE FUNCTION convertListToArray(sourceRef REFERENCE, destinationRef REFERENCE)
+BEGIN
+	DECLARE listItemRef REFERENCE TO sourceRef.[1];
+	DECLARE fieldName CHARACTER FIELDNAME(sourceRef);
+	
+	DELETE FIELD destinationRef.{fieldName};
+	CREATE LASTCHILD OF destinationRef AS destinationRef IDENTITY (JSON.Array){fieldName};
+	DECLARE arrayItemRef REFERENCE TO destinationRef;
+
+	WHILE LASTMOVE(listItemRef) DO
+		CREATE LASTCHILD OF destinationRef AS arrayItemRef NAME 'Item';
+		SET arrayItemRef = listItemRef;
+		MOVE listItemRef NEXTSIBLING;
+	END WHILE;
+END;
+
+
+CREATE PROCEDURE findItemValueInList(IN itemRef REFERENCE, IN key CHARACTER, IN value CHARACTER) RETURNS CHARACTER
+BEGIN
+	 WHILE LASTMOVE(itemRef) DO
+		IF itemRef.{key} = value THEN
+			RETURN itemRef.attributeValue; 
+		END IF;
+		
+		MOVE itemRef NEXTSIBLING REPEAT NAME;
+	END WHILE;
+	RETURN '';
+END;
+
+CREATE PROCEDURE findfilterValueInList(IN itemRef REFERENCE, IN key CHARACTER, IN value CHARACTER) RETURNS CHARACTER
+BEGIN
+	 WHILE LASTMOVE(itemRef) DO
+		IF itemRef.{key} = value THEN
+			RETURN itemRef.filterValue; 
+		END IF;
+		
+		MOVE itemRef NEXTSIBLING REPEAT NAME;
+	END WHILE;
+	RETURN '';
+END;
+
+CREATE PROCEDURE findfieldInList(IN itemRef REFERENCE, IN key CHARACTER) RETURNS BOOLEAN
+BEGIN
+	 WHILE LASTMOVE(itemRef) DO
+		IF (FIELDVALUE(itemRef.filterKey) = key) THEN
+			RETURN TRUE; 
+		END IF;
+		
+		MOVE itemRef NEXTSIBLING REPEAT NAME;
+	END WHILE;
+	RETURN FALSE;
+END;
+ 	 
+--To check if input contains number only
+CREATE FUNCTION checkStringValue (value CHARACTER) RETURNS BOOLEAN
+BEGIN
+	
+	IF (CAST(value AS INTEGER DEFAULT 0) <> 0) THEN
+		--If cast successful then it contains integer only
+		RETURN TRUE;
+	END IF;
+	RETURN FALSE;
+END;
+
+--To check if input contains aphanumeric only
+CREATE FUNCTION ifStringContainsInteger (value CHARACTER) RETURNS BOOLEAN
+BEGIN
+	IF (CONTAINS(value, '0') OR CONTAINS(value, '1') OR CONTAINS(value, '2') OR CONTAINS(value, '3') OR 
+		CONTAINS(value, '4') OR CONTAINS(value, '5') OR CONTAINS(value, '6') OR CONTAINS(value, '7') OR 
+		CONTAINS(value, '8') OR CONTAINS(value, '9')) THEN
+		RETURN TRUE;
+	END IF;
+	RETURN FALSE;
+END;
+
+CREATE FUNCTION isValidLength (value CHARACTER, valueLength INTEGER) RETURNS BOOLEAN
+BEGIN
+	IF LENGTH(value) = valueLength THEN
+		RETURN TRUE;
+	END IF;
+	RETURN FALSE;
+END;
+
+
+CREATE FUNCTION prepareRequiredLength(IN givenName CHARACTER, IN lengthReq INTEGER, IN padChar CHARACTER, 
+	IN direction CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE oldLength INTEGER LENGTH(givenName);
+	IF direction = 'LEFT' THEN
+		RETURN REPLICATE(padChar, lengthReq - oldLength) || givenName;
+	ELSE 
+		RETURN  givenName || REPLICATE(padChar, lengthReq - oldLength);
+	END IF;
+END;
+CREATE FUNCTION maskPanNumber(IN inParam CHARACTER) RETURNS CHARACTER 
+BEGIN
+      RETURN REPLACE(inParam,SUBSTRING(inParam FROM 7 FOR 6),'******');
+END;
+
+DECLARE TRANSACTION_STATUS SHARED CONSTANT ROW 
+	ROW('FAILURE' AS FAILURE, 'SUCCESS' AS SUCCESS);
+
+
+CREATE FUNCTION stringDelimiterValueCount(IN stringValue CHARACTER) RETURNS INTEGER
+BEGIN		 
+         DECLARE iIndx INT 0;         
+         WHILE LENGTH(stringValue) > 0 DO
+             IF CONTAINS(stringValue, ',') THEN
+                 SET stringValue = SUBSTRING (stringValue AFTER ',');
+             ELSE             
+                 SET stringValue = '';
+             END IF;
+             SET iIndx = iIndx + 1;
+         END WHILE;	
+	RETURN iIndx;
+END;
+
+
+CREATE FUNCTION getNextValue(IN originalValue CHARACTER,IN separator CHARACTER,IN startIndex INTEGER) RETURNS CHARACTER
+BEGIN
+         DECLARE startTime CHARACTER;                
+             IF CONTAINS(originalValue, separator) THEN
+                 SET startTime = SUBSTRING (originalValue FROM startIndex FOR 8);
+             ELSE
+             	 SET startTime = SUBSTRING (originalValue FROM startIndex FOR 8);
+             END IF;         
+	RETURN startTime;
+END;
+
+
+
+
+

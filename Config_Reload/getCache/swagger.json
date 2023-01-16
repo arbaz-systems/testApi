@@ -1,0 +1,46 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "title" : "getCache",
+    "version" : "1.0.0",
+    "description" : "getCache"
+  },
+  "paths" : {
+    "/config" : {
+      "get" : {
+        "operationId" : "getConfig",
+        "responses" : {
+          "200" : {
+            "description" : "The operation was successful.",
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        },
+        "produces" : [ "application/json" ],
+        "description" : "Retrieve config"
+      },
+      "post" : {
+        "operationId" : "postConfig",
+        "responses" : {
+          "200" : {
+            "description" : "The operation was successful."
+          }
+        },
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "description" : "Insert a config",
+        "parameters" : [ {
+          "name" : "body",
+          "in" : "body",
+          "schema" : {
+            "type" : "string"
+          },
+          "description" : "The request body for the operation",
+          "required" : true
+        } ]
+      }
+    }
+  },
+  "basePath" : "/getcache/v1"
+}
