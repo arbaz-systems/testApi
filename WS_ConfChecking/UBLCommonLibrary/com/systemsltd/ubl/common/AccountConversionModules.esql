@@ -1,0 +1,149 @@
+BROKER SCHEMA com.systemsltd.ubl.common
+
+PATH com.systemsltd.common.logging, com.systemsltd.common, com.systemsltd.ubl.common, com.systemsltd.ubl.common.config,
+	com.systemsltd.common.cache;
+
+
+DECLARE accountNumberPath, ibanPath, cardNumberPath, branchCodePath, bankIMDPath EXTERNAL CHARACTER '';
+
+
+CREATE PROCEDURE populateAccountInfoFromIBAN(IN iban CHARACTER, OUT countryCode CHARACTER, OUT checkDigit CHARACTER,
+	OUT swiftCode CHARACTER, OUT hostIdentification CHARACTER, OUT accountLength CHARACTER, OUT accountNumber CHARACTER) 
+BEGIN
+	SET countryCode = SUBSTRING(iban FROM 1 FOR 2);
+	SET checkDigit = SUBSTRING(iban FROM 3 FOR 2);
+	SET swiftCode = SUBSTRING(iban FROM 5 FOR 4);
+	SET hostIdentification = SUBSTRING(iban FROM 9 FOR 2);
+	SET accountLength = SUBSTRING(iban FROM 11 FOR 2);
+	SET accountNumber = RIGHT(iban, CAST(accountLength AS INTEGER DEFAULT 0));
+	
+	IF (ifStringContainsInteger(countryCode) = TRUE  -- OR checkStringValue(checkDigit) = FALSE 
+		OR ifStringContainsInteger(swiftCode) = TRUE -- OR checkStringValue(hostIdentification) = FALSE OR 
+		-- checkStringValue(accountLength) = FALSE
+		) THEN
+		THROW USER EXCEPTION MESSAGE 2951 VALUES('Invalid IBAN');
+	END IF;
+END;
+
+
+CREATE PROCEDURE populateAccountInfoFromCardNumber(IN cardNumber CHARACTER, OUT accountNumber CHARACTER, OUT branchCode CHARACTER) 
+BEGIN
+	DECLARE result ROW;
+	SET result.data = THE(SELECT card.ACCOUNT_NUMBER, card.BRANCH_CODE FROM Database.{getIRISSchemaName()}.VW_CARD_INFO AS card 
+							WHERE card.CARDNUMBER = cardNumber);
+
+	SET accountNumber = result.data.ACCOUNT_NUMBER;
+	SET branchCode = result.data.BRANCH_CODE;
+END;
+
+
+CREATE FILTER MODULE VerifyAccountConversionRequried
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE conversionRequired BOOLEAN FALSE;
+		DECLARE iban CHARACTER CASE WHEN isEmptyString(ibanPath) THEN '' ELSE EVAL(ibanPath) END;
+		DECLARE cardNumber CHARACTER CASE WHEN isEmptyString(cardNumberPath) THEN '' ELSE EVAL(cardNumberPath) END;
+		DECLARE bankIMD CHARACTER CASE WHEN isEmptyString(bankIMDPath) THEN '' ELSE EVAL(bankIMDPath) END;
+
+		IF NOT isEmptyString(iban) THEN
+			IF NOT isEmptyString(bankIMD) AND bankIMD = getUBLBankIMD() THEN
+				SET Environment.Variables.Request = 'IBAN';
+				SET Environment.Variables.IBAN = iban;
+				SET conversionRequired = TRUE;
+			END IF;
+
+		ELSEIF NOT isEmptyString(cardNumber) THEN
+			SET Environment.Variables.Request = 'CARD';
+			SET Environment.Variables.CardNumber = cardNumber;
+			SET conversionRequired = TRUE;
+		END IF;
+		
+		CALL logDebugMessage('Account Conversion Required: ' || CAST(conversionRequired AS CHARACTER));
+		RETURN conversionRequired;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PopulateAccountFromIBAN
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot = InputRoot;
+
+		IF NOT isEmptyString(accountNumberPath) THEN
+			DECLARE countryCode, checkDigit, swiftCode, hostIdentification, accountLength, accountNumber CHARACTER '';
+
+			CALL populateAccountInfoFromIBAN(Environment.Variables.IBAN, countryCode, checkDigit, swiftCode,
+				hostIdentification, accountLength, accountNumber);
+				
+			CALL logDebugMessage('AccountNo. extracted from IBAN ' || COALESCE(accountNumber, ''));
+
+			IF NOT isEmptyString(accountNumber) THEN
+			
+				DECLARE charLen CHARACTER REPLICATE('0', CAST(accountLength AS INTEGER));
+				DECLARE updateAccountESQL CHARACTER 'SET ' || accountNumberPath || ' = CAST(' || accountNumber || 
+													' AS CHARACTER FORMAT ''' || charLen || ''')';
+	
+				EVAL(updateAccountESQL);
+				
+				DECLARE hostSystem CHARACTER getGroupConfigProperty('IBAN_HOST_IDENTIFIER', '', hostIdentification);
+				IF hostSystem = getOMNIHost() AND NOT isEmptyString(branchCodePath) THEN 
+					DECLARE omniBranchCode CHARACTER getConfigProperty('OMNI_BRANCH_CODE');
+					DECLARE updateBranchESQL CHARACTER 'SET ' || branchCodePath ||  '= CAST(' || omniBranchCode || ' AS CHARACTER)';
+					EVAL(updateBranchESQL);
+				END IF;
+				
+				SET Environment.Variables.ConversionFail = FALSE;
+			ELSE 
+				SET Environment.Variables.Transaction.HostResponse.ErrorCode = '43';
+				CALL getMappedResponseDescription(Environment.Variables.Transaction.HostResponse.ErrorCode, Environment.Variables.Transaction.HostResponse.Error.Item[1]);
+				SET Environment.Variables.ConversionFail = TRUE;
+			END IF;
+		END IF;
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PopulateAccountFromCardNumber
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot = InputRoot;
+		
+		IF NOT isEmptyString(accountNumberPath) THEN
+			DECLARE accountNumber, branchCode CHARACTER '';
+			CALL populateAccountInfoFromCardNumber(Environment.Variables.CardNumber, accountNumber, branchCode);
+
+			IF NOT isEmptyString(accountNumber) THEN
+				CALL logDebugMessage('Account Number : ' || accountNumber);
+
+				DECLARE updateAccountESQL CHARACTER 'SET ' || accountNumberPath || ' = CAST(' || accountNumber ||
+													' AS CHARACTER FORMAT ''000000000000'')';
+				EVAL(updateAccountESQL);
+	
+					IF NOT isEmptyString(branchCode) AND NOT isEmptyString(branchCodePath) THEN
+							CALL logDebugMessage('Branch Code : ' || branchCode);
+							DECLARE updateBranchESQL CHARACTER 'SET ' || branchCodePath || ' = CAST(' || branchCode || ' AS CHARACTER)';
+							EVAL(updateBranchESQL);
+					END IF;
+				SET Environment.Variables.ConversionFail = FALSE;
+			ELSE
+				SET Environment.Variables.ConversionFail = TRUE;
+				SET Environment.Variables.Transaction.HostResponse.ErrorCode = '43';
+				CALL getMappedResponseDescription(Environment.Variables.Transaction.HostResponse.ErrorCode, Environment.Variables.Transaction.HostResponse.Error.Item[1]);
+			END IF;
+		END IF;
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FILTER MODULE CheckConversion
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		RETURN Environment.Variables.ConversionFail = TRUE;
+	END; 
+	
+END MODULE;
+

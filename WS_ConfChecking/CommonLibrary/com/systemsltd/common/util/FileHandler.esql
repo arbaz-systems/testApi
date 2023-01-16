@@ -1,0 +1,19 @@
+BROKER SCHEMA com.systemsltd.common.util
+
+
+CREATE FUNCTION fileExists(location CHARACTER)
+RETURNS BOOLEAN
+LANGUAGE JAVA
+EXTERNAL NAME "com.systemsltd.common.util.FileUtils.fileExists";
+
+
+CREATE FUNCTION readFile(location CHARACTER)
+RETURNS BLOB
+LANGUAGE JAVA
+EXTERNAL NAME "com.systemsltd.common.util.FileUtils.readFile";
+
+
+CREATE FUNCTION getSecretKey(keystorePassword CHARACTER, alias CHARACTER, filepath CHARACTER)
+RETURNS BLOB
+LANGUAGE JAVA
+EXTERNAL NAME "com.systemsltd.common.util.FileUtils.getSecretKey";

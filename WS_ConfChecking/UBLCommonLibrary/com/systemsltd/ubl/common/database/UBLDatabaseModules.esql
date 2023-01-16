@@ -1,0 +1,650 @@
+BROKER SCHEMA com.systemsltd.ubl.common.database
+
+PATH com.systemsltd.common.database, com.systemsltd.ubl.common, com.systemsltd.common,
+	 com.systemsltd.common.logging, com.systemsltd.ubl.common.config, com.systemsltd.common.util,
+	 com.systemsltd.ubl.common.acl;
+
+
+DECLARE asyncOverrideRequired, syncOverrideRequired, groupEntryRequired EXTERNAL BOOLEAN FALSE;
+DECLARE processingQueue, responseQueue, serviceName, reversalHost EXTERNAL CHARACTER '';
+DECLARE authenticationRequired, transactionDetailInsertRequired EXTERNAL BOOLEAN TRUE;
+
+
+DECLARE UPDATE_TRANSACTION_DETAIL_STATUS CONSTANT CHARACTER
+		'UPDATE TRANSACTION_DETAIL TD SET TD.TRANSACTION_STATUS = ?, MODIFIED_DATETIME = CURRENT_TIMESTAMP WHERE TD.TRANSACTION_GROUP_ID = ?';
+
+DECLARE CHECK_TRANSACTION_GROUP_STATUS CONSTANT CHARACTER
+		'SELECT TG.ID, TG.TRANSACTION_STATUS FROM TRANSACTION_GROUP TG 
+		 WHERE TG.ID = ? ';
+
+DECLARE CHECK_TRANSACTION_STATUS CONSTANT CHARACTER
+		'SELECT TI.TRANSACTION_STATUS FROM TRANSACTION_INFO TI
+		WHERE TI.ID = ? ';
+
+DECLARE UPDATE_TRANSACTION_GROUP_STATUS CONSTANT CHARACTER
+		'UPDATE TRANSACTION_INFO
+		SET TRANSACTION_STATUS = ?, COMPLETION_TIME = ?
+		WHERE ID = (SELECT TRANSACTION_INFO_ID FROM TRANSACTION_GROUP WHERE ID = ?)';
+		
+DECLARE TOTAL_RECEIVED_TRANSACTION_COUNT_AND_AMOUNT_SUM CONSTANT CHARACTER
+		'SELECT COUNT(1) AS TRANSACTION_COUNT, SUM(AMOUNT) AS AMOUNT_SUM FROM TRANSACTION_DETAIL 
+		WHERE TRANSACTION_GROUP_ID = ?';		
+		
+DECLARE TOTAL_GROUP_TRANSACTION_COUNT_AND_TOTAL_AMOUNT CHARACTER
+		'SELECT TRANSACTION_COUNT, TOTAL_AMOUNT FROM TRANSACTION_GROUP
+		WHERE ID = ?';		
+
+DECLARE VERIFY_ORIGINAL_TRANSACTION CONSTANT CHARACTER 
+		'SELECT TI.TRANSACTION_TYPE, TI.TRANSACTION_SUBTYPE, TI.CHANNEL, TI.TRANSACTION_STATUS, TI.REFERENCE_ID 
+		FROM TRANSACTION_INFO TI WHERE TI.REFERENCE_ID  = ? ';
+		
+
+DECLARE UPDATE_TRANSACTION_DETAIL_STATUS_BY_DETAIL_ID CONSTANT CHARACTER
+		'UPDATE TRANSACTION_DETAIL SET TRANSACTION_STATUS = ? WHERE ID = ?';
+
+
+CREATE FUNCTION saveMessageDetail(rootRef REFERENCE) RETURNS INTEGER
+BEGIN
+	DECLARE messageID INTEGER getNextSequenceValue('MESSAGE_INFO_SEQ');
+
+	INSERT INTO Database.MESSAGE_INFO (ID, MESSAGE_DOMAIN, MESSAGE_SETS, MESSAGE_TYPE, MESSAGE_FORMAT,
+	ENCODING, CCSID, MESSAGE, ACTIVE_IND, CREATE_DATETIME, CREATED_BY)
+		values (messageID, FIELDNAME(rootRef.*[<]), rootRef.Properties.MessageSet, emptyStringValue(rootRef.Properties.MessageType, ' '),
+		rootRef.Properties.MessageFormat, rootRef.Properties.Encoding, rootRef.Properties.CodedCharSetId,
+		serializeMessage(rootRef), 1, CURRENT_TIMESTAMP, 'SYSTEM');
+	RETURN messageID;
+END;
+
+
+CREATE FUNCTION saveTransactionInfo(messageRef REFERENCE) RETURNS INTEGER
+BEGIN
+	DECLARE transactionInfoID INTEGER getNextSequenceValue('TRANSACTION_INFO_SEQ');
+	DECLARE headerRef REFERENCE TO messageRef.serviceHeader;
+	DECLARE transactionRef REFERENCE TO messageRef.transactionInfo;
+	DECLARE groupHeaderRef REFERENCE TO messageRef.groupHeader;
+
+	INSERT INTO Database.TRANSACTION_INFO(ID, CHANNEL, TRANSACTION_TYPE, TRANSACTION_SUBTYPE, REFERENCE_ID, PROCESSING_NATURE, PROCESSING_MODE,
+											RECEIVED_TIME, ACTIVE_IND, CREATE_DATETIME, CREATED_BY, NARRATION, TRANSACTION_DATETIME,
+											TRANSMISSION_DATETIME, STAN)
+	VALUES(transactionInfoID, emptyStringValue(headerRef.channel, ' '), emptyStringValue(transactionRef.transactionType, ' '),
+			transactionRef.transactionSubType, emptyStringValue(transactionRef.referenceId, ' '),
+			emptyStringValue(headerRef.processingType, ' '), emptyStringValue(groupHeaderRef.processingMode, 'SINGLE'),
+			CURRENT_TIMESTAMP, '1', CURRENT_TIMESTAMP, 'SYSTEM', transactionRef.narration,
+			emptyStringValue(transactionRef.transactionDate || ' ' || transactionRef.transactionTime, ' '),
+			emptyStringValue(characterTimestampToCharacter(transactionRef.transmissionDateTime, 'yyyy-MM-dd''T''HH:mm:ss', 'YYYYMMddHHmmss'), ' '),
+			transactionRef.stan);
+
+	RETURN transactionInfoID;
+END;
+
+
+CREATE FUNCTION saveGroupTransaction(messageRef REFERENCE, transactionInfoID INTEGER, status CHARACTER, statusDescription CHARACTER) RETURNS INTEGER
+BEGIN
+	DECLARE batchTransactionID INTEGER getNextSequenceValue('TRANSACTION_GROUP_SEQ');
+	DECLARE transactionCount REFERENCE TO messageRef.groupHeader.totalTransactions;
+
+	INSERT INTO Database.TRANSACTION_GROUP (ID, TRANSACTION_INFO_ID, TRANSACTION_COUNT, TOTAL_AMOUNT, TRANSACTION_STATUS, ACTIVE_IND, CREATE_DATETIME,
+											CREATED_BY, NODE_NAME, TRANSACTION_STATUS_DESCRIPTION)
+		values (batchTransactionID, transactionInfoID, transactionCount, messageRef.totalAmount, status, 1, CURRENT_TIMESTAMP, 'SYSTEM', BrokerName, statusDescription);
+
+	RETURN batchTransactionID;
+END;
+
+
+CREATE PROCEDURE updateTransactionInfo(IN transactionID INTEGER, IN status CHARACTER )
+BEGIN
+	UPDATE Database.TRANSACTION_INFO AS TRANS SET TRANSACTION_STATUS = status WHERE TRANS.ID = transactionID;
+END;
+
+
+--CREATE PROCEDURE updateGroupTransactionInfo(IN groupId INTEGER, IN status CHARACTER )
+--BEGIN
+--	-- DECLARE result ROW THE(SELECT TG.TRANSACTION_INFO_ID AS TransInfoID FROM Database.TRANSACTION_GROUP AS TG WHERE TG.ID = batchID);
+--	-- CALL updateTransactionInfo(CAST(result.TransInfoID AS INTEGER), status);
+--	DECLARE result ROW;
+--	SET result.data = PASSTHRU(UPDATE_TRANSACTION_GROUP_STATUS VALUES(status, CURRENT_TIMESTAMP, groupId));
+--END;
+
+
+CREATE PROCEDURE updateTransactionStatus(IN transactionId INTEGER, IN transactionSource CHARACTER, IN transcationStatus CHARACTER)
+BEGIN
+	CALL logDebugMessage('Inside Procedure updateTransactionStatus');
+	UPDATE Database.{transactionSource} AS T 
+	SET TRANSACTION_STATUS = transcationStatus, MODIFIED_DATETIME = CURRENT_TIMESTAMP 
+	WHERE T.ID = transactionId;
+END;
+
+
+CREATE PROCEDURE updateGroupTransactionStatus(IN groupId INTEGER, IN transcationStatus CHARACTER, IN transactionStatusDesc CHARACTER)
+BEGIN
+	UPDATE Database.TRANSACTION_GROUP AS T 
+	SET TRANSACTION_STATUS = transcationStatus, TRANSACTION_STATUS_DESCRIPTION = transactionStatusDesc, MODIFIED_DATETIME = CURRENT_TIMESTAMP 
+	WHERE T.ID = groupId;
+END;
+
+
+CREATE DATABASE MODULE SaveTransactionInDatabase
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE requestRef REFERENCE TO Body.*[1];
+
+		IF (asyncOverrideRequired) THEN
+			CALL logDebugMessage('Overriding Transaction processing nature to ASYNCHRONOUS');
+			SET requestRef.serviceHeader.processingType = 'ASYNCHRONOUS';
+		END IF;
+
+		IF (syncOverrideRequired) THEN
+			CALL logDebugMessage('Overriding Transaction processing nature to SYNCHRONOUS');
+			SET requestRef.serviceHeader.processingType = 'SYNCHRONOUS';
+		END IF;
+
+		DECLARE messageID INTEGER saveMessageDetail(Root);
+		DECLARE transactionInfoID INTEGER 0;
+		DECLARE transactionID INTEGER;
+		DECLARE status CHARACTER 'RECEIVING';
+		DECLARE statusDescription CHARACTER 'BATCH_RECEIVING_AT_SOA';
+
+		IF (groupEntryRequired AND FIELDTYPE(requestRef.groupHeader.groupId) IS NULL) THEN 
+			IF FIELDTYPE(requestRef.groupHeader.totalTransactions) IS NULL THEN 
+				SET requestRef.groupHeader.totalTransactions = CARDINALITY(requestRef.[<].[]);
+			END IF;
+			 
+			IF FIELDTYPE(requestRef.groupHeader.processingMode) IS NULL THEN
+				SET requestRef.groupHeader.processingMode = 'BULK';
+			END IF;
+
+			IF NOT (requestRef.groupHeader.completed) THEN
+				SET status = 'RECEIVING';
+				SET statusDescription = 'BATCH_RECEIVING_AT_SOA';
+			END IF;
+
+			SET transactionInfoID = saveTransactionInfo(requestRef);
+			SET Environment.Variables.Transaction.transactionInfoId = transactionInfoID;
+
+			SET requestRef.groupHeader.groupId = saveGroupTransaction(requestRef, transactionInfoID, status, statusDescription);
+			CALL logInfoMessage('Group ID generated: ' || CAST(requestRef.groupHeader.groupId AS CHARACTER));
+			
+		ELSEIF (groupEntryRequired AND FIELDTYPE(requestRef.groupHeader.groupId) IS NOT NULL) THEN
+			
+			DECLARE result ROW
+				THE(SELECT TG.TRANSACTION_INFO_ID FROM Database.TRANSACTION_GROUP AS TG WHERE TG.ID = requestRef.groupHeader.groupId);
+				SET Environment.Variables.Transaction.transactionInfoId = CAST(result.TRANSACTION_INFO_ID AS INTEGER);
+		
+		END IF;
+
+		IF NOT groupEntryRequired THEN
+			SET transactionID = getNextSequenceValue('TRANSACTION_DETAIL_SEQ');
+			SET transactionInfoID = saveTransactionInfo(requestRef);
+			SET Environment.Variables.Transaction.transactionInfoId = transactionInfoID;
+
+			INSERT INTO Database.TRANSACTION_DETAIL(ID, TRANSACTION_GROUP_ID, TRANSACTION_INFO_ID, MESSAGE_INFO_ID, ACTIVE_IND, CREATE_DATETIME,
+				CREATED_BY, PROCESSING_QUEUE, RESPONSE_QUEUE, TRANSACTION_STATUS, HOST_SYSTEM_REFERENCE_ID, AMOUNT, NODE_NAME)
+				
+			VALUES(transactionID, requestRef.groupHeader.groupId, transactionInfoID, messageID, 1, CURRENT_TIMESTAMP, 'SYSTEM', processingQueue,
+				responseQueue, 'RECEIVED', requestRef.remittanceFundTransfer.remitterDetail.remitterId, requestRef.[<].amount, BrokerName);
+				
+		END IF;
+
+		-- saving orginal request for recovery
+		SET Environment.Variables.Transaction.Request = requestRef;
+		SET Environment.Variables.Transaction.Properties = Root.Properties;
+		SET Environment.Variables.Transaction.DetailId = transactionID;
+		SET Environment.Variables.Transaction.messageInfoId = messageID;
+--		SET Environment.Variables.Transaction.transactionInfoId = transactionInfoID;
+
+		COMMIT;
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FUNCTION isGroupTransactionExist(groupId INTEGER) RETURNS BOOLEAN
+BEGIN
+	DECLARE result ROW THE(SELECT TG.ID AS TRANS_GROUP_ID FROM Database.TRANSACTION_GROUP AS TG WHERE TG.ID = groupId);
+	RETURN isPositiveInteger(CAST(result.TRANS_GROUP_ID AS INTEGER));
+END;
+
+
+CREATE FUNCTION checkGroupTransactionStatus(groupId INTEGER) RETURNS CHARACTER
+BEGIN
+	DECLARE result ROW;
+	SET result.data = PASSTHRU(CHECK_TRANSACTION_GROUP_STATUS VALUES(groupId));
+							  
+	RETURN result.data.TRANSACTION_STATUS; 					  
+END;
+
+
+CREATE FUNCTION checkTransactionStatus(transactionId INTEGER) RETURNS CHARACTER
+BEGIN
+	DECLARE result ROW;
+	SET result.data = PASSTHRU(CHECK_TRANSACTION_STATUS	VALUES(transactionId));
+							  
+	RETURN result.data.TRANSACTION_STATUS; 					  
+END;
+
+
+--CREATE FUNCTION saveSAFDetail(msgInfoId INTEGER, transactionInfoID INTEGER, maxRetryCount INTEGER, dependentTransId INTEGER) RETURNS INTEGER
+--BEGIN
+--	DECLARE safID INTEGER getNextSequenceValue('TRANSACTION_SAF_LOG_SEQ');
+--	DECLARE scheduledTime TIMESTAMP CURRENT_TIMESTAMP + CAST(getReversalDelay() AS INTERVAL SECOND);
+--	
+--	INSERT INTO Database.TRANSACTION_SAF_LOG 
+--			(ID, TRANSACTION_INFO_ID, DEPENDENT_TRANSACTION_ID, MESSAGE_INFO_ID, RETRY_COUNT, 
+--			MAX_RETRY_COUNT, DELAY_INTERVAL, PROCESSING_QUEUE, RESPONSE_QUEUE, CURRENT_SCHEDULE_TIME, LOCK_VERSION, ACTIVE_IND,
+--			CREATE_DATETIME, CREATED_BY, MODIFIED_DATETIME, MODIFIED_BY)
+--	VALUES (safID , transactionInfoID, dependentTransId, msgInfoId, 0, 
+--			maxRetryCount, getReversalDelay(), processingQueue, getSAFResponseQueue(), scheduledTime,  '1', '1', 
+--			CURRENT_TIMESTAMP, 'IIB', CURRENT_TIMESTAMP, 'IIB');
+--			
+--	RETURN safID;	
+--END;
+
+
+CREATE FUNCTION saveTransactionInSAF(serviceName CHARACTER, safRequest REFERENCE, messageID INTEGER, transactionInfoID INTEGER, transactionDetailId INTEGER, dependentTransactionId INTEGER, safProcessingQueue CHARACTER, safResponseQueue CHARACTER) RETURNS INTEGER
+BEGIN
+	DECLARE status CHARACTER
+		CASE WHEN isPositiveInteger(dependentTransactionId) THEN getTransactionStatusWaiting() ELSE getTransactionStatusReceived() END;	
+
+--	CALL logDebugMessage('Inserting ' ||  reversalHost || ' Reversal Message into TRANSACTION_INFO');
+	IF(transactionInfoID IS NULL) THEN
+		SET transactionInfoID = saveTransactionInfo(safRequest);
+	END IF;
+
+--	CALL logDebugMessage('Inserted with ID: ' || CAST(transactionInfoID AS CHARACTER));
+	CALL logDebugMessage('Inserted with transactionInfoId: ' || CAST(transactionInfoID AS CHARACTER));
+	
+	DECLARE transactionID INTEGER getNextSequenceValue('TRANSACTION_SAF_LOG_SEQ');
+	
+	DECLARE channel CHARACTER safRequest.serviceHeader.channel;
+	DECLARE retryCount INTEGER 0;
+	DECLARE maxRetryCount INTEGER getServiceRetryCount(channel, serviceName);
+	DECLARE delayInterval INTEGER getServiceDelayInterval(channel, serviceName);
+	DECLARE resolvedResponseQueue CHARACTER 
+		CASE WHEN NOT isEmptyString(safResponseQueue) THEN safResponseQueue ELSE getSAFResponseQueue() END;	
+	
+	DECLARE currentScheduledTime TIMESTAMP CURRENT_TIME + CAST(delayInterval AS INTERVAL SECOND);
+	
+	INSERT INTO Database.TRANSACTION_SAF_LOG
+						(ID, TRANSACTION_INFO_ID, DEPENDENT_TRANSACTION_ID, MESSAGE_INFO_ID, RETRY_COUNT, MAX_RETRY_COUNT, PROCESSING_QUEUE,
+						RESPONSE_QUEUE, CURRENT_SCHEDULE_TIME, LOCK_VERSION, ACTIVE_IND, CREATE_DATETIME, CREATED_BY, MODIFIED_DATETIME, MODIFIED_BY,
+						DELAY_INTERVAL, TRANSACTION_DETAIL_ID, TRANSACTION_STATUS, NODE_NAME)
+	VALUES (transactionID, transactionInfoID, dependentTransactionId, messageID, retryCount, maxRetryCount, safProcessingQueue,
+			resolvedResponseQueue, currentScheduledTime, 1, 1, CURRENT_TIME, 'SYSTEM', CURRENT_TIME, 'SYSTEM', delayInterval, transactionDetailId,
+			status, BrokerName);
+			
+	CALL logDebugMessage('Inserted with safLogId: ' || CAST(transactionID AS CHARACTER));
+
+	RETURN transactionID;
+END;
+
+
+CREATE PROCEDURE updateTransactionDetailStatus(IN groupId INTEGER, IN status CHARACTER)
+BEGIN
+	DECLARE result ROW;
+	SET result.data = PASSTHRU(UPDATE_TRANSACTION_DETAIL_STATUS 
+							  VALUES(status, groupId));
+END;
+
+
+CREATE PROCEDURE updateTransactionGroupDetails(IN groupId INTEGER, IN successCount INTEGER, IN status CHARACTER)
+BEGIN
+	UPDATE Database.TRANSACTION_GROUP AS TG
+	SET SUCCESS_COUNT = successCount, TRANSACTION_STATUS = status
+	WHERE TG.ID = groupId;
+	
+	CALL logDebugMessage('Updated TRANSACTION_GROUP success count as ' || CAST(successCount AS CHARACTER)
+							|| ' and status as ' || status || ' for transaction group : '
+							|| CAST(groupId AS CHARACTER));
+END;
+
+
+CREATE PROCEDURE updateTransactionGroupDetailsWithFailCnt(IN groupId INTEGER, IN successCount INTEGER, IN status CHARACTER, IN failureCount INTEGER)
+BEGIN
+	UPDATE Database.TRANSACTION_GROUP AS TG
+	SET SUCCESS_COUNT = successCount, TRANSACTION_STATUS = status, FAILURE_COUNT = failureCount,
+		MODIFIED_DATETIME = CURRENT_TIMESTAMP, MODIFIED_BY = 'SYSTEM'
+	WHERE TG.ID = groupId;
+	
+	CALL logDebugMessage('Updated TRANSACTION_GROUP success count as ' || CAST(successCount AS CHARACTER)
+							|| ' failure count as ' || CAST(failureCount AS CHARACTER)
+							|| ' and status as ' || status || ' for transaction group : '
+							|| CAST(groupId AS CHARACTER));
+END;
+
+
+CREATE FUNCTION getTotalReceivedTransactionCountAndAmountSum(IN groupId INTEGER,  OUT receivedTransactionCount INTEGER, OUT amount DECIMAL)
+BEGIN					  
+	DECLARE result ROW;
+	SET result.data = PASSTHRU(TOTAL_RECEIVED_TRANSACTION_COUNT_AND_AMOUNT_SUM VALUES(groupId));
+	SET receivedTransactionCount = CAST(result.data.TRANSACTION_COUNT AS INTEGER);
+	SET amount = COALESCE(result.data.AMOUNT_SUM, 0);
+END;
+
+
+CREATE PROCEDURE getGroupTotalCountAndTotalAmount(IN groupId INTEGER, OUT totalTransactionCount INTEGER, OUT totalAmount DECIMAL)
+BEGIN					  
+	DECLARE result ROW;
+	SET result.data = PASSTHRU(TOTAL_GROUP_TRANSACTION_COUNT_AND_TOTAL_AMOUNT VALUES(groupId));
+	SET totalTransactionCount = CAST(result.data.TRANSACTION_COUNT AS INTEGER);		
+	SET totalAmount = result.data.TOTAL_AMOUNT;					  
+END;
+
+
+CREATE FUNCTION verifyOriginalTransaction(IN referenceId CHARACTER, INOUT refTree REFERENCE )
+BEGIN					  
+	DECLARE result ROW;
+	MOVE refTree TO result;
+	SET result.data = THE(SELECT TI.TRANSACTION_TYPE, TI.TRANSACTION_SUBTYPE, TI.CHANNEL, TI.TRANSACTION_STATUS, TI.REFERENCE_ID 
+					  FROM Database.TRANSACTION_INFO AS TI WHERE TI.REFERENCE_ID  = referenceId);
+END;
+
+
+CREATE PROCEDURE saveTransactionDetail(IN transactionInfoID INTEGER, IN messageID INTEGER)
+BEGIN
+	DECLARE transactionID INTEGER getNextSequenceValue('TRANSACTION_DETAIL_SEQ');	
+	INSERT INTO Database.TRANSACTION_DETAIL(ID, TRANSACTION_GROUP_ID, TRANSACTION_INFO_ID, MESSAGE_INFO_ID, PROCESSING_QUEUE, RESPONSE_QUEUE, ACTIVE_IND, CREATE_DATETIME, CREATED_BY)
+	VALUES(transactionID, null, transactionInfoID, messageID, processingQueue, responseQueue, 1, CURRENT_TIMESTAMP, 'SYSTEM');
+END;
+
+
+CREATE PROCEDURE saveTransactionAttribute(IN transactionDetailID INTEGER, IN transAttrKey CHARACTER, IN transAttrValue CHARACTER)
+BEGIN
+	
+	DECLARE transAttrID INTEGER THE(SELECT ITEM TA.ID FROM Database.TRANSACTION_ATTRIBUTE AS TA 
+										WHERE TA.ATTRIBUTE_KEY = transAttrKey AND TA.TRANSACTION_DETAIL_ID = transactionDetailID);
+
+	IF transAttrID IS NOT NULL OR transAttrID <> 0 THEN
+		
+		UPDATE Database.TRANSACTION_ATTRIBUTE AS TA SET ATTRIBUTE_VALUE = transAttrValue, 
+		MODIFIED_DATETIME = CURRENT_TIMESTAMP, MODIFIED_BY = 'SYSTEM' 
+		WHERE TA.ID = transAttrID;
+	ELSE 
+		SET transAttrID = getNextSequenceValue('TRANSACTION_ATTRIBUTE_SEQ');	
+		INSERT INTO Database.TRANSACTION_ATTRIBUTE(ID, TRANSACTION_DETAIL_ID, ATTRIBUTE_KEY, ATTRIBUTE_VALUE, ACTIVE_IND, CREATE_DATETIME, CREATED_BY)
+		VALUES(transAttrID, transactionDetailID, transAttrKey, transAttrValue, 1, CURRENT_TIMESTAMP, 'SYSTEM');
+	END IF;
+	
+END;
+
+
+CREATE PROCEDURE updateTransactionInfoCompletionTime(IN transactionInfoId INTEGER)
+BEGIN
+	
+	CALL logDebugMessage('Update in TRANSACTION_INFO starts');
+	
+	UPDATE Database.TRANSACTION_INFO AS TI SET COMPLETION_TIME = CURRENT_TIMESTAMP, 
+		MODIFIED_DATETIME = CURRENT_TIMESTAMP, MODIFIED_BY = 'SYSTEM' 
+		WHERE TI.ID = transactionInfoId;
+		
+	CALL logDebugMessage('Update in TRANSACTION_INFO ends');
+END;
+
+--CREATE PROCEDURE updateTransactionDetailStatusByDetailId(IN transactionDetailId INTEGER, IN status CHARACTER)
+--BEGIN
+--	PASSTHRU UPDATE_TRANSACTION_DETAIL_STATUS_BY_DETAIL_ID VALUES(status, transactionDetailId);
+--	CALL logDebugMessage('Updated transaction status as ' || status ||
+--							' for transaction : ' || CAST(transactionDetailId AS CHARACTER));
+--END;
+
+
+CREATE DATABASE MODULE SaveReversalTransactionInDatabase
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE requestRef REFERENCE TO Body.*[1];
+		
+		CALL logDebugMessage('Inserting ' ||  reversalHost || ' Reversal Message into MESSAGE_INFO');
+		DECLARE messageId INTEGER saveMessageDetail(Root);
+		CALL logDebugMessage('Inserted with ID: ' || CAST(messageId AS CHARACTER));
+		
+		CALL logDebugMessage('Inserting ' ||  reversalHost || ' Reversal Message into TRANSACTION_SAF_LOG');
+		SET Environment.Variables.Transaction.SAFId = saveTransactionInSAF(serviceName, requestRef,
+					messageId, NULL, NULL, Environment.Variables.Transaction.SAFId, processingQueue, responseQueue);
+		CALL logDebugMessage('Inserted with ID: ' || CAST(Environment.Variables.Transaction.SAFId AS CHARACTER));
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+--CREATE PROCEDURE updateGroupStatus(IN groupId INTEGER, IN status CHARACTER)
+--BEGIN
+--	UPDATE Database.TRANSACTION_GROUP AS TG
+--	SET TRANSACTION_STATUS = status
+--	WHERE TG.ID = groupId;
+--END;
+
+
+--CREATE PROCEDURE updateGroupSuccessCount(IN groupId INTEGER, IN successCount INTEGER)
+--BEGIN
+--	UPDATE Database.TRANSACTION_GROUP AS TG	
+--	SET SUCCESS_COUNT = successCount
+--	WHERE TG.ID = groupId;
+--END;
+
+
+CREATE PROCEDURE GET_CLIENT_DET
+( 
+	IN P_CUST_CNIC CHARACTER,
+	IN P_CHNL CHARACTER,
+	OUT P_RESPONSE_CODE CHARACTER,
+	OUT P_RESPONSE_DESC CHARACTER
+)
+LANGUAGE DATABASE DYNAMIC RESULT SETS 1 
+EXTERNAL NAME "%.PKG_CLIENT_DETAIL.GET_CLIENT_DET";
+
+
+CREATE PROCEDURE UPDATE_TRANSACTION_STATUS
+( 
+	IN P_CUST_CNIC CHARACTER,
+	IN P_CHNL CHARACTER,
+	OUT P_RESPONSE_CODE CHARACTER,
+	OUT P_RESPONSE_DESC CHARACTER
+)
+LANGUAGE DATABASE DYNAMIC RESULT SETS 1 
+EXTERNAL NAME "%.PKG_CLIENT_DETAIL.GET_CLIENT_DET";
+
+
+CREATE DATABASE MODULE UpdateGroupTransactionStatus
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE inMsgRef REFERENCE TO Body.*[1];
+		
+		IF EXISTS(transactionRef.Error.Item[]) THEN
+	
+			IF (inMsgRef.groupHeader.completed=true AND inMsgRef.groupHeader.processingMode='BATCH') THEN
+			
+			CALL updateGroupTransactionStatus(inMsgRef.groupHeader.groupId, 'FAILED', 'BATCH_FAILED');
+			CALL logDebugMessage('Updated transaction status as RECEIVING for transaction
+			in TRANSACTION_GROUP having id ' || CAST(inMsgRef.groupHeader.groupId AS CHARACTER));
+
+			ELSE	
+
+			CALL updateGroupTransactionStatus(inMsgRef.groupHeader.groupId, 'RECEIVING', 'BATCH_RECEIVING_AT_SOA');
+			CALL logDebugMessage('Updated transaction status as RECEIVING for transaction
+			in TRANSACTION_GROUP having id ' || CAST(inMsgRef.groupHeader.groupId AS CHARACTER));
+
+			END IF;
+			
+		END IF;	
+
+
+
+	
+		--IF EXISTS(transactionRef.Error.Item[]) THEN
+	
+		--	CALL updateGroupTransactionStatus(inMsgRef.groupHeader.groupId, 'RECEIVING', 'BATCH_RECEIVING_AT_SOA');
+		--	CALL logDebugMessage('Updated transaction status as RECEIVING for transaction
+		--	in TRANSACTION_GROUP having id ' || CAST(inMsgRef.groupHeader.groupId AS CHARACTER));
+	--	END IF;	
+						
+		RETURN TRUE;
+	END;
+END MODULE;
+--CREATE DATABASE MODULE UpdateGroupTransactionStatus
+--	CREATE FUNCTION Main () RETURNS BOOLEAN
+--	BEGIN
+--		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+--		DECLARE inMsgRef REFERENCE TO Body.*[1];
+--		
+--		IF EXISTS(transactionRef.Error.Item[]) THEN
+--	
+--			CALL updateGroupTransactionStatus(inMsgRef.groupHeader.groupId, 'RECEIVING', 'BATCH_RECEIVING_AT_SOA');
+--			CALL logDebugMessage('Updated transaction status as RECEIVING for transaction
+--			in TRANSACTION_GROUP having id ' || CAST(inMsgRef.groupHeader.groupId AS CHARACTER));
+--		END IF;	
+--						
+--		RETURN TRUE;
+--	END;
+--END MODULE;
+
+
+CREATE FILTER MODULE ValidateRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE requestRef REFERENCE TO Body.*[1];
+--		CALL logInfoDecoratedMessage('Request received: ', Root);
+
+		DECLARE requestHeader CHARACTER serializeField(Root.HTTPInputHeader, Properties);
+		CALL logInfoMessage('Request HTTPHeader: ' || COALESCE(requestHeader,''));
+		
+		IF Root.HTTPInputHeader."Content-Type" <> 'application/json' THEN
+			THROW USER EXCEPTION MESSAGE 163 VALUES('Invalid Content Type');
+		END IF;
+
+		CREATE FIELD Environment.Variables.Transaction;
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		SET transactionRef.Request = requestRef;
+		SET transactionRef.Properties = Root.Properties;
+		
+		IF (Root.HTTPInputHeader."X-Forwarded-For" IS NOT NULL) THEN
+			SET transactionRef.SourceIp = Root.HTTPInputHeader."X-Forwarded-For";
+		ELSE
+			SET transactionRef.SourceIp = Root.HTTPInputHeader."X-Remote-Host";
+		END IF;
+		
+		-- Validation
+		IF NOT fieldAndValueExists(requestRef.serviceHeader.authInfo.password, 'password') THEN
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('password');
+		END IF;
+		
+		IF NOT fieldAndValueExists(requestRef.serviceHeader.channel, 'channel') THEN
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('channel');
+		END IF;
+		
+		DECLARE aclError CHARACTER '';
+		DECLARE accessAllowed BOOLEAN FALSE;
+		CALL logDebugMessage('Verifying channel access control');
+		CALL logDebugMessage('authenticationRequired: '|| cast(authenticationRequired as CHARACTER) );
+		IF NOT (authenticationRequired) THEN
+			SET accessAllowed = TRUE;
+		ELSE
+			SET accessAllowed = verifyAccessControl(requestRef.serviceHeader, requestRef.transactionInfo, Properties, transactionRef, aclError);
+		END IF;
+		
+		IF (accessAllowed) THEN
+			CALL logDebugMessage('Channel authenticated');
+			IF NOT (groupEntryRequired AND fieldAndValueExists(requestRef.groupHeader.groupId, 'groupId')) THEN
+				IF EXISTS(SELECT TI.ID FROM Database.TRANSACTION_INFO AS TI 
+					  WHERE TI.REFERENCE_ID = requestRef.transactionInfo.referenceId 
+						AND TI.CHANNEL = requestRef.serviceHeader.channel) THEN
+						
+				THROW USER EXCEPTION MESSAGE 71 VALUES('Duplicate Transaction');
+				END IF;
+			END IF;
+		
+			-- Perform validation
+			IF (NOT fieldAndValueExists(requestRef.transactionInfo.transactionDate, 'transactionDate') OR 
+				NOT isValidLength(requestRef.transactionInfo.transactionDate, 10) OR
+				isValidFormat(requestRef.transactionInfo.transactionDate, '^(\d{4})-((0[1-9])|(1[0-2]))-(0[1-9]|[12][0-9]|3[01])$') = FALSE) THEN
+				CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('transactionDate');
+			END IF;
+		
+			IF (NOT fieldAndValueExists(requestRef.transactionInfo.transactionTime, 'transactionTime') OR 
+				NOT isValidLength(requestRef.transactionInfo.transactionTime, 8) OR
+				isValidFormat(requestRef.transactionInfo.transactionTime, 
+				'\b(0[0-9]|1[0-9]|2[0-3])(\:)(0[0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])(\:)(0[0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])\b') = FALSE) THEN
+				CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('transactionTime');
+			END IF;
+		
+			IF (NOT(fieldAndValueExists(requestRef.transactionInfo.transactionType, 'transactionType')) OR  
+				NOT ENDSWITH(requestRef.transactionInfo.transactionType, 'INQUIRY') OR fieldAndValueExists(requestRef.transactionInfo.stan, 'stan')) THEN
+				IF NOT isValidLength(requestRef.transactionInfo.stan, 6)  THEN
+					CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('stan');
+				END IF;
+			END IF;
+		
+			IF (NOT(fieldAndValueExists(requestRef.transactionInfo.transmissionDateTime, 'transmissionDateTime')) OR  
+				NOT isValidLength(requestRef.transactionInfo.transmissionDateTime, 19) OR
+				isValidFormat(requestRef.transactionInfo.transmissionDateTime,
+				'^([0-9][0-9]|[0-9][0-9])\d{2}\-([0]\d|[1][0-2])\-([0-2]\d|[3][0-1])T(([0-1]\d|[2][0-3])(\:[0-5]\d){1,2}(\:[0-5]\d){1,2})?$') = FALSE) THEN
+				CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('transmissionDateTime');
+			END IF;
+		ELSE
+			
+			CALL logInfoMessage(aclError || ' for channel ' || requestRef.serviceHeader.channel);
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE aclError;
+			
+		END IF;
+	
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FILTER MODULE InsertInTransactionDetailTableRequired
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		RETURN transactionDetailInsertRequired;
+	END;
+END MODULE;
+
+
+CREATE DATABASE MODULE GetRegionMapping
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE fromRegion REFERENCE TO Root.JSON.Data.serviceHeader.fromRegionInfo;
+		DECLARE toRegion REFERENCE TO Root.JSON.Data.serviceHeader.toRegionInfo;
+
+		SET Environment.Variables.fromRegionDataSource = 'CBSDSN';
+		IF (fromRegion.bicCode IS NOT NULL OR fromRegion.bicCode <> '')
+			AND (fromRegion.countryCode IS NOT NULL OR fromRegion.countryCode <> '') THEN
+		
+			DECLARE regionData row;
+			SET regionData.item[] = SELECT RM.PREFIX, RM.BIC_CODE FROM Database.{'REGION_MAPPING'} AS RM WHERE
+					RM.BIC_CODE IN(fromRegion.bicCode, toRegion.bicCode) AND RM.CODE IN(fromRegion.countryCode, toRegion.countryCode);
+			
+			DECLARE regionDataRef REFERENCE TO regionData.item;
+			DECLARE dsnName CHARACTER 'DSN';
+			
+			WHILE LASTMOVE(regionDataRef) DO
+				IF regionDataRef.PREFIX IS NULL THEN
+					SET dsnName = 'CBS' || dsnName;
+				ELSE
+					SET dsnName = regionDataRef.PREFIX || dsnName;
+				END IF;
+				
+				IF regionDataRef.BIC_CODE = fromRegion.bicCode THEN
+					SET Environment.Variables.fromRegionDataSource = dsnName;
+				ELSEIF regionDataRef.BIC_CODE = toRegion.bicCode THEN
+					SET Environment.Variables.toRegionDataSource = dsnName;
+				END IF;
+				
+				CALL logInfoMessage('Setting CBS DSN to: ' || dsnName);
+				MOVE regionDataRef NEXTSIBLING;
+			END WHILE;
+		END IF;
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE DATABASE MODULE TransactionPostProcessingModule
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL updateTransactionInfoCompletionTime(LocalEnvironment.transactionLog.TransactionInfoID);
+		RETURN TRUE;
+	END;
+END MODULE;

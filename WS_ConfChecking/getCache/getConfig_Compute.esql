@@ -1,0 +1,11 @@
+path com.systemsltd.common.cache;
+
+CREATE COMPUTE MODULE getConfig_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		SET OutputRoot.JSON.Data.value = readFromCache(InputRoot.JSON.CacheName,InputRoot.JSON.Data.key);
+		
+		RETURN TRUE;
+	END;
+END MODULE;
