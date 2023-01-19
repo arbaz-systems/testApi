@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" 
+xmlns:xmi="http://www.omg.org/XMI" xmlns:com_systemsltd_common_logging_LogMessage.subflow="com/systemsltd/common/logging/LogMessage.subflow" xmlns:ComIbmThrow.msgnode="ComIbmThrow.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" 
+xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="com/systemsltd/common/FaultHandler.subflow" 
+nsPrefix="com_systemsltd_common_FaultHandler.subflow">
+<eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true">
+<eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.fileLoggingRequired" name="fileLoggingRequired" lowerBound="1"  defaultValueLiteral="true">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.databaseLoggingRequired" name="databaseLoggingRequired" lowerBound="1"  defaultValueLiteral="false">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.decoration" name="decoration" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.loggerName" name="loggerName" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.status" name="status"  defaultValueLiteral="(InputRoot.JSON.Data.responseHeader.responseCode = getSuccessResponseCode())">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.idPath" name="idPath" lowerBound="1"  defaultValueLiteral="Environment.Variables.Transaction.Channel">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.sourceSystem" name="sourceSystem"  defaultValueLiteral="Environment.Variables.Transaction.Request.serviceHeader.channel">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.destinationSystem" name="destinationSystem"  defaultValueLiteral="IIB">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.deleteMessageId" name="deleteMessageId" lowerBound="1"  defaultValueLiteral="true">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+</eStructuralFeatures>
+<translation xmi:type="utility:TranslatableString" key="FaultHandler" bundleName="com/systemsltd/common/FaultHandler" pluginId="flowAPIgenerated"/>
+<colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj16/FaultHandler.gif"/>
+<colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj30/FaultHandler.gif"/>
+<composition>
+<nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="85,47">
+<translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="com/systemsltd/common/FaultHandler" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_1" location="203,47">
+<translation xmi:type="utility:ConstantString" string="LogMessage"/>
+</nodes>
+<nodes xmi:type="ComIbmThrow.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="330,47" messageNumber="12" messageText="Some fault has occurred">
+<translation xmi:type="utility:ConstantString" string="Throw"/>
+</nodes>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_1" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+</composition>
+<propertyOrganizer>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.fileLoggingRequired">
+<propertyName xmi:type="utility:TranslatableString" key="Property.fileLoggingRequired" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.databaseLoggingRequired">
+<propertyName xmi:type="utility:TranslatableString" key="Property.databaseLoggingRequired" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.decoration">
+<propertyName xmi:type="utility:TranslatableString" key="Property.decoration" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.loggerName">
+<propertyName xmi:type="utility:TranslatableString" key="Property.loggerName" bundleName="com/systemsltd/common/logging/ProcessLogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.status">
+<propertyName xmi:type="utility:TranslatableString" key="Property.status" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.idPath">
+<propertyName xmi:type="utility:TranslatableString" key="Property.idPath" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.sourceSystem">
+<propertyName xmi:type="utility:TranslatableString" key="Property.sourceSystem" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.destinationSystem">
+<propertyName xmi:type="utility:TranslatableString" key="Property.destinationSystem" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.deleteMessageId">
+<propertyName xmi:type="utility:TranslatableString" key="Property.deleteMessageId" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyOrganizer>
+<attributeLinks promotedAttribute="Property.fileLoggingRequired" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.fileLoggingRequired"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.databaseLoggingRequired" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.databaseLoggingRequired"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.decoration" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.decoration"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.status" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.status"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.idPath" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.idPath"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.sourceSystem" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.sourceSystem"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.destinationSystem" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.destinationSystem"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.deleteMessageId" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.deleteMessageId"/>
+</attributeLinks>
+<stickyBoard/>
+</eClassifiers>
+</ecore:EPackage>

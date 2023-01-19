@@ -1,0 +1,93 @@
+BROKER SCHEMA com.systemsltd.common.database
+
+PATH com.systemsltd.common.cache, com.systemsltd.common.logging;
+
+DECLARE UPDATE_TRANSACTION_DETAIL_STATUS_BY_DETAIL_ID CONSTANT CHARACTER
+		'UPDATE TRANSACTION_DETAIL SET TRANSACTION_STATUS = ? WHERE ID = ?';
+
+CREATE FUNCTION getNextSequenceValue(sequenceName CHARACTER) RETURNS INTEGER
+BEGIN
+	DECLARE seqId ROW;
+	SET seqId.Id[] = PASSTHRU('SELECT ' || sequenceName || '.NEXTVAL FROM DUAL') ;
+	DECLARE Id INTEGER seqId.Id[1].NEXTVAL;
+	RETURN Id;
+END;
+
+
+CREATE FUNCTION getNextSequenceValueWithDSN(sequenceName CHARACTER, dsnName CHARACTER NULLABLE) RETURNS INTEGER
+BEGIN
+	DECLARE seqId ROW;
+	SET seqId.Id[] = PASSTHRU('SELECT ' || sequenceName || '.NEXTVAL FROM DUAL' TO Database.{dsnName}) ;
+	DECLARE Id INTEGER seqId.Id[1].NEXTVAL;
+	RETURN Id;
+END;
+
+
+CREATE DATABASE MODULE SaveMessageInDatabaseModule
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE envRef REFERENCE TO Environment.Variables;
+		DECLARE modelRef REFERENCE TO Root.*[<];
+		DECLARE msgDomain CHARACTER FIELDNAME(modelRef);
+		DECLARE msgModel CHARACTER FIELDNAME(modelRef.[1]);
+		DECLARE message BLOB CASE msgDomain 
+			WHEN 'BLOB' THEN modelRef.BLOB 
+			ELSE ASBITSTREAM(modelRef CCSID Properties.CodedCharSetId) 
+		END;
+		
+		/*
+		IF NOT LASTMOVE(envRef) THEN
+			CREATE FIELD Environment.Variables;
+			MOVE envRef TO Environment.Variables;
+		END IF;
+		
+		SET envRef.{msgModel} = 
+		PASSTHRU('INSERT INTO IB_MESSAGE_DETAIL(DOMAIN, MESSAGE_SET, MESSAGE_TYPE, ENCODING, CCSID, DATA)
+				 OUTPUT INSERTED.ID as Id VALUES(?, ?, ?, ?, ?, ?)',
+				 msgDomain, Properties.MessageSet, Properties.MessageType, Properties.Encoding, Properties.CodedCharSetId, message);
+		--CALL logInfoMessage('Stored Request Message with Id: ' || CAST(envRef.{msgModel}.Id AS CHARACTER));
+		*/
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+--CREATE PROCEDURE updateTransactionDetailStatusByDetailId(IN transactionDetailId INTEGER, IN status CHARACTER)
+--BEGIN
+--	PASSTHRU UPDATE_TRANSACTION_DETAIL_STATUS_BY_DETAIL_ID VALUES(status, transactionDetailId);
+--	CALL logDebugMessage('Updated transaction status as ' || status ||
+--							' for transaction : ' || CAST(transactionDetailId AS CHARACTER));
+--END;
+
+CREATE PROCEDURE saveNotification(IN status CHARACTER, IN inputRef REFERENCE, IN properties REFERENCE, 
+						IN safID INTEGER NULLABLE) RETURNS INTEGER
+BEGIN
+	DECLARE templateId INTEGER THE(SELECT ITEM NT.ID FROM Database.NOTIFICATION_TEMPLATE AS NT 
+			WHERE NT.TEMPLATE_NAME = inputRef.templateName);
+	
+--	DECLARE blobRef BLOB ASBITSTREAM(inputRef.body OPTIONS FolderBitStream CCSID properties.CodedCharSetId);
+	DECLARE messageBody CHARACTER CAST(inputRef.body AS CHARACTER ENCODING properties.Encoding);
+	DECLARE notificationMessageId INTEGER getNextSequenceValue('NOTIFICATION_MESSAGE_SEQ');
+	
+	INSERT INTO Database.NOTIFICATION_MESSAGE (ID, NOTIFICATION_TYPE, TO_ADDRESS,NOTIFICATION_TEMPLATE_ID, 
+		SUBJECT, MESSAGE_BODY, IMPORTANCE, PRIORITY, STATUS, ACTIVE_IND, CREATED_BY, CREATE_DATETIME,
+		CC_ADDRESS, BCC_ADDRESS, FROM_ADDRESS, LOCK_VERSION, TRANSACTION_SAF_LOG_ID) 
+	VALUES (notificationMessageId, inputRef.type, inputRef.to, templateId, inputRef.subject, messageBody,
+		inputRef.importance, inputRef.priority, status, 1, 'SYSTEM', CURRENT_TIMESTAMP, inputRef.cc, 
+		inputRef.bcc, getConfigProperty('FROM_ADDRESS'), 0, safID);
+	
+	CALL logInfoMessage('Notification record inserted for ID:' || CAST(notificationMessageId AS CHARACTER));			
+	
+	IF (inputRef.attachmentCount > 0) THEN
+		MOVE inputRef TO inputRef.attachment.Item;
+		DECLARE notificationAttachmentId INTEGER getNextSequenceValue('NOTIFICATION_ATTACHMENT_SEQ');
+		INSERT INTO Database.NOTIFICATION_ATTACHMENT (ID, NAME, CONTENT_TYPE, DATA_LOCATION, ACTIVE_IND, 
+			CREATE_DATETIME, CREATED_BY, NOTIFICATION_TEMPLATE_ID, NOTIFICATION_MESSAGE_ID, DATA) 
+		VALUES (notificationAttachmentId, inputRef.name, inputRef.type, inputRef.dataLocation, 1,CURRENT_TIMESTAMP,
+			'SYSTEM', templateId, notificationMessageId, CAST(inputRef.data AS BLOB CCSID properties.CodedCharSetId));
+		
+		CALL logInfoMessage('Attachment record inserted for ID:' || CAST(notificationAttachmentId AS CHARACTER));			
+	END IF;
+	
+	RETURN notificationMessageId;
+END;

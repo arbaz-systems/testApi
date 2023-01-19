@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmFilter.msgnode="ComIbmFilter.msgnode" xmlns:ComIbmFlowOrder.msgnode="ComIbmFlowOrder.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ComIbmTrace.msgnode="ComIbmTrace.msgnode" xmlns:com_systemsltd_common_logging_ProcessLogMessage.subflow="com/systemsltd/common/logging/ProcessLogMessage.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow"
+    xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="com/systemsltd/common/logging/LogMessage.subflow" nsPrefix="com_systemsltd_common_logging_LogMessage.subflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.fileLoggingRequired" name="fileLoggingRequired" lowerBound="1" defaultValueLiteral="true">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.databaseLoggingRequired" name="databaseLoggingRequired" lowerBound="1" defaultValueLiteral="false">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.asyncProcessingRequired" name="asyncProcessingRequired" lowerBound="1" defaultValueLiteral="true">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.decoration" name="decoration">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.status" name="status" defaultValueLiteral="(InputRoot.JSON.Data.responseHeader.responseCode = '00')">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.idPath" name="idPath" lowerBound="1" defaultValueLiteral="Environment.Variables.Transaction.Channel">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.sourceSystem" name="sourceSystem" defaultValueLiteral="Environment.Variables.Transaction.Request.serviceHeader.channel">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.destinationSystem" name="destinationSystem" defaultValueLiteral="IIB">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.newRequest" name="newRequest" lowerBound="1">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.deleteMessageId" name="deleteMessageId" lowerBound="1" defaultValueLiteral="true">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.queueName" name="queueName" defaultValueLiteral="LOG.MESSAGE.IN">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.loggerName" name="loggerName">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.dataSource" name="dataSource" defaultValueLiteral="IIBDSN">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <translation xmi:type="utility:TranslatableString" key="LogMessage" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/CommonLibrary/icons/full/obj16/LogMessage.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/CommonLibrary/icons/full/obj30/LogMessage.gif"/>
+    <composition>
+      <nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="42,96">
+        <translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+      </nodes>
+      <nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="179,197">
+        <translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+      </nodes>
+      <nodes xmi:type="ComIbmFlowOrder.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="115,96">
+        <translation xmi:type="utility:ConstantString" string="Log Processing"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="246,96" dataSource="IIBDSN" computeExpression="esql://routine/com.systemsltd.common.logging#PrepareAndProcessLogMessageModule.Main">
+        <translation xmi:type="utility:ConstantString" string="Prepare and Process Log Message"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="449,97" connection="CLIENT" transactionMode="no" policyUrl="{PolicyProject}:MQEndpoint">
+        <translation xmi:type="utility:ConstantString" string="Write Async Log Message"/>
+      </nodes>
+      <nodes xmi:type="ComIbmFilter.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="349,204" filterExpression="esql://routine/com.systemsltd.common.logging#LogExceptionFilter.Main">
+        <translation xmi:type="utility:ConstantString" string="Log Exception"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="497,192" destination="localError" pattern="${CURRENT_TIMESTAMP} -- Error occured while logging exception in MessageFlow: ${MessageFlowLabel} -- ${ASBITSTREAM(ExceptionList)} &#xD;&#xA;">
+        <translation xmi:type="utility:ConstantString" string="Write to Error Log"/>
+      </nodes>
+      <nodes xmi:type="com_systemsltd_common_logging_ProcessLogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_4" location="328,9">
+        <translation xmi:type="utility:ConstantString" string="ProcessLogMessage"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_1" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.first" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.Input"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.second" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer>
+      <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.fileLoggingRequired">
+        <propertyName xmi:type="utility:TranslatableString" key="Property.fileLoggingRequired" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+        <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.databaseLoggingRequired">
+          <propertyName xmi:type="utility:TranslatableString" key="Property.databaseLoggingRequired" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+          <propertyDescriptor groupName="Group.Advanced" configurable="true" userDefined="true" describedAttribute="Property.asyncProcessingRequired">
+            <propertyName xmi:type="utility:TranslatableString" key="Property.asyncProcessingRequired" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+            <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.decoration">
+              <propertyName xmi:type="utility:TranslatableString" key="Property.decoration" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+              <propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.status">
+                <propertyName xmi:type="utility:TranslatableString" key="Property.status" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+                <propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.idPath">
+                  <propertyName xmi:type="utility:TranslatableString" key="Property.idPath" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+                  <propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.sourceSystem">
+                    <propertyName xmi:type="utility:TranslatableString" key="Property.sourceSystem" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+                    <propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.destinationSystem">
+                      <propertyName xmi:type="utility:TranslatableString" key="Property.destinationSystem" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+                      <propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.newRequest">
+                        <propertyName xmi:type="utility:TranslatableString" key="Property.newRequest" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+                        <propertyDescriptor groupName="Group.Configurables" configurable="true" userDefined="true" describedAttribute="Property.deleteMessageId">
+                          <propertyName xmi:type="utility:TranslatableString" key="Property.deleteMessageId" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+                          <propertyDescriptor groupName="Group.Advanced" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.MQQueueNameEditor" configurable="true" describedAttribute="Property.queueName">
+                            <propertyName xmi:type="utility:TranslatableString" key="Property.queueName" bundleName="ComIbmMQOutput" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+                            <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.loggerName">
+                              <propertyName xmi:type="utility:TranslatableString" key="Property.loggerName" bundleName="com/systemsltd/common/logging/ProcessLogMessage" pluginId="CommonLibrary"/>
+                              <propertyDescriptor groupName="Group.Basic" configurable="true" describedAttribute="Property.dataSource">
+                                <propertyName xmi:type="utility:TranslatableString" key="Property.dataSource" bundleName="ComIbmCompute" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+                              </propertyDescriptor>
+                            </propertyDescriptor>
+                          </propertyDescriptor>
+                        </propertyDescriptor>
+                      </propertyDescriptor>
+                    </propertyDescriptor>
+                  </propertyDescriptor>
+                </propertyDescriptor>
+              </propertyDescriptor>
+            </propertyDescriptor>
+          </propertyDescriptor>
+        </propertyDescriptor>
+      </propertyDescriptor>
+    </propertyOrganizer>
+    <attributeLinks promotedAttribute="Property.queueName" overriddenNodes="FCMComposite_1_3">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.queueName"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_4">
+      <overriddenAttribute href="com/systemsltd/common/logging/ProcessLogMessage.subflow#Property.loggerName"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.dataSource" overriddenNodes="FCMComposite_1_2">
+      <overriddenAttribute href="ComIbmCompute.msgnode#Property.dataSource"/>
+    </attributeLinks>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

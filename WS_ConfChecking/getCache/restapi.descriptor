@@ -6,7 +6,7 @@
         </sharedLibraryReference>
     </references>
     <ns2:operations>
-        <ns2:operation name="postConfig" implementation="postConfig.subflow"/>
+        <ns2:operation name="postCheckCache" implementation="postCheckCache.subflow"/>
     </ns2:operations>
     <ns2:errorHandlers/>
 </ns2:restapiDescriptor>

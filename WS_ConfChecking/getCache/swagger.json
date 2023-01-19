@@ -6,9 +6,9 @@
     "description" : "getCache"
   },
   "paths" : {
-    "/config" : {
+    "/checkCache" : {
       "post" : {
-        "operationId" : "postConfig",
+        "operationId" : "postCheckCache",
         "responses" : {
           "200" : {
             "description" : "The operation was successful."
@@ -16,7 +16,7 @@
         },
         "consumes" : [ "application/json" ],
         "produces" : [ "application/json" ],
-        "description" : "Insert a config",
+        "description" : "Insert a checkCache",
         "parameters" : [ {
           "name" : "body",
           "in" : "body",
