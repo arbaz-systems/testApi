@@ -1,0 +1,78 @@
+BROKER SCHEMA com.systemsltd.ubl.omni.remittance
+
+PATH com.systemsltd.common, com.systemsltd.ubl.common, com.systemsltd.ubl.common.config;
+DECLARE ns NAMESPACE 'http://tempuri.org/';
+
+DECLARE OMNI_REMITTANCE_URL EXTERNAL CHARACTER '';
+
+CREATE COMPUTE MODULE PrepareRemittanceInquiryRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+
+		SET OutputLocalEnvironment.Destination.SOAP.Request.Transport.HTTP.WebServiceURL = OMNI_REMITTANCE_URL;
+
+		DECLARE inMsgRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE itemRef REFERENCE TO inMsgRef.transactionInfo.attributeList.Item;
+
+		CREATE FIELD OutputRoot.XMLNSC.ns:RemittanceInquiry;
+		DECLARE inquiryRef REFERENCE TO OutputRoot.XMLNSC.ns:RemittanceInquiry;
+
+--		DECLARE toAccountRef REFERENCE TO inMsgRef.*[<].toAccount;
+
+		DECLARE fromAccountRef REFERENCE TO inMsgRef.*[<].account;
+		DECLARE toPersonRef REFERENCE TO inMsgRef.*[<].toPerson;
+		DECLARE mappedChannel CHARACTER getChannelMapping(inMsgRef.serviceHeader.channel, getOMNIRemittanceHost());
+		DECLARE password CHARACTER getGroupConfigProperty(getOMNIRemittanceHost(), mappedChannel, 'PASSWORD');
+		DECLARE userName CHARACTER getGroupConfigProperty(getOMNIRemittanceHost(), mappedChannel, 'USERNAME');
+
+		DECLARE requestingChannel CHARACTER findItemValueInList(itemRef, 'attributeKey', 'requestingChannel');
+		IF isEmptyString(requestingChannel) THEN
+			SET requestingChannel = COALESCE(mappedChannel, inMsgRef.serviceHeader.channel);
+		END IF;
+		
+		SET inquiryRef.ns:userName = userName;
+		SET inquiryRef.ns:password = password;
+		SET inquiryRef.ns:channel = requestingChannel;
+		SET inquiryRef.ns:senderCNIC = fromAccountRef.accountOwnerList.Item.cnic;
+		SET inquiryRef.ns:senderName = fromAccountRef.accountOwnerList.Item.firstName;
+		IF fieldAndValueExists(fromAccountRef.accountOwnerList.Item.lastName, 'lastName') THEN
+			SET inquiryRef.ns:senderName = fromAccountRef.accountOwnerList.Item.firstName || ' ' || fromAccountRef.accountOwnerList.Item.lastName;
+		END IF;
+		SET inquiryRef.ns:senderMobileNumber = fromAccountRef.accountOwnerList.Item.contactNumber;
+		SET inquiryRef.ns:receiverCNIC = toPersonRef.cnic;
+		SET inquiryRef.ns:receiverName = toPersonRef.firstName;
+		IF fieldAndValueExists(toPersonRef.lastName, 'lastName') THEN
+			SET inquiryRef.ns:receiverName = toPersonRef.firstName || ' ' || toPersonRef.lastName;
+		END IF;
+		SET inquiryRef.ns:receiverMobileNumber = toPersonRef.contactNumber;
+--		SET inquiryRef.ns:remittanceAmount = inMsgRef.cnicFundTransfer.amount; -- Which one? from account or to account;
+		SET inquiryRef.ns:remittanceAmount = inMsgRef.*[<].amount;
+		SET inquiryRef.ns:externalTransactionId = findItemValueInList(itemRef, 'attributeKey', 'externalTransactionId'); -- To be confirmed
+		SET inquiryRef.ns:pof = inMsgRef.cnicFundTransfer.paymentMode; -- Payment mode. To be confirmed
+
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FILTER MODULE VerifyRemittanceInquiryResponse 
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+	--	DECLARE responseRef REFERENCE TO Root.SOAP.Body.ns:RemittanceInquiryResponse;
+		DECLARE responseRef REFERENCE TO Root.XMLNSC.ns:RemittanceInquiryResponse;
+		SET Environment.Variables.Transaction.RemittanceInquiryResponse = responseRef;
+		RETURN (responseRef.ns:RemittanceInquiryResult = 0);
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE RecoverProperties
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = Environment.Variables.Transaction.Properties;
+		SET OutputRoot = InputRoot;
+		RETURN TRUE;
+	END; 
+	
+END MODULE;

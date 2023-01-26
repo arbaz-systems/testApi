@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" 
+xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmWSInput.msgnode="ComIbmWSInput.msgnode" xmlns:ComIbmRouteToLabel.msgnode="ComIbmRouteToLabel.msgnode" xmlns:ComIbmWSReply.msgnode="ComIbmWSReply.msgnode" xmlns:AccountManagementServiceInputCatchHandler.subflow="AccountManagementServiceInputCatchHandler.subflow" xmlns:AccountManagementServiceInputFailureHandler.subflow="AccountManagementServiceInputFailureHandler.subflow" xmlns:AccountManagementServiceInputTimeoutHandler.subflow="AccountManagementServiceInputTimeoutHandler.subflow" xmlns:ComIbmLabel.msgnode="ComIbmLabel.msgnode" xmlns:AccountOpeningStatus.subflow="AccountOpeningStatus.subflow" xmlns:CustomerAccountAmendment.subflow="CustomerAccountAmendment.subflow" xmlns:CustomerAccountOpening.subflow="CustomerAccountOpening.subflow" xmlns:postAccountOpening.subflow="postAccountOpening.subflow" xmlns:postAmendment.subflow="postAmendment.subflow" xmlns:postFetchCustomerAccount.subflow="postFetchCustomerAccount.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" 
+xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="gen/AccountManagementService.msgflow" 
+nsPrefix="gen_AccountManagementService.msgflow">
+<eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1">
+<eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+<translation xmi:type="utility:TranslatableString" key="AccountManagementService" bundleName="gen/AccountManagementService" pluginId="flowAPIgenerated"/>
+<colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj16/AccountManagementService.gif"/>
+<colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj30/AccountManagementService.gif"/>
+<composition>
+<nodes xmi:type="ComIbmWSInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="25,150" URLSpecifier="/accountmanagementservice/v1*" parseQueryString="true" messageDomainProperty="JSON" validateTiming="complete" faultFormat="HTML" validateMaster="contentAndValue">
+<translation xmi:type="utility:ConstantString" string="HTTP Input"/>
+</nodes>
+<nodes xmi:type="ComIbmRouteToLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="125,150">
+<translation xmi:type="utility:ConstantString" string="Route To Label"/>
+</nodes>
+<nodes xmi:type="ComIbmWSReply.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="525,150">
+<translation xmi:type="utility:ConstantString" string="HTTP Reply"/>
+</nodes>
+<nodes xmi:type="AccountManagementServiceInputCatchHandler.subflow:FCMComposite_1" xmi:id="FCMComposite_1_4" location="325,225" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="AccountManagementServiceInputCatchHandler"/>
+</nodes>
+<nodes xmi:type="AccountManagementServiceInputFailureHandler.subflow:FCMComposite_1" xmi:id="FCMComposite_1_5" location="325,300" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="AccountManagementServiceInputFailureHandler"/>
+</nodes>
+<nodes xmi:type="AccountManagementServiceInputTimeoutHandler.subflow:FCMComposite_1" xmi:id="FCMComposite_1_6" location="325,375" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="AccountManagementServiceInputTimeoutHandler"/>
+</nodes>
+<nodes xmi:type="ComIbmLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="125,450" labelName="AccountOpeningStatus">
+<translation xmi:type="utility:ConstantString" string="AccountOpeningStatus (Label)"/>
+</nodes>
+<nodes xmi:type="AccountOpeningStatus.subflow:FCMComposite_1" xmi:id="FCMComposite_1_8" location="325,450" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="AccountOpeningStatus (Implementation)"/>
+</nodes>
+<nodes xmi:type="ComIbmLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_9" location="125,525" labelName="CustomerAccountAmendment">
+<translation xmi:type="utility:ConstantString" string="CustomerAccountAmendment (Label)"/>
+</nodes>
+<nodes xmi:type="CustomerAccountAmendment.subflow:FCMComposite_1" xmi:id="FCMComposite_1_10" location="325,525" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="CustomerAccountAmendment (Implementation)"/>
+</nodes>
+<nodes xmi:type="ComIbmLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_11" location="125,600" labelName="CustomerAccountOpening">
+<translation xmi:type="utility:ConstantString" string="CustomerAccountOpening (Label)"/>
+</nodes>
+<nodes xmi:type="CustomerAccountOpening.subflow:FCMComposite_1" xmi:id="FCMComposite_1_12" location="325,600" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="CustomerAccountOpening (Implementation)"/>
+</nodes>
+<nodes xmi:type="ComIbmLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_13" location="125,675" labelName="postAccountOpening">
+<translation xmi:type="utility:ConstantString" string="postAccountOpening (Label)"/>
+</nodes>
+<nodes xmi:type="postAccountOpening.subflow:FCMComposite_1" xmi:id="FCMComposite_1_14" location="325,675" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="postAccountOpening (Implementation)"/>
+</nodes>
+<nodes xmi:type="ComIbmLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_15" location="125,750" labelName="postAmendment">
+<translation xmi:type="utility:ConstantString" string="postAmendment (Label)"/>
+</nodes>
+<nodes xmi:type="postAmendment.subflow:FCMComposite_1" xmi:id="FCMComposite_1_16" location="325,750" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="postAmendment (Implementation)"/>
+</nodes>
+<nodes xmi:type="ComIbmLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_17" location="125,825" labelName="postFetchCustomerAccount">
+<translation xmi:type="utility:ConstantString" string="postFetchCustomerAccount (Label)"/>
+</nodes>
+<nodes xmi:type="postFetchCustomerAccount.subflow:FCMComposite_1" xmi:id="FCMComposite_1_18" location="325,825" loggerName="AccountManagementProcessingFlow">
+<translation xmi:type="utility:ConstantString" string="postFetchCustomerAccount (Implementation)"/>
+</nodes>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.catch" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.timeout" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_9" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_11" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_10" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_12" targetNode="FCMComposite_1_12" sourceNode="FCMComposite_1_11" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_13" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_12" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_14" targetNode="FCMComposite_1_14" sourceNode="FCMComposite_1_13" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_15" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_14" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_16" targetNode="FCMComposite_1_16" sourceNode="FCMComposite_1_15" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_17" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_16" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_18" targetNode="FCMComposite_1_18" sourceNode="FCMComposite_1_17" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input_1"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_19" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_18" sourceTerminalName="OutTerminal.Output_1" targetTerminalName="InTerminal.in"/>
+</composition>
+<propertyOrganizer>
+</propertyOrganizer>
+<stickyBoard>
+<stickyNote location="25,25" >
+<body xmi:type="utility:ConstantString" string="This message flow is automatically generated.&#xA;Do not edit this message flow.&#xA;If you edit the message flow, your changes will be overwritten without a warning.&#xA;"/>
+</stickyNote>
+</stickyBoard>
+</eClassifiers>
+</ecore:EPackage>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" 
+xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmSOAPRequest.msgnode="ComIbmSOAPRequest.msgnode" xmlns:com_systemsltd_common_FaultHandler.subflow="com/systemsltd/common/FaultHandler.subflow" xmlns:com_systemsltd_common_logging_LogMessage.subflow="com/systemsltd/common/logging/LogMessage.subflow" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmSOAPExtract.msgnode="ComIbmSOAPExtract.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" 
+xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="com/systemsltd/ubl/omni/remittance/RemittanceInquiryProcessing.subflow" 
+nsPrefix="com_systemsltd_ubl_omni_remittance_RemittanceInquiryProcessing.subflow">
+<eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true">
+<eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.OMNI_REMITTANCE_URL" name="OMNI_REMITTANCE_URL" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.loggerName" name="loggerName" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.status" name="status"  defaultValueLiteral="(InputRoot.SOAP.Body.*:RemittanceInquiryResponse.*:RemittanceInquiryResult = 0)">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.idPath" name="idPath" lowerBound="1"  defaultValueLiteral="Environment.Variables.Transaction.RemittanceInquiry">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<translation xmi:type="utility:TranslatableString" key="RemittanceInquiryProcessing" bundleName="com/systemsltd/ubl/omni/remittance/RemittanceInquiryProcessing" pluginId="flowAPIgenerated"/>
+<colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj16/RemittanceInquiryProcessing.gif"/>
+<colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj30/RemittanceInquiryProcessing.gif"/>
+<composition>
+<nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="-104,68">
+<translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="com/systemsltd/ubl/omni/remittance/RemittanceInquiryProcessing" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="ComIbmSOAPRequest.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="209,69" wsdlFileName="CNICToFundTransfer.wsdl" selectedPortType="RemittanceServicesSoap" selectedBinding="RemittanceServicesSoap" selectedOperation="RemittanceInquiry" selectedPort="RemittanceServicesSoap" targetNamespace="http://tempuri.org/" useHTTPTransport="true" webServiceURL="http://localhost:9081/QATSOA/RemittanceServices.asmx" sslProtocol="TLS">
+<translation xmi:type="utility:ConstantString" string="Remittance Inquiry"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_FaultHandler.subflow:FCMComposite_1" xmi:id="FCMComposite_1_4" location="336,144" databaseLoggingRequired="true" destinationSystem="OMNI" idPath="Environment.Variables.Transaction.RemittanceInquiry" status="(InputRoot.SOAP.Body.*:RemittanceInquiryResponse.*:RemittanceInquiryResult = 0)">
+<translation xmi:type="utility:ConstantString" string="FaultHandler"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_6" location="336,69" databaseLoggingRequired="true" decoration="Received Remittance Inquiry Response" destinationSystem="OMNI" idPath="Environment.Variables.Transaction.RemittanceInquiry" status="(InputRoot.SOAP.Body.*:RemittanceInquiryResponse.*:RemittanceInquiryResult = 0)">
+<translation xmi:type="utility:ConstantString" string="Log Response"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_2" location="109,69" databaseLoggingRequired="true" decoration="Prepared Remittance Inquiry Request" destinationSystem="OMNI" idPath="Environment.Variables.Transaction.RemittanceInquiry" newRequest="true">
+<translation xmi:type="utility:ConstantString" string="Log Request"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="529,73">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Out" bundleName="com/systemsltd/ubl/omni/remittance/RemittanceInquiryProcessing" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="-16,68" computeExpression="esql://routine/com.systemsltd.ubl.omni.remittance#PrepareRemittanceInquiryRequest.Main" computeMode="destinationAndMessage">
+<translation xmi:type="utility:ConstantString" string="Prepare Request"/>
+</nodes>
+<nodes xmi:type="ComIbmSOAPExtract.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="438,69">
+<translation xmi:type="utility:ConstantString" string="SOAP Extract"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_8" location="319,-3" databaseLoggingRequired="true" destinationSystem="OMNI" idPath="Environment.Variables.Transaction.RemittanceInquiry" status="(InputRoot.SOAP.Body.*:RemittanceInquiryResponse.*:RemittanceInquiryResult = 0)">
+<translation xmi:type="utility:ConstantString" string="Log Failure Response"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output1" location="531,-3">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Failure" bundleName="com/systemsltd/ubl/omni/remittance/RemittanceInquiryProcessing" pluginId="flowAPIgenerated"/>
+</nodes>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.fault" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_3" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="OutTerminal.Output1" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.Input"/>
+</composition>
+<propertyOrganizer>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.OMNI_REMITTANCE_URL">
+<propertyName xmi:type="utility:TranslatableString" key="Property.OMNI_REMITTANCE_URL" bundleName="com/systemsltd/ubl/omni/remittance/RemittanceInquiryProcessing" pluginId="flowAPIgenerated"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.loggerName">
+<propertyName xmi:type="utility:TranslatableString" key="Property.loggerName" bundleName="com/systemsltd/common/logging/ProcessLogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.status">
+<propertyName xmi:type="utility:TranslatableString" key="Property.status" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.idPath">
+<propertyName xmi:type="utility:TranslatableString" key="Property.idPath" bundleName="com/systemsltd/common/logging/LogMessage" pluginId="CommonLibrary"/>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyOrganizer>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_4">
+<overriddenAttribute href="com/systemsltd/common/FaultHandler.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.status" overriddenNodes="FCMComposite_1_4">
+<overriddenAttribute href="com/systemsltd/common/FaultHandler.subflow#Property.status"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.idPath" overriddenNodes="FCMComposite_1_4">
+<overriddenAttribute href="com/systemsltd/common/FaultHandler.subflow#Property.idPath"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_2 FCMComposite_1_6 FCMComposite_1_8">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.status" overriddenNodes="FCMComposite_1_8 FCMComposite_1_6">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.status"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.idPath" overriddenNodes="FCMComposite_1_8 FCMComposite_1_2 FCMComposite_1_6">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.idPath"/>
+</attributeLinks>
+<stickyBoard/>
+</eClassifiers>
+</ecore:EPackage>

@@ -1,0 +1,246 @@
+BROKER SCHEMA com.systemsltd.ubl.accountmanagementservice
+
+PATH com.systemsltd.common, com.systemsltd.ubl.cbs, com.systemsltd.ubl.common, 
+com.systemsltd.ubl.common.config, com.systemsltd.ubl.common.database, com.systemsltd.ubl.caps;
+
+CREATE FILTER MODULE ValidateCustomerAccountAmendmentRequest
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE inMsgRef REFERENCE TO Root.JSON.Data;
+		
+		CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+		
+		CALL validateServiceHeader(inMsgRef.serviceHeader, transactionRef);
+		CALL validateTransactionInfo(inMsgRef.transactionInfo, transactionRef, 'CUSTOMER_ACCOUNT', 'AMENDMENT_REQUEST');
+		CALL validateCAPSRequestParams(inMsgRef, transactionRef);
+--		CALL ValidateCNIC(inMsgRef.[<], transactionRef);
+		
+		RETURN EXISTS(transactionRef.Error.Item[]);
+	END; 
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareCustomerAccountAmendmentRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CREATE FIELD OutputRoot.XMLNSC.CAPS_REQUEST;
+		DECLARE capsReqRef REFERENCE TO OutputRoot.XMLNSC.CAPS_REQUEST;
+		
+		SET OutputRoot.Properties = InputProperties;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.ACCOUNT_NO = inputRef.customerAccountAmendmentRequest.account.accountNo;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.BRANCH = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.branch;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.ACCT_TYPE = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.acctType;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.CCY = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.ccy;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.OWNERSHIP_TYPE = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.ownershipType;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.ACCT_DESC = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.acctDesc;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SECRETKEYWORD = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.secretKeyword;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SPECIAL_INSTRUCTIONS = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.specialInstructions;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.TYPE_OF_CUSTOMER = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.typeOfCustomer;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_FUNDS = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfFunds;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_FUNDS2 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfFunds2;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_FUNDS3 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfFunds3;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfIncome;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME2 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfIncome2;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME3 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfIncome3;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME_OTHER = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfIncomeOther;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME_REMITTANCE.ROW.COUNTRY = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfIncomeRemittance.row.country;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME_REMITTANCE.RELATIONSHIP = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfIncomeRemittance.row.relationship;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfWealth;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH2 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfWealth2;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH3 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfWealth3;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH4 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfWealth4;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH_OTHERS = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.sourceOfWealthothers;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.MONTHLY_INCOME = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.monthlyIncome;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_CREDIT_TRANSACTION = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.usualModeOfCreditTransaction;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_CREDIT_TRANSACTION2 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.usualModeOfCreditTransaction2;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_CREDIT_TRANSACTION3 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.usualModeOfCreditTransaction3;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.MODE_CREDIT_OTHER = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.modeCreditOther;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_DEBIT_TRANSACTION = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.usualModeOfDebitTransaction;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_DEBIT_TRANSACTION2 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.usualModeOfDebitTransaction2;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_DEBIT_TRANSACTION3 = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.usualModeOfDebitTransaction3;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.MODE_DEBIT_OTHER = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.modeDebitOther;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.PURPOSE_OF_ACCOUNT = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.purposeOfAccount;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.PURPOSE_OTHER = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.purposeOther;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.ULTIMATE_BENEF_OF_ACCOUNT = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.ultimateBenefOfAccount;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.RELATIONSHIP_WITH_CUSTOMER = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.relationshipWithCustomer;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.GLOBAL_ID_OF_ULT_BENEFICIARY = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.globalIdOfUltBeneficiary;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_AGG_CREDIT_AMT_PER_MONTH = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.expAggCreditAmtPerMonth;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_NO_CREDIT_TRAN_PER_MONTH = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.expNoCreditTranPerMonth;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_AGG_DEBIT_AMT_PER_MONTH = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.expAggDebitAmtPerMonth;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_NO_DEBIT_TRAN_PER_MONTH = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.expNoDebitTranPerMonth;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_IFTT = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.expIftt;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_OFTT = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.expOftt;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.PHYSICAL_VERYIFICATION_CONDUCTED = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.physicalVeryificationConducted;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SEGMENTED_CODE = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.segmentedCode;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.MukammalPKG = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.mukammalPkg;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.CLIENT_IND = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.clientInd;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.PROFIT_CENTRE = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.profitCentre;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.NO_OF_TRANSACTION = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.noOfTransaction;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SINGLE_JOINT = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.singleJoint;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.ACCT_TYPE_ID = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.acctTypeId;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.LIMIT_DAILY = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.limitDaily;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.LIMIT_MONTHLY = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.limitMonthly;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.INITIALDEPOSITAMOUNT = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.initialDepositAmount;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.TPIN = inputRef.customerAccountAmendmentRequest.account.symbolsAccountDetails.tpin;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.STATEMENT_TYPE = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.statementType;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.STATEMENT_FREQ = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.statementFreq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.CONTACT_TYPE = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.contactType;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.MAILING_ADDRESS = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.mailingAddress;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.MAILING_ADDRESS1 = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.mailingAddress1;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.MAILING_ADDRESS2 = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.mailingAddress2;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.MAILING_ADDRESS3 = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.mailingAddress3;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.HOLD_MAIL = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.holdMail;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.CITY = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.city;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.REFERRAL_EMP_NO = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.referralEmpNo;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.REFERRAL_EMP_NAME = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.referralEmpName;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.POSTAL_CODE = inputRef.customerAccountAmendmentRequest.account.symbolAccountStatementDetail.postalCode;
+		
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_VISACARD_INFO.CARD_TYPE_ID = inputRef.customerAccountAmendmentRequest.account.symbolsAccountVisaCardInfo.cardTypeId;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_VISACARD_INFO.NAME_ON_CARD = inputRef.customerAccountAmendmentRequest.account.symbolsAccountVisaCardInfo.nameOnCard;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_VISACARD_INFO.SUPPLEMENTARY_CARD_REQ = inputRef.customerAccountAmendmentRequest.account.symbolsAccountVisaCardInfo.supplementaryCardReq;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.NETBANKING_REQ = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.netBankingReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.DAILY_LIMIT = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.dailyLimit;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.MONTHLY_LIMIT = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.monthlyLimit;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.OMNIBRANCHLESSBANKING_REQ = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.omniBranchlessBankingReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.OMNI_INITIAL_AMOUNT = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.omniInitialAmount;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.CREDIT_CARD_REQ = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.creditCardReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.PERSONAL_LOAN = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.personalLoan;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.CAR_FINANCING_REQ = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.carFinancingReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.MORTGAGE_REQ = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.mortgageReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.BUSINESS_FINANCE_REQ = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.businessFinanceReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.UBL_TERM_LIFE_INSURANCE = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.ublTermLifeInsurance;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.INTRESTED_IN_TPIN = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.intrestedInTpin;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.OTHER = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.other;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.LOCKERS = inputRef.customerAccountAmendmentRequest.account.symbolAccountOtherProducts.lockers;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_CHEQUE_BK_REQUISITION.CHEQUE_BK_REQ = inputRef.customerAccountAmendmentRequest.account.symbolsChequeBkRequisition.chequeBkReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_CHEQUE_BK_REQUISITION.NO_OF_LEAVES = inputRef.customerAccountAmendmentRequest.account.symbolsChequeBkRequisition.noOfLeaves;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_CHEQUE_BK_REQUISITION.QTY = inputRef.customerAccountAmendmentRequest.account.symbolsChequeBkRequisition.qty;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_ADDITIONALINFO.COMPANY = inputRef.customerAccountAmendmentRequest.account.symbolsAccountAdditionalInfo.company;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_ADDITIONALINFO.COMPANY_EMP = inputRef.customerAccountAmendmentRequest.account.symbolsAccountAdditionalInfo.companyEmp;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMBOLS_ACCOUNT_ADDITIONALINFO.OFFICER_ID = inputRef.customerAccountAmendmentRequest.account.symbolsAccountAdditionalInfo.officerId;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.STAFF_LSF.STAFF = inputRef.customerAccountAmendmentRequest.account.staffLsf.staff;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.STAFF_LSF.LSF = inputRef.customerAccountAmendmentRequest.account.staffLsf.lsf;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.STAFF_LSF.EMP_NO = inputRef.customerAccountAmendmentRequest.account.staffLsf.empNo;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.STAFF_LSF.AOF_FILLED_BY_CSR_NAME = inputRef.customerAccountAmendmentRequest.account.staffLsf.aofFilledByCsrName;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.STAFF_LSF.CSR_EMPLOYEE_NAME = inputRef.customerAccountAmendmentRequest.account.staffLsf.csrEmployeeName;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.STAFF_LSF.AOF_FILLED_BY_CSM_OR_BM_NAME = inputRef.customerAccountAmendmentRequest.account.staffLsf.aofFilledByCsmOrBmName;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.STAFF_LSF.CSM_OR_BM_EMPLOYEE_NAME = inputRef.customerAccountAmendmentRequest.account.staffLsf.csmOrBmEmployeeName;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.SERVICE_REQ = inputRef.customerAccountAmendmentRequest.account.symAcctSmsAlertDetails.serviceReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.SERVICE_TYPE = inputRef.customerAccountAmendmentRequest.account.symAcctSmsAlertDetails.serviceType;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.ALL_ALERT_REQ = inputRef.customerAccountAmendmentRequest.account.symAcctSmsAlertDetails.allAlertReq;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.DBT_TRN_MIN = inputRef.customerAccountAmendmentRequest.account.symAcctSmsAlertDetails.dbtTrnMin;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.CRDT_TRN_MIN = inputRef.customerAccountAmendmentRequest.account.symAcctSmsAlertDetails.crdtTrnMin;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.NO_LMT_DEFINED = inputRef.customerAccountAmendmentRequest.account.symAcctSmsAlertDetails.noLmtDefined;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMB_CLIENT_POSTAL.ADDRESS = inputRef.customerAccountAmendmentRequest.account.symbClientPostal.address;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMB_CLIENT_POSTAL.ADDRESS2 = inputRef.customerAccountAmendmentRequest.account.symbClientPostal.address2;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMB_CLIENT_POSTAL.ADDRESS3 = inputRef.customerAccountAmendmentRequest.account.symbClientPostal.address3;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMB_CLIENT_POSTAL.ADDRESS4 = inputRef.customerAccountAmendmentRequest.account.symbClientPostal.address4;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMB_CLIENT_POSTAL.COUNTRY = inputRef.customerAccountAmendmentRequest.account.symbClientPostal.country;
+		SET capsReqRef.ACCOUNT_UPDATE.ACCOUNT.SYMB_CLIENT_POSTAL.CITY = inputRef.customerAccountAmendmentRequest.account.symbClientPostal.city;
+		
+		SET capsReqRef.ACCOUNT_UPDATE.AORID = inputRef.customerAccountAmendmentRequest.aorId;
+		SET capsReqRef.ACCOUNT_UPDATE.RMID = inputRef.customerAccountAmendmentRequest.rmId;
+		
+		CALL populateCAPSRequestParams(capsReqRef, inputRef);
+		
+		RETURN TRUE;
+	END;	
+END MODULE;
+
+
+CREATE COMPUTE MODULE CallCustomerAccountAmendment
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE serializedRequest, serializedResponse CHARACTER '';
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;		
+		DECLARE capsSchemaName CHARACTER getCAPSSchemaName();
+		
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE capsReqRef REFERENCE TO InputRoot.XMLNSC.CAPS_REQUEST;
+--		DECLARE spXMLRef REFERENCE TO capsReqRef.TRACKING_INQUERY;
+		
+		SET serializedRequest = serializeField(capsReqRef.ACCOUNT_UPDATE, InputProperties);
+		
+		DECLARE responseCode, responseDesc CHARACTER '';
+
+		CALL CAPSWEBEX_TRANSINPUT_CALL(
+			capsReqRef.TrackingNo,
+		 	capsReqRef.STAN,
+		 	capsReqRef.CNIC,
+		 	capsReqRef.TRAN_CODE,
+		 	capsReqRef.CHANNEL,
+		 	serializedRequest,
+		 	serializedResponse,
+		 	responseCode,
+		 	responseDesc) EXTERNAL SCHEMA capsSchemaName;
+		
+		DECLARE capsResponse BLOB 
+		CAST(serializedResponse AS BLOB CCSID InputProperties.CodedCharSetId);
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC')
+		PARSE(capsResponse, InputProperties.Encoding, InputProperties.CodedCharSetId);
+		
+		DECLARE requestOut REFERENCE TO OutputRoot.XMLNSC.[<];
+		
+		IF capsTransactionSuccessfull(responseCode) THEN
+			SET  transactionRef.HostResponse.ErrorCode = getSuccessResponseCode();
+		ELSE
+			CALL transformSyetemErrorIntoXml(requestOut, responseCode, responseDesc);
+			PROPAGATE TO TERMINAL 1 DELETE NONE;
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareCustomerAccountAmendmentResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE capsRespRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE requestOutRef REFERENCE TO InputRoot.XMLNSC.ACCOUNT_UPDATE;
+		
+		CALL copyAndConvertServiceHeader(transactionRef.Request.serviceHeader, capsRespRef);
+		CALL copyAndConvertTransactionInfo(transactionRef.Request.transactionInfo, capsRespRef);
+		
+		CALL PopulateSuccessResponseHeader(capsRespRef, getTransactionStatusSuccess());
+		
+		IF transactionRef.HostResponse.ErrorCode <> getSuccessResponseCode() THEN
+			SET capsRespRef.responseHeader.responseCode = transactionRef.HostResponse.ErrorCode;
+			SET capsRespRef.responseHeader.responseDetails = transactionRef.HostResponse.Error;
+		ELSE
+			
+			SET capsRespRef.customerAccountAmendmentResponse.accountNumber = requestOutRef.ACCOUNTNUMBER;
+			SET capsRespRef.customerAccountAmendmentResponse.trackingNo = requestOutRef.TRACKING_NO;
+			
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+CREATE FUNCTION transformSyetemErrorIntoXml(outRef REFERENCE, responseCode CHARACTER, responseDesc CHARACTER)
+BEGIN
+	SET outRef.ERROR.RESPONSE_CODE = responseCode;
+	SET outRef.ERROR.RESPONSE_DESC = responseDesc;
+END;

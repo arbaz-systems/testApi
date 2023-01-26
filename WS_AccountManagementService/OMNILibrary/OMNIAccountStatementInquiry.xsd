@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.systemsltd.com/ubl/omni" xmlns="http://www.systemsltd.com/ubl/omni">
+
+	<xsd:element name="AccountStatementInquiryRequest" type="AccountStatementInquiryRequest" />
+	<xsd:element name="AccountStatementInquiryResponse" type="AccountStatementInquiryResponse" />
+
+
+	<xsd:complexType name="AccountStatementInquiryRequest">
+		<xsd:sequence>
+			<xsd:element name="OMNI_ACCOUNTSTATEMENTINQUIRY_REQUEST">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="P_SEC_CHANNEL" type="xsd:string" />
+						<xsd:element name="P_SEC_PASSWORD" type="xsd:string" />
+						<xsd:element name="MOBILE_NUMBER  " type="xsd:string" />
+						<xsd:element name="START_DATE" type="xsd:date" />
+						<xsd:element name="END_DATE" type="xsd:date" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="AccountStatementInquiryResponse">
+		<xsd:sequence>
+			<xsd:element name="OMNI_ACCOUNTSTATEMENTINQUIRY_RESPONSE">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="MY_CURSOR"  maxOccurs="unbounded">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="ACCOUNT_ID"
+										type="xsd:string" />
+									<xsd:element name="ACCOUNTING_DATE"
+										type="xsd:dateTime" />
+									<xsd:element name="ACCOUNTING_TIME"
+										type="xsd:time" />
+									<xsd:element name="ACTION"
+										type="xsd:string" />
+									<xsd:element name="AMOUNT"
+										type="xsd:string" />
+									<xsd:element name="ORN_TRANSACTION_ID"
+										type="xsd:string" />
+									<xsd:element name="AVAILABLE_BALANCE"
+										type="xsd:decimal" />
+									<xsd:element name="TRANSACTION_DESCRIPTION"
+										type="xsd:string" />
+									<xsd:element name="V_STATUS_CODE"
+										type="xsd:integer" />
+									<xsd:element name="V_STATUS_DESC"
+										type="xsd:string" />
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

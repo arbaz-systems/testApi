@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.systemsltd.com/ubl/cbs" targetNamespace="http://www.systemsltd.com/ubl/cbs">
+
+	<xsd:include schemaLocation="CBSCommonMessageModel.xsd" />
+	<xsd:element name="FundsTransferRequest" type="FundsTransferRequest" />
+	<xsd:element name="FundsTransferResponse" type="FundsTransferResponse" />
+	<xsd:element name="BatchFundsTransRequest" type="BatchFundsTransRequest" />
+	<xsd:element name="BatchFundsTransResponse" type="BatchFundsTransResponse" />
+
+
+	<xsd:complexType name="FundsTransferRequest">
+		<xsd:sequence>
+			<xsd:element name="CBS_TRAN_IN">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HEADER_IN" type="GeneralHeaderIn" />
+
+						<xsd:element name="MSG_TYPE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="1"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="STAN">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="6"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="TRAN_DATETIME">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="19"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="TRAN_AMT">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:decimal">
+									<xsd:fractionDigits value="2" />
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="TRAN_DESC">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="140"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="CHEQUE_NO">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="13"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="CCY_RATE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:decimal">
+									<xsd:fractionDigits value="8" />
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="DR_INFO">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="DR_BANK_CODE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="6"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_BANK_NAME">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="35"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_ACCT_TITLE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="40"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_ACCT_IBAN">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="34"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_ACCT_TYPE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="1"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_ACCT_NO">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="20"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_BRANCH">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="6"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_CCY">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="3"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_CLIENT_NO">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="12"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_CRC">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="12"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="DR_VALUE_DATE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="19"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+
+						<xsd:element name="CR_INFO">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="CR_BANK_CODE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="6"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_BANK_NAME">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="35"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_ACCT_TITLE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="40"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_ACCT_IBAN">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="34"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_ACCT_TYPE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="1"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_ACCT_NO">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="20"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_BRANCH">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="6"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_CCY">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="3"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+
+									<xsd:element name="CR_CLIENT_NO">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="12"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_CRC">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="12"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="CR_VALUE_DATE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="6"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="SC_DETAIL">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="FEE_AMT">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:decimal">
+												<xsd:fractionDigits value="2" />
+											</xsd:restriction>
+										</xsd:simpleType>
+
+									</xsd:element>
+
+									<xsd:element name="TAX_AMT">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:decimal">
+												<xsd:fractionDigits value="2" />
+											</xsd:restriction>
+										</xsd:simpleType>
+
+									</xsd:element>
+
+									<xsd:element name="ORIG_TRAN_REF">
+									</xsd:element>
+
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="REV_DETAIL" minOccurs="0">
+							<xsd:complexType>
+								<xsd:sequence>
+
+									<xsd:element name="TRAN_SEQ_NO">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="15"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+
+									<xsd:element name="TRAN_DATE">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:string">
+												<xsd:maxLength value="19"></xsd:maxLength>
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="META_DATA" type="META_DATA"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+	<xsd:complexType name="FundsTransferResponse">
+		<xsd:sequence>
+			<xsd:element name="CBS_TRAN_OUT">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HEADER_OUT" type="GeneralHeaderOut" />
+
+						<xsd:element name="TRAN_CODE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="8"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="RESP_CODE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="6"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="RESP_MSG">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="255"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+						<xsd:element name="TRAN_REF_NO">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="15"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+	<xsd:complexType name="BatchFundsTransRequest">
+		<xsd:sequence>
+			<xsd:element name="CBS_BATCH_TRAN_IN">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HEADER_IN" type="GeneralHeaderIn" />
+						<xsd:element name="BATCH_ID" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="50"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="BATCH_DATE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="19"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="CR_DR_IND">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="1"></xsd:maxLength>
+									<xsd:enumeration value="C"></xsd:enumeration>
+									<xsd:enumeration value="D"></xsd:enumeration>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="STAN">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="6"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="TRAN_DATETIME">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="19"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="TRAN_AMT">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:decimal">
+									<xsd:fractionDigits value="2" />
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="TRAN_DESC">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="140"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="CHEQUE_NO">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="13"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="ACCT_TYPE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="1"></xsd:maxLength>
+									<xsd:enumeration value="C"></xsd:enumeration>
+									<xsd:enumeration value="G"></xsd:enumeration>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="IBAN">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="34"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="ACCT_NO">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="20"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="BRANCH">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="6"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="CCY">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="3"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="CLIENT_NO">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="12"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="CRC">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="12"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="VALUE_DATE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="19"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="CCY_RATE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:decimal">
+									<xsd:fractionDigits value="8" />
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="SC_DETAIL">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="FEE_AMT">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:decimal">
+												<xsd:fractionDigits value="2" />
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+									<xsd:element name="TAX_AMT">
+										<xsd:simpleType>
+											<xsd:restriction base="xsd:decimal">
+												<xsd:fractionDigits value="2" />
+											</xsd:restriction>
+										</xsd:simpleType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="META_DATA" type="META_DATA"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="BatchFundsTransResponse">
+		<xsd:sequence>
+			<xsd:element name="CBS_BATCH_TRAN_OUT">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HEADER_IN" type="GeneralHeaderOut" />
+						<xsd:element name="BATCH_ID">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="50"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="BATCH_DATE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="19"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="TRAN_CODE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="8"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="RESP_CODE">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="6"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="RESP_MSG">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="255"></xsd:maxLength>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="BATCH_DTL">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="TRAN_DTL">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="CBS_REF_NO">
+													<xsd:simpleType>
+														<xsd:restriction base="xsd:string">
+															<xsd:maxLength value="50"></xsd:maxLength>
+														</xsd:restriction>
+													</xsd:simpleType>
+												</xsd:element>
+												<xsd:element name="TRAN_REF_NO">
+													<xsd:simpleType>
+														<xsd:restriction base="xsd:string">
+															<xsd:maxLength value="50"></xsd:maxLength>
+														</xsd:restriction>
+													</xsd:simpleType>
+												</xsd:element>
+												<xsd:element name="RESULT_CODE">
+													<xsd:simpleType>
+														<xsd:restriction base="xsd:string">
+															<xsd:maxLength value="1"></xsd:maxLength>
+														</xsd:restriction>
+													</xsd:simpleType>
+												</xsd:element>
+												<xsd:element name="RESP_CODE">
+													<xsd:simpleType>
+														<xsd:restriction base="xsd:string">
+															<xsd:maxLength value="6"></xsd:maxLength>
+														</xsd:restriction>
+													</xsd:simpleType>
+												</xsd:element>
+												<xsd:element name="RESP_MSG">
+													<xsd:simpleType>
+														<xsd:restriction base="xsd:string">
+															<xsd:maxLength value="255"></xsd:maxLength>
+														</xsd:restriction>
+													</xsd:simpleType>
+												</xsd:element>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+	<xsd:complexType name ="META_DATA">
+		<xsd:sequence>
+			<xsd:element name="META_ENTITY_TYPE" />
+			<xsd:element name="META_COLUMNS" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="SA_META_COLUMN_T">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="META_SIMPLE">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="META_ID" />
+												<xsd:element name="META_VALUE" />
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

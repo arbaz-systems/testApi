@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://CTL.COM.Services.Online.WebServices/OnlineServices" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:s1="http://microsoft.com/wsdl/types/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:tns="http://CTL.COM.Services.Online.WebServices/OnlineServices">
+  <wsdl:documentation>
+    <wsdl:appinfo source="WMQI_APPINFO">
+      <MRWSDLAppInfo imported="true">
+        <generatedXSD location="OnlineServicesAPI_InlineSchema1.xsd"/>
+        <generatedXSD location="OnlineServicesAPI_InlineSchema2.xsd"/>
+        <binding hasEncoding="false" imported="true" name="OnlineServicesSoap" originalBindingStyle="document"/>
+        <binding hasEncoding="false" imported="true" name="OnlineServicesSoap12" originalBindingStyle="document"/>
+      </MRWSDLAppInfo>
+    </wsdl:appinfo>
+  </wsdl:documentation>
+  <wsdl:types>
+    
+    
+          <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://CTL.COM.Services.Online.WebServices/OnlineServices" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions">
+<xsd:import namespace="http://microsoft.com/wsdl/types/" schemaLocation="OnlineServicesAPI_InlineSchema2.xsd"/>
+<xsd:include schemaLocation="OnlineServicesAPI_InlineSchema1.xsd"/>
+    </xsd:schema>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
+<xsd:include schemaLocation="OnlineServicesAPI_InlineSchema2.xsd"/>
+    </xsd:schema>
+    </wsdl:types>
+  <wsdl:message name="UnblockPinRequestSoapIn">
+    <wsdl:part element="tns:UnblockPinRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="UnblockPinRequestSoapOut">
+    <wsdl:part element="tns:UnblockPinRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="SetPinRequestSoapIn">
+    <wsdl:part element="tns:SetPinRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="SetPinRequestSoapOut">
+    <wsdl:part element="tns:SetPinRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ChangePinRequestSoapIn">
+    <wsdl:part element="tns:ChangePinRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ChangePinRequestSoapOut">
+    <wsdl:part element="tns:ChangePinRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ValidatePinRequestSoapIn">
+    <wsdl:part element="tns:ValidatePinRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ValidatePinRequestSoapOut">
+    <wsdl:part element="tns:ValidatePinRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AddBonusRequestSoapIn">
+    <wsdl:part element="tns:AddBonusRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AddBonusRequestSoapOut">
+    <wsdl:part element="tns:AddBonusRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CreateProxyCardSoapIn">
+    <wsdl:part element="tns:CreateProxyCard" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CreateProxyCardSoapOut">
+    <wsdl:part element="tns:CreateProxyCardResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ActivateCardRequestSoapIn">
+    <wsdl:part element="tns:ActivateCardRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ActivateCardRequestSoapOut">
+    <wsdl:part element="tns:ActivateCardRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InfoRequestSoapIn">
+    <wsdl:part element="tns:InfoRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InfoRequestSoapOut">
+    <wsdl:part element="tns:InfoRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CardGroupInfoRequestSoapIn">
+    <wsdl:part element="tns:CardGroupInfoRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CardGroupInfoRequestSoapOut">
+    <wsdl:part element="tns:CardGroupInfoRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AlertsMaintenanceSoapIn">
+    <wsdl:part element="tns:AlertsMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AlertsMaintenanceSoapOut">
+    <wsdl:part element="tns:AlertsMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AlertsInquirySoapIn">
+    <wsdl:part element="tns:AlertsInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AlertsInquirySoapOut">
+    <wsdl:part element="tns:AlertsInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="OnlineCardMaintenanceSoapIn">
+    <wsdl:part element="tns:OnlineCardMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="OnlineCardMaintenanceSoapOut">
+    <wsdl:part element="tns:OnlineCardMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="OnUsAuthorizationRequestSoapIn">
+    <wsdl:part element="tns:OnUsAuthorizationRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="OnUsAuthorizationRequestSoapOut">
+    <wsdl:part element="tns:OnUsAuthorizationRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="DHIAuthorizationRequestSoapIn">
+    <wsdl:part element="tns:DHIAuthorizationRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="DHIAuthorizationRequestSoapOut">
+    <wsdl:part element="tns:DHIAuthorizationRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="APIPingSoapIn">
+    <wsdl:part element="tns:APIPing" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="APIPingSoapOut">
+    <wsdl:part element="tns:APIPingResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AcquireTicketSoapIn">
+    <wsdl:part element="tns:AcquireTicket" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AcquireTicketSoapOut">
+    <wsdl:part element="tns:AcquireTicketResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AuthorizationInquirySoapIn">
+    <wsdl:part element="tns:AuthorizationInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AuthorizationInquirySoapOut">
+    <wsdl:part element="tns:AuthorizationInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FinancialAuthorizationRequestSoapIn">
+    <wsdl:part element="tns:FinancialAuthorizationRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FinancialAuthorizationRequestSoapOut">
+    <wsdl:part element="tns:FinancialAuthorizationRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ExecutionTrackingSoapIn">
+    <wsdl:part element="tns:ExecutionTracking" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ExecutionTrackingSoapOut">
+    <wsdl:part element="tns:ExecutionTrackingResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GenerateCustomerAlertsSoapIn">
+    <wsdl:part element="tns:GenerateCustomerAlerts" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GenerateCustomerAlertsSoapOut">
+    <wsdl:part element="tns:GenerateCustomerAlertsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EntityACPInquirySoapIn">
+    <wsdl:part element="tns:EntityACPInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EntityACPInquirySoapOut">
+    <wsdl:part element="tns:EntityACPInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EntityACPMaintenanceSoapIn">
+    <wsdl:part element="tns:EntityACPMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EntityACPMaintenanceSoapOut">
+    <wsdl:part element="tns:EntityACPMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EMVScriptInquirySoapIn">
+    <wsdl:part element="tns:EMVScriptInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EMVScriptInquirySoapOut">
+    <wsdl:part element="tns:EMVScriptInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EMVScriptMaintenanceSoapIn">
+    <wsdl:part element="tns:EMVScriptMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EMVScriptMaintenanceSoapOut">
+    <wsdl:part element="tns:EMVScriptMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="OnlineServicesSoap">
+    <wsdl:operation name="UnblockPinRequest">
+      <wsdl:input message="tns:UnblockPinRequestSoapIn"/>
+      <wsdl:output message="tns:UnblockPinRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="SetPinRequest">
+      <wsdl:input message="tns:SetPinRequestSoapIn"/>
+      <wsdl:output message="tns:SetPinRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ChangePinRequest">
+      <wsdl:input message="tns:ChangePinRequestSoapIn"/>
+      <wsdl:output message="tns:ChangePinRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ValidatePinRequest">
+      <wsdl:input message="tns:ValidatePinRequestSoapIn"/>
+      <wsdl:output message="tns:ValidatePinRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AddBonusRequest">
+      <wsdl:input message="tns:AddBonusRequestSoapIn"/>
+      <wsdl:output message="tns:AddBonusRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CreateProxyCard">
+      <wsdl:input message="tns:CreateProxyCardSoapIn"/>
+      <wsdl:output message="tns:CreateProxyCardSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ActivateCardRequest">
+      <wsdl:input message="tns:ActivateCardRequestSoapIn"/>
+      <wsdl:output message="tns:ActivateCardRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="InfoRequest">
+      <wsdl:input message="tns:InfoRequestSoapIn"/>
+      <wsdl:output message="tns:InfoRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CardGroupInfoRequest">
+      <wsdl:input message="tns:CardGroupInfoRequestSoapIn"/>
+      <wsdl:output message="tns:CardGroupInfoRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AlertsMaintenance">
+      <wsdl:input message="tns:AlertsMaintenanceSoapIn"/>
+      <wsdl:output message="tns:AlertsMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AlertsInquiry">
+      <wsdl:input message="tns:AlertsInquirySoapIn"/>
+      <wsdl:output message="tns:AlertsInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="OnlineCardMaintenance">
+      <wsdl:input message="tns:OnlineCardMaintenanceSoapIn"/>
+      <wsdl:output message="tns:OnlineCardMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="OnUsAuthorizationRequest">
+      <wsdl:input message="tns:OnUsAuthorizationRequestSoapIn"/>
+      <wsdl:output message="tns:OnUsAuthorizationRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="DHIAuthorizationRequest">
+      <wsdl:input message="tns:DHIAuthorizationRequestSoapIn"/>
+      <wsdl:output message="tns:DHIAuthorizationRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="APIPing">
+      <wsdl:input message="tns:APIPingSoapIn"/>
+      <wsdl:output message="tns:APIPingSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireTicket">
+      <wsdl:input message="tns:AcquireTicketSoapIn"/>
+      <wsdl:output message="tns:AcquireTicketSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AuthorizationInquiry">
+      <wsdl:input message="tns:AuthorizationInquirySoapIn"/>
+      <wsdl:output message="tns:AuthorizationInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="FinancialAuthorizationRequest">
+      <wsdl:input message="tns:FinancialAuthorizationRequestSoapIn"/>
+      <wsdl:output message="tns:FinancialAuthorizationRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ExecutionTracking">
+      <wsdl:input message="tns:ExecutionTrackingSoapIn"/>
+      <wsdl:output message="tns:ExecutionTrackingSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GenerateCustomerAlerts">
+      <wsdl:input message="tns:GenerateCustomerAlertsSoapIn"/>
+      <wsdl:output message="tns:GenerateCustomerAlertsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="EntityACPInquiry">
+      <wsdl:input message="tns:EntityACPInquirySoapIn"/>
+      <wsdl:output message="tns:EntityACPInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="EntityACPMaintenance">
+      <wsdl:input message="tns:EntityACPMaintenanceSoapIn"/>
+      <wsdl:output message="tns:EntityACPMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="EMVScriptInquiry">
+      <wsdl:input message="tns:EMVScriptInquirySoapIn"/>
+      <wsdl:output message="tns:EMVScriptInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="EMVScriptMaintenance">
+      <wsdl:input message="tns:EMVScriptMaintenanceSoapIn"/>
+      <wsdl:output message="tns:EMVScriptMaintenanceSoapOut"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="OnlineServicesSoap" type="tns:OnlineServicesSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="UnblockPinRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/UnblockPinRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetPinRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/SetPinRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangePinRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/ChangePinRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidatePinRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/ValidatePinRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddBonusRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AddBonusRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateProxyCard">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/CreateProxyCard" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ActivateCardRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/ActivateCardRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InfoRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/InfoRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CardGroupInfoRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/CardGroupInfoRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AlertsMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AlertsMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AlertsInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AlertsInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OnlineCardMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/OnlineCardMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OnUsAuthorizationRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/OnUsAuthorizationRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DHIAuthorizationRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/DHIAuthorizationRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="APIPing">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/APIPing" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireTicket">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AcquireTicket" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AuthorizationInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AuthorizationInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FinancialAuthorizationRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/FinancialAuthorizationRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ExecutionTracking">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/ExecutionTracking" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GenerateCustomerAlerts">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/GenerateCustomerAlerts" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EntityACPInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/EntityACPInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EntityACPMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/EntityACPMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EMVScriptInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/EMVScriptInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EMVScriptMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/EMVScriptMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="OnlineServicesSoap12" type="tns:OnlineServicesSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="UnblockPinRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/UnblockPinRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetPinRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/SetPinRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ChangePinRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/ChangePinRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ValidatePinRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/ValidatePinRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddBonusRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AddBonusRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateProxyCard">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/CreateProxyCard" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ActivateCardRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/ActivateCardRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InfoRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/InfoRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CardGroupInfoRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/CardGroupInfoRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AlertsMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AlertsMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AlertsInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AlertsInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OnlineCardMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/OnlineCardMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OnUsAuthorizationRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/OnUsAuthorizationRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DHIAuthorizationRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/DHIAuthorizationRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="APIPing">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/APIPing" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireTicket">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AcquireTicket" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AuthorizationInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/AuthorizationInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FinancialAuthorizationRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/FinancialAuthorizationRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ExecutionTracking">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/ExecutionTracking" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GenerateCustomerAlerts">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/GenerateCustomerAlerts" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EntityACPInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/EntityACPInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EntityACPMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/EntityACPMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EMVScriptInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/EMVScriptInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EMVScriptMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Online.WebServices/OnlineServices/EMVScriptMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="OnlineServices">
+    <wsdl:port binding="tns:OnlineServicesSoap" name="OnlineServicesSoap">
+      <soap:address location="https://prime.tdl.ubl.com/PRIME4_MGRDBAPI/Online/OnlineServices.asmx"/>
+    </wsdl:port>
+    <wsdl:port binding="tns:OnlineServicesSoap12" name="OnlineServicesSoap12">
+      <soap12:address location="https://prime.tdl.ubl.com/PRIME4_MGRDBAPI/Online/OnlineServices.asmx"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

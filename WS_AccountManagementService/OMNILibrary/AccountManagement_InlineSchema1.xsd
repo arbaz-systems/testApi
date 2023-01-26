@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:tns="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <xsd:element ibmSchExtn:docRoot="true" name="GetCityListSelfAO">
+        <xsd:complexType/>
+      </xsd:element>
+      <xsd:element ibmSchExtn:docRoot="true" name="GetCityListSelfAOResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="1" minOccurs="0" name="GetCityListSelfAOResult">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:any maxOccurs="unbounded" minOccurs="0" namespace="http://www.w3.org/2001/XMLSchema" processContents="lax"/>
+                  <xsd:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax"/>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element ibmSchExtn:docRoot="true" name="ProcessSelfAccountOpening">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="1" minOccurs="0" name="userName" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="password" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="channelID" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="customerName" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="cnic" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="mobileNumber" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="emailAddress" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="cityID" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="address" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="isFatca" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="cnicIssuanceDate" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="tnc" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="deviceKey" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="deviceInfo" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="IMEI" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="facePicture" type="xsd:base64Binary"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="cnicFront" type="xsd:base64Binary"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element ibmSchExtn:docRoot="true" name="ProcessSelfAccountOpeningResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="1" minOccurs="0" name="ProcessSelfAccountOpeningResult" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="accountID" type="xsd:string"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="responseMessage" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>

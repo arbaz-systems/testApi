@@ -1,0 +1,493 @@
+BROKER SCHEMA com.systemsltd.ubl.accountmanagementservice
+
+PATH com.systemsltd.common, com.systemsltd.ubl.cbs, com.systemsltd.ubl.common, 
+com.systemsltd.ubl.common.config, com.systemsltd.ubl.common.database, com.systemsltd.ubl.omni,
+com.systemsltd.common.logging;
+
+
+CREATE FILTER MODULE ValidateFetchCustomerAccountRequest
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE transRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE inMsgRef REFERENCE TO Root.JSON.Data;
+		
+		CREATE FIELD transRef.Error IDENTITY (JSON.Array);
+		
+		CALL validateServiceHeader(inMsgRef.serviceHeader, transRef);
+		CALL validateTransactionInfo(inMsgRef.transactionInfo, transRef, 'FETCHACCOUNT', '');
+		
+		IF NOT fieldAndValueExists(inMsgRef.fetchCustomerAccountRequest.hostSystem, 'hostSystem')
+			AND (inMsgRef.fetchCustomerAccountRequest.hostSystem IN ('CBS', 'OMNI', 'PRIME')) THEN
+			CREATE LASTCHILD OF transRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('hostSystem');
+		END IF;
+		
+		IF(inMsgRef.fetchCustomerAccountRequest.hostSystem = 'OMNI')THEN			
+			IF NOT fieldAndValueExists(inMsgRef.fetchCustomerAccountRequest.mobileNo, 'mobileNo') THEN
+				CREATE LASTCHILD OF transRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('mobileNo');
+			END IF;
+			IF NOT fieldAndValueExists(inMsgRef.fetchCustomerAccountRequest.channelCode, 'channelCode') THEN
+				CREATE LASTCHILD OF transRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('channelCode');
+			END IF;		
+		END IF;
+		
+		IF(inMsgRef.fetchCustomerAccountRequest.hostSystem = 'CBS') THEN
+--			IF NOT fieldAndValueExists(inMsgRef.fetchCustomerAccountRequest.rowsPerPage, 'rowsPerPage') THEN
+--				CREATE LASTCHILD OF transRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('rowsPerPage');
+--			END IF;
+--			IF NOT fieldAndValueExists(inMsgRef.fetchCustomerAccountRequest.page, 'page') THEN
+--				CREATE LASTCHILD OF transRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('page');
+--			END IF;
+			IF NOT fieldAndValueExists(inMsgRef.fetchCustomerAccountRequest.accountNo, 'accountNo') THEN
+				CREATE LASTCHILD OF transRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('accountNo');
+			END IF;
+		END IF;
+		
+		RETURN EXISTS(transRef.Error.Item[]);
+	END; 
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareFetchCustomerAccountOMNIRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO InputRoot.JSON.Data;
+		CREATE FIELD OutputRoot.XMLNSC.FetchCustomerAccountRequest.OMNI_FETCHCUSTOMERACCOUNT_REQUEST;
+		DECLARE fetchCustomerAccountRequest REFERENCE TO OutputRoot.XMLNSC.FetchCustomerAccountRequest.OMNI_FETCHCUSTOMERACCOUNT_REQUEST;
+		
+		DECLARE mappedChannel CHARACTER getChannelMapping(inputRef.serviceHeader.channel, getOMNIHost());
+		DECLARE password CHARACTER getGroupConfigProperty(getOMNIHost(), mappedChannel, 'PASSWORD');		
+
+		SET OutputRoot.Properties = InputProperties;
+	
+		SET fetchCustomerAccountRequest.P_SEC_CHANNEL =  inputRef.fetchCustomerAccountRequest.channelCode;
+		SET fetchCustomerAccountRequest.P_SEC_PASSWORD = password;
+		SET fetchCustomerAccountRequest.P_MOBILE_NO = inputRef.fetchCustomerAccountRequest.mobileNo;
+		SET fetchCustomerAccountRequest.P_CHANNEL_CODE = COALESCE(mappedChannel, inputRef.serviceHeader.channel);
+		
+		SET OutputRoot.XMLNSC = OutputRoot.XMLNSC.FetchCustomerAccountRequest;
+		
+		RETURN TRUE;
+	END;	
+END MODULE;
+
+
+CREATE COMPUTE MODULE CallOMNIFetchCustomerAccount
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE inputRef REFERENCE TO InputRoot.XMLNSC.OMNI_FETCHCUSTOMERACCOUNT_REQUEST;
+	
+		CREATE FIELD OutputRoot.XMLNSC.FetchCustomerAccountResponse.OMNI_FETCHCUSTOMERACCOUNT_RESPONSE;
+		DECLARE fetchCustomerAccountResponse REFERENCE TO OutputRoot.XMLNSC.FetchCustomerAccountResponse.OMNI_FETCHCUSTOMERACCOUNT_RESPONSE;
+		DECLARE omniSchemaName CHARACTER getOMNISchemaName();
+		
+		CALL SP_GET_CUSTOMER_ACCOUNT_DETAIL(inputRef.P_SEC_CHANNEL, inputRef.P_SEC_PASSWORD, 
+		inputRef.P_MOBILE_NO, inputRef.P_CHANNEL_CODE,
+		fetchCustomerAccountResponse.P_CURSOR[]) EXTERNAL SCHEMA omniSchemaName;
+				
+
+		SET OutputRoot.XMLNSC = OutputRoot.XMLNSC.FetchCustomerAccountResponse;		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareJSONFetchCustomerAccountResponse
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE inputRef REFERENCE TO InputRoot.XMLNSC.OMNI_FETCHCUSTOMERACCOUNT_RESPONSE;
+		
+		CREATE FIELD OutputRoot.JSON.Data;	
+		DECLARE outRef REFERENCE TO OutputRoot.JSON.Data;
+		-- DECLARe outRef.fetchCustomerAccountResponse REFERENCE TO outRef.fetchCustomerAccountResponse;
+		DECLARE transRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE envHostResponseRef REFERENCE TO transRef.HostResponse;
+		DECLARE status CHARACTER 'SUCCESS';
+
+		SET OutputRoot.Properties = InputProperties;
+		SET outRef.serviceHeader = transRef.Request.serviceHeader;
+		CALL copyAndConvertTransactionInfo(transRef.Request.transactionInfo, outRef);
+		CALL PopulateSuccessResponseHeader(outRef, status);
+
+		DECLARE responseHeaderRef REFERENCE TO outRef.responseHeader; 
+			
+		--if error from system			
+		IF envHostResponseRef.ErrorCode <> getSuccessResponseCode() THEN
+			SET responseHeaderRef.responseCode = envHostResponseRef.ErrorCode;
+			SET responseHeaderRef.responseDetails = envHostResponseRef.Error;
+			SET status = 'FAILURE';
+						
+		--else success	
+		ELSE
+			SET outRef.fetchCustomerAccountResponse.accountId = inputRef.P_CURSOR.ACCOUNT_ID;
+			SET outRef.fetchCustomerAccountResponse.orionAccountId = inputRef.P_CURSOR.ORION_ACCOUNT_ID;
+			SET outRef.fetchCustomerAccountResponse.mobilePhoneNo = inputRef.P_CURSOR.MOBILE_PHONE_NUMBER;
+			SET outRef.fetchCustomerAccountResponse.cnic = inputRef.P_CURSOR.CNIC;
+			SET outRef.fetchCustomerAccountResponse.limitTypeCode = inputRef.P_CURSOR.LIMIT_TYPE_CODE;
+			SET outRef.fetchCustomerAccountResponse.accountTitle = inputRef.P_CURSOR.ACCOUNT_TITLE;
+			SET outRef.fetchCustomerAccountResponse.verificationSourceName = inputRef.P_CURSOR.VERIFICATION_SOURCE_NAME;
+			SET outRef.fetchCustomerAccountResponse.registrationStatus = inputRef.P_CURSOR.REGISTRATION_STATUS;
+			SET outRef.fetchCustomerAccountResponse.accountStatus = inputRef.P_CURSOR.ACCOUNT_STATUS;
+			SET outRef.fetchCustomerAccountResponse.accountTypeName = inputRef.P_CURSOR.ACCOUNT_TYPE_NAME;
+			
+			SET outRef.fetchCustomerAccountResponse.credit = inputRef.P_CURSOR.CREDIT;
+			SET outRef.fetchCustomerAccountResponse.createdDate = CAST(inputRef.P_CURSOR.CREATED_DATE AS DATE);
+			SET outRef.fetchCustomerAccountResponse.updatedDate = CAST(inputRef.P_CURSOR.UPDATED_DATE AS DATE);
+			SET outRef.fetchCustomerAccountResponse.createdBy = inputRef.P_CURSOR.CREATED_BY;
+			SET outRef.fetchCustomerAccountResponse.updatedBy = inputRef.P_CURSOR.UPDATED_BY;
+			SET outRef.fetchCustomerAccountResponse.accountLevel = inputRef.P_CURSOR.ACCOUNT_LEVEL;
+			SET outRef.fetchCustomerAccountResponse.specialAccountTypeId = inputRef.P_CURSOR.SPECIAL_ACCOUNT_TYPE_ID;
+			SET outRef.fetchCustomerAccountResponse.dl = CAST(inputRef.P_CURSOR.DL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.ml = CAST(inputRef.P_CURSOR.ML AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.yl = CAST(inputRef.P_CURSOR.YL AS INTEGER);
+			
+			SET outRef.fetchCustomerAccountResponse.dwl = CAST(inputRef.P_CURSOR.DWL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.mwl = CAST(inputRef.P_CURSOR.MWL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.ywl = CAST(inputRef.P_CURSOR.YWL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.ddl = CAST(inputRef.P_CURSOR.DDL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.mdl = CAST(inputRef.P_CURSOR.MDL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.ydl = CAST(inputRef.P_CURSOR.YDL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.dll = CAST(inputRef.P_CURSOR.DLL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.mll = CAST(inputRef.P_CURSOR.MLL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.yll = CAST(inputRef.P_CURSOR.YLL AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.maximumBalanceAllowed = inputRef.P_CURSOR.MAXIMUM_BALANCE_ALLOWED;
+			
+			SET outRef.fetchCustomerAccountResponse.preferredLanguage = inputRef.P_CURSOR.PREFERRED_LANGUAGE;
+			SET outRef.fetchCustomerAccountResponse.customerName = inputRef.P_CURSOR.CUSTOMER_NAME;
+			SET outRef.fetchCustomerAccountResponse.accountCategory = inputRef.P_CURSOR.ACCOUNT_CATEGORY;
+			SET outRef.fetchCustomerAccountResponse.maximumBalanceAvailable = CAST(inputRef.P_CURSOR.MAXIMUM_BALANCE_AVAILABLE AS INTEGER);
+			SET outRef.fetchCustomerAccountResponse.isCCAVerified = inputRef.P_CURSOR.IS_CCA_VERIFIED;
+			SET outRef.fetchCustomerAccountResponse.isGetPaymentAllowed = inputRef.P_CURSOR.IS_GET_PAYMENT_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.isNameTagSet = inputRef.P_CURSOR.IS_NAME_TAG_SET;
+			SET outRef.fetchCustomerAccountResponse.isTOSAgreed = inputRef.P_CURSOR.IS_TOS_AGREED;
+			SET outRef.fetchCustomerAccountResponse.isVoiceTagSet = inputRef.P_CURSOR.IS_VOICE_TAG_SET;
+			SET outRef.fetchCustomerAccountResponse.dlAllowed = inputRef.P_CURSOR.DL_ALLOWED;
+			
+			SET outRef.fetchCustomerAccountResponse.mlAllowed = inputRef.P_CURSOR.ML_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.ylAllowed = inputRef.P_CURSOR.YL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.dwlAllowed = inputRef.P_CURSOR.DWL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.mwlAllowed = inputRef.P_CURSOR.MWL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.ywlAllowed = inputRef.P_CURSOR.YWL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.ddlAllowed = inputRef.P_CURSOR.DDL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.mdlAllowed = inputRef.P_CURSOR.MDL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.ydlAllowed = inputRef.P_CURSOR.YDL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.dllAllowed = inputRef.P_CURSOR.DLL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.mllAllowed = inputRef.P_CURSOR.MLL_ALLOWED;
+			
+			SET outRef.fetchCustomerAccountResponse.yllAllowed = inputRef.P_CURSOR.YLL_ALLOWED;
+			SET outRef.fetchCustomerAccountResponse.mobileType = inputRef.P_CURSOR.MOBILE_TYPE;
+			SET outRef.fetchCustomerAccountResponse.orionUserId = inputRef.P_CURSOR.ORION_USER_ID;
+			SET outRef.fetchCustomerAccountResponse.verificationDate = CAST(inputRef.P_CURSOR.VERIFICATION_DATE AS DATE);
+			SET outRef.fetchCustomerAccountResponse.pinSetDate = CAST(inputRef.P_CURSOR.PIN_SET_DATE AS DATE);
+			SET outRef.fetchCustomerAccountResponse.registrationChannel = inputRef.P_CURSOR.REGISTRATION_CHANNEL;
+			SET outRef.fetchCustomerAccountResponse.registrationDate = CAST(inputRef.P_CURSOR.REGISTRATION_DATE AS DATE);
+			SET outRef.fetchCustomerAccountResponse.tosAgreedDate = CAST(inputRef.P_CURSOR.TOS_AGREED_DATE AS DATE);
+			SET outRef.fetchCustomerAccountResponse.dateOfBirth = CAST(inputRef.P_CURSOR.DATE_OF_BIRTH AS DATE);
+			SET outRef.fetchCustomerAccountResponse.nameTagSetDate = CAST(inputRef.P_CURSOR.NAME_TAG_SET_DATE AS DATE);
+			
+			SET outRef.fetchCustomerAccountResponse.address = inputRef.P_CURSOR.ADDRESS;
+			SET outRef.fetchCustomerAccountResponse.emailAddress = inputRef.P_CURSOR.EMAIL_ADDRESS;
+			SET outRef.fetchCustomerAccountResponse.landLinePhoneNumber = inputRef.P_CURSOR.LAND_LINE_PHONE_NUMBER;
+			SET outRef.fetchCustomerAccountResponse.fathersName = inputRef.P_CURSOR.FATHERS_NAME;
+			SET outRef.fetchCustomerAccountResponse.grandFathersName = inputRef.P_CURSOR.GRAND_FATHERS_NAME;
+			SET outRef.fetchCustomerAccountResponse.motheMaidenName = inputRef.P_CURSOR.MOTHERS_MAIDEN_NAME;
+			SET outRef.fetchCustomerAccountResponse.city = inputRef.P_CURSOR.CITY;
+			SET outRef.fetchCustomerAccountResponse.country = inputRef.P_CURSOR.COUNTRY;
+			
+			
+			
+		END IF;
+
+		DELETE FIELD Environment.Variables.Transaction.HostResponse;
+		CALL updateTransactionStatus(Environment.Variables.Transaction.DetailId, 'TRANSACTION_DETAIL', status);
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+-- FOR CBS
+
+CREATE COMPUTE MODULE PrepareFetchCustomerAccountCBSRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputMsgRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CREATE FIELD OutputRoot.XMLNSC.FetchCustomerAccount.REQUEST_IN;
+		DECLARE cbsReqRef REFERENCE TO OutputRoot.XMLNSC.FetchCustomerAccount.REQUEST_IN;
+		
+		SET OutputRoot.Properties = InputProperties;
+		SET Environment.Variables.Transaction.Request = inputMsgRef;
+				
+	 	CALL populateCBSMessageHeader(inputMsgRef, cbsReqRef);
+	 	
+	 	DECLARE inputRef REFERENCE TO inputMsgRef.fetchCustomerAccountRequest;
+	 	
+
+             -- changes done to entertain CR from arshad sb
+              
+		IF inputMsgRef.transactionInfo.transactionSubType = 'FETCHACCOUNTIBAN' THEN
+          	 	 SET cbsReqRef.DETAIL_IN.ACCT_NO = inputRef.accountNo;
+       			 ELSE
+                		 SET cbsReqRef.DETAIL_IN.SYM_RB_ACCT_CASA_QRY_IN.PAGE_IN.ROWS_PER_PAGE = inputRef.rowsPerPage;
+                 		 SET cbsReqRef.DETAIL_IN.SYM_RB_ACCT_CASA_QRY_IN.PAGE_IN.PAGE = inputRef.page;         
+                  		 SET cbsReqRef.DETAIL_IN.SYM_RB_ACCT_CASA_QRY_IN.ACCT_NO = inputRef.accountNo;
+           	END IF;
+
+	 
+		SET OutputRoot.XMLNSC = OutputRoot.XMLNSC.FetchCustomerAccount;
+	RETURN TRUE;
+	END;
+END MODULE;
+
+
+
+CREATE COMPUTE MODULE CallCBSFetchCustomerAccount
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE serializedRequest, serializedResponse CHARACTER '';
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;		
+		DECLARE cbsSchemaName CHARACTER getCBSSchemaName(); 
+		DECLARE dsnName CHARACTER Environment.Variables.fromRegionDataSource;
+		
+		SET OutputRoot.Properties = InputProperties;
+		SET serializedRequest = serializeMessage(InputRoot);
+		CALL PROCESS_INQ(serializedRequest, serializedResponse) IN Database.{dsnName}.{cbsSchemaName};
+		
+		DECLARE cbsFetchCustomerAccountResponse BLOB 
+		CAST(serializedResponse AS BLOB CCSID InputProperties.CodedCharSetId);
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') 
+		PARSE(cbsFetchCustomerAccountResponse, InputProperties.Encoding, InputProperties.CodedCharSetId);
+		
+		DECLARE requestOut REFERENCE TO OutputRoot.XMLNSC.REQUEST_OUT;
+		
+		IF cbsTransactionSuccessfull(requestOut.HEADER_OUT.RESULT_CODE) THEN
+			SET transactionRef.HostResponse.ErrorCode = getSuccessResponseCode();
+		ELSE
+			PROPAGATE TO TERMINAL 1 DELETE NONE;
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareCBSJSONFetchCustomerAccountResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE inputRef REFERENCE TO InputRoot.XMLNSC.REQUEST_OUT;
+		
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE cbsRespRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		
+		CALL copyAndConvertServiceHeader(transactionRef.Request.serviceHeader, cbsRespRef);
+		CALL copyAndConvertTransactionInfo(transactionRef.Request.transactionInfo, cbsRespRef);
+		
+		CALL PopulateSuccessResponseHeader(cbsRespRef, 'SUCCESS');
+		
+		IF transactionRef.HostResponse.ErrorCode = getSuccessResponseCode() THEN
+			
+			if transactionRef.Request.transactionInfo.transactionSubType='FETCHACCOUNTIBAN' THEN
+
+				 -- SET cbsRespRef.fetchCustomerAccountResponse.ibanCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.IBAN_CODE;
+				-- SET cbsRespRef.fetchCustomerAccountResponse.accountStatus = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_STATUS;
+				
+					-- changes done to entertain CR from arshad sb
+					
+				 SET cbsRespRef.fetchCustomerAccountResponse.ibanCode = inputRef.DETAIL_OUT.IBAN_CODE;
+                                 SET cbsRespRef.fetchCustomerAccountResponse.accountNO = inputRef.DETAIL_OUT.ACCT_NO;
+				 SET cbsRespRef.fetchCustomerAccountResponse.accountStatus = inputRef.DETAIL_OUT.ACCT_STATUS;
+			else 
+			SET cbsRespRef.fetchCustomerAccountResponse.pageOut.rowsPerPage = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PAGE_OUT.ROWS_PER_PAGE;
+			SET cbsRespRef.fetchCustomerAccountResponse.pageOut.page = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PAGE_OUT.PAGE;
+			SET cbsRespRef.fetchCustomerAccountResponse.pageOut.totalRows = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PAGE_OUT.TOTAL_ROWS;
+			
+			SET cbsRespRef.fetchCustomerAccountResponse.version = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.VERSION;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountNO = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_NO;
+			SET cbsRespRef.fetchCustomerAccountResponse.ibanCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.IBAN_CODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.clientNo = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.CLIENT_NO;
+			SET cbsRespRef.fetchCustomerAccountResponse.ccy = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.CCY;
+			SET cbsRespRef.fetchCustomerAccountResponse.branch = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.BRANCH;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountDesc = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_DESC;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountOpenDate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_OPEN_DATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountCloseDate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_CLOSE_DATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.lastChangeDate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.LAST_CHANGED_DATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.profitCentre = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PROFIT_CENTRE;
+			SET cbsRespRef.fetchCustomerAccountResponse.ownershipType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.OWNERSHIP_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.clientInd = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.CLIENT_IND;
+			SET cbsRespRef.fetchCustomerAccountResponse.globalId = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.GLOBAL_ID;
+			SET cbsRespRef.fetchCustomerAccountResponse.globalIdType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.GLOBAL_ID_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.countryLOC = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.COUNTRY_LOC;
+			SET cbsRespRef.fetchCustomerAccountResponse.stateLOC = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.STATE_LOC;
+			SET cbsRespRef.fetchCustomerAccountResponse.stmtPbk = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.STMT_PBK;
+			SET cbsRespRef.fetchCustomerAccountResponse.depositType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.DEPOSIT_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.passwordReqd = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PASSWORD_REQD;
+			SET cbsRespRef.fetchCustomerAccountResponse.pwdAccountType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PWD_ACCT_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.pwdDrTxn = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PWD_DR_TXN;
+			SET cbsRespRef.fetchCustomerAccountResponse.pwdOwnership = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PWD_OWNERSHIP;
+			SET cbsRespRef.fetchCustomerAccountResponse.pwdSignatory = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PWD_SIGNATORY;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountPassword = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_PASSWORD;
+			SET cbsRespRef.fetchCustomerAccountResponse.valueDateMode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.VALUE_DATE_MODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.purposeCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PURPOSE_CODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.segmentCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.SEGMENT_CODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountStatus = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_STATUS;
+			SET cbsRespRef.fetchCustomerAccountResponse.hoRepCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.HO_REP_CODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.hoRepDesc = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.HO_REP_DESC;
+			SET cbsRespRef.fetchCustomerAccountResponse.nbcCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.NBC_CODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.toleranceAMT = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.TOLERANCE_AMT;
+			SET cbsRespRef.fetchCustomerAccountResponse.ataAccount = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ATA_ACCT;
+			SET cbsRespRef.fetchCustomerAccountResponse.limitAMT = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.LIMIT_AMT;
+			SET cbsRespRef.fetchCustomerAccountResponse.freeCheques = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.FREE_CHEQUES;
+			SET cbsRespRef.fetchCustomerAccountResponse.actualOrLedgerBal = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACTUAL_OR_LEDGER_BAL;
+			SET cbsRespRef.fetchCustomerAccountResponse.genOdRemind = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.GEN_OD_REMIND;
+			SET cbsRespRef.fetchCustomerAccountResponse.wdlNoticeInd = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.WDL_NOTICE_IND;
+			SET cbsRespRef.fetchCustomerAccountResponse.pbkSerialNo = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.PBK_SERIAL_NO;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountTermPeriod = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_TERM_PERIOD;
+			SET cbsRespRef.fetchCustomerAccountResponse.accountTermType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.ACCT_TERM_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.mainStmtFreq = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.MAIN_STMT_FREQ;
+			SET cbsRespRef.fetchCustomerAccountResponse.mainStmtDay = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.MAIN_STMT_DAY;
+			SET cbsRespRef.fetchCustomerAccountResponse.minimumBal = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.MINIMUM_BAL;
+			SET cbsRespRef.fetchCustomerAccountResponse.odLimit = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.OD_LIMIT;
+			SET cbsRespRef.fetchCustomerAccountResponse.channel = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.CHANNEL;
+			SET cbsRespRef.fetchCustomerAccountResponse.channelSource = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.CHANNEL_SOURCE;
+			SET cbsRespRef.fetchCustomerAccountResponse.channelDetailInfo = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.CHANNEL_DETAIL_INFO;
+			SET cbsRespRef.fetchCustomerAccountResponse.timeStamp = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.TIMESTAMP;
+			SET cbsRespRef.fetchCustomerAccountResponse.scPackType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.SC_PACK_TYPE;
+			
+			SET cbsRespRef.fetchCustomerAccountResponse.rbPassbkVersion = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_PASSBK_DTLS_CASA_QRY.RB_PASSBK_BONUS_QRY_DTLS_T.VERSION;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbPassbkNoOfPeriod = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_PASSBK_DTLS_CASA_QRY.RB_PASSBK_BONUS_QRY_DTLS_T.NO_OF_PERIOD;
+			
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntVersion = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.VERSION;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrIntType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_INT_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrAccountLevelIntRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_ACCT_LEVEL_INT_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrSpreadRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_SPREAD_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrEffectRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_EFFECT_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrNextCycleDate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_NEXT_CYCLE_DATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrIntDay = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_INT_DAY;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrThirdPartyAccount = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_THIRD_PARTY_ACCT;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrPeriodFreq = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_PERIOD_FREQ;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrTaxType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_TAX_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntTaxableInd = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.TAXABLE_IND;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrCOFAppType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_COF_APP_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrFundType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_FUND_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrCOFRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_COF_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrCOFLiqPremia = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_COF_LIQ_PREMIA;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrStateCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_STAT_CODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrRealznIntType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_REALZN_INT_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntInterestBonf = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.INTEREST_BONF;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntInterestBonfType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.INTEREST_BONF_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrIntType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_INT_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrAccountLevelIntRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_ACCT_LEVEL_INT_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrSpreadRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_SPREAD_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrEffectRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_EFFECT_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrAuthIntRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_AUTH_INT_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrNextCycleDate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_NEXT_CYCLE_DATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrIntDay = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_INT_DAY;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrThirdPartyAccount = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_THIRD_PARTY_ACCT;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrPeriodFreq = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_PERIOD_FREQ;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrCOFAppType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_COF_APP_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrFundType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_FUND_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrCOFRate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_COF_RATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrCOFLiqPremia = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_COF_LIQ_PREMIA;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntDrStatCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.DR_STAT_CODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbIntCrPrinAccount = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_INT_QRY_DTLS_CASA_QRY.RB_INT_QRY_DTLS_T.CR_PRIN_ACCT;
+			
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtPosition = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.POSITION;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtVersion = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.VERSION;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtContactRefNo = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.CONTACT_REF_NO;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtRefNo = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.STMT_REF_NO;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtLang = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.STMT_LANG;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtPeriodFreq = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.PERIOD_FREQ;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtDay = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.STMT_DAY;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtNextStmtDate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.NEXT_STMT_DATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtSuppressPrint = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.SUPPRESS_PRINT;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtLastStmtNo = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.LAST_STMT_NO;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtAtCap = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.STMT_AT_CAP;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtCmlStmtCode = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.CML_STMT_CODE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtOnMaturityStmt = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.ON_MATURITY_STMT;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtAfterMovement = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.STMT_AFTER_MOVEMENT;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.STMT_TYPE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtConsSc = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.CONS_SC;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtTemplate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.TEMPLATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtDistrChannel = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.DISTR_CHANNEL;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbStmtCtrlCommand = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_STMT_QRY_DTLS_CASA_QRY.RB_STMT_QRY_DTLS_T.CTRL_COMMAND;
+			
+			SET cbsRespRef.fetchCustomerAccountResponse.rbjointPosition = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_JOINT_ACCT_DTLS_CASA_QRY.RB_JOINT_ACCT_QRY_DTLS_T.POSITION;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbjointVersion = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_JOINT_ACCT_DTLS_CASA_QRY.RB_JOINT_ACCT_QRY_DTLS_T.VERSION;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbjointClientNo = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_JOINT_ACCT_DTLS_CASA_QRY.RB_JOINT_ACCT_QRY_DTLS_T.JOINT_CLIENT_NO;
+			
+			SET cbsRespRef.fetchCustomerAccountResponse.rbWdlPosition = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_WDL_NOTICE_DTLS_CASA_QRY.RB_WDL_NOTICE_QRY_DTLS_T.POSITION;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbWdlVersion = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_WDL_NOTICE_DTLS_CASA_QRY.RB_WDL_NOTICE_QRY_DTLS_T.VERSION;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbWdlSeqNo = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_WDL_NOTICE_DTLS_CASA_QRY.RB_WDL_NOTICE_QRY_DTLS_T.WDL_SEQ_NO;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbWdlAmount = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_WDL_NOTICE_DTLS_CASA_QRY.RB_WDL_NOTICE_QRY_DTLS_T.WDL_AMOUNT;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbWdlStartDate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_WDL_NOTICE_DTLS_CASA_QRY.RB_WDL_NOTICE_QRY_DTLS_T.START_DATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbWdlEndDate = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_WDL_NOTICE_DTLS_CASA_QRY.RB_WDL_NOTICE_QRY_DTLS_T.END_DATE;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbWdlTermPeriod = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_WDL_NOTICE_DTLS_CASA_QRY.RB_WDL_NOTICE_QRY_DTLS_T.WDL_TERM_PERIOD;
+			SET cbsRespRef.fetchCustomerAccountResponse.rbWdlTermType = inputRef.DETAIL_OUT.SYM_RB_ACCT_CASA_QRY_OUT.RB_WDL_NOTICE_DTLS_CASA_QRY.RB_WDL_NOTICE_QRY_DTLS_T.WDL_TERM_TYPE;
+			END IF;
+			
+		ELSEIF EXISTS(transactionRef.Error.Item[]) THEN
+			SET cbsRespRef.responseHeader.responseCode = getValidationErrorCode();
+			SET cbsRespRef.responseHeader.responseDetails = transactionRef.Error;
+		
+		ELSEIF transactionRef.HostResponse.ErrorCode <> getSuccessResponseCode() THEN
+			SET cbsRespRef.responseHeader.responseCode = transactionRef.HostResponse.ErrorCode;
+			SET cbsRespRef.responseHeader.responseDetails = transactionRef.HostResponse.Error;			
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+---------------------------------------------------------- PRIME
+
+
+CREATE COMPUTE MODULE ProcessPRIMEFetchCustomerAccount
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE inputRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		
+		CALL logInfoMessage('Calling fetch customer account for prime against cnic : ' || inputRef.fetchCustomerAccountRequest.cnic);
+		
+		SET transactionRef.HostResponse.data[] = SELECT details.*
+			FROM Database.{getPRIMESchemaName()}."VW_SOA_CARD_AGAINST_CNIC"
+			AS details
+			WHERE details.CNIC = inputRef.fetchCustomerAccountRequest.cnic;
+		
+	 	DECLARE dataRef REFERENCE TO transactionRef.HostResponse.data;
+		
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE outRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		SET outRef.serviceHeader = inputRef.serviceHeader;
+		SET outRef.transactionInfo = inputRef.transactionInfo;
+		CALL PopulateSuccessResponseHeader(outRef, 'SUCCESS');
+		
+		IF NOT LASTMOVE(dataRef) THEN
+			
+			SET outRef.responseHeader.responseCode = '99';
+			SET outRef.responseHeader.responseDetails.Item = 'No Records found against cnic';
+		ELSE
+			
+			CALL logInfoMessage('Response received from prime fetch customer account');
+			
+			SET outRef.fetchCustomerAccountResponse.cardNumber = dataRef.CARD_NUMBER;
+			SET outRef.fetchCustomerAccountResponse.embossingName = dataRef.EMBOSSING_NAME;
+			SET outRef.fetchCustomerAccountResponse.cardType = dataRef.CARD_TYPE;
+			SET outRef.fetchCustomerAccountResponse.cnic = dataRef.CNIC;
+			SET outRef.fetchCustomerAccountResponse.cardStatus = dataRef.CARD_STATUS;
+			
+		END IF;
+	 	
+	 	RETURN TRUE;
+	END;
+END MODULE;

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.systemsltd.com/ubl/omni" xmlns="http://www.systemsltd.com/ubl/omni">
+
+	<xsd:element name="FundsTransferRequest" type="FundsTransferRequest" />
+	<xsd:element name="FundsTransferResponse" type="FundsTransferResponse" />
+
+	<xsd:complexType name="FundsTransferRequest">
+		<xsd:sequence>
+			<xsd:element name="OMNI_FUNDSTRANSFER_REQUEST">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="P_SEC_CHANNEL" type="xsd:string" />
+						<xsd:element name="P_SEC_PASSWORD" type="xsd:string" />
+						<xsd:element name="P_GUID" type="xsd:string" />
+						<xsd:element name="P_FROM_ACCOUNT" type="xsd:string" />
+						<xsd:element name="P_FROM_BRANCH_CODE" type="xsd:string" />
+						<xsd:element name="P_TO_ACCOUNT" type="xsd:string" />
+						<xsd:element name="P_TO_BRANCH_CODE" type="xsd:string" />
+						<xsd:element name="P_AMOUNT" type="xsd:decimal" />
+						<xsd:element name="P_FEE_AMOUNT" type="xsd:decimal" />
+						<xsd:element name="P_FEE_FROM_ACCT_ID" type="xsd:decimal" />
+						<xsd:element name="P_FEE_TO_ACCT_ID" type="xsd:decimal" />
+						<xsd:element name="P_FED_AMOUNT" type="xsd:decimal" />
+						<xsd:element name="P_FED_FROM_ACCT_ID" type="xsd:decimal" />
+						<xsd:element name="P_FED_TO_ACCT_ID" type="xsd:decimal" />
+						<xsd:element name="P_WHT_FROM_ACCT_ID" type="xsd:decimal" />
+						<xsd:element name="P_TXN_TYPE_NAME" type="xsd:string" />
+						<xsd:element name="P_CHANNEL_CODE" type="xsd:string" />
+						<xsd:element name="P_NARRATION" type="xsd:string" />
+						<xsd:element name="P_OVERRIDE_LIMITS" type="xsd:string" />
+						<xsd:element name="P_CREATED_BY" type="xsd:string" />
+						<xsd:element name="P_UPDATED_BY" type="xsd:string" />
+						<xsd:element name="P_COMMIT" type="xsd:string" />
+						<xsd:element name="P_EXISTING_TXN_ID" type="xsd:decimal" />
+						<xsd:element name="P_AGENT_ID" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="FundsTransferResponse">
+		<xsd:sequence>
+			<xsd:element name="OMNI_FUNDSTRANSFER_RESPONSE">
+				<xsd:complexType>
+					<xsd:sequence>	
+						<xsd:element name="P_TXN_ID" type="xsd:integer" />
+						<xsd:element name="P_WHT_AMOUNT" type="xsd:integer" />
+						<xsd:element name="P_RET_VALUE" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>		
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>

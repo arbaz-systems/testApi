@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="JCN_HOME/jplugin2.jar"/>
+	<classpathentry kind="var" path="JCN_HOME/javacompute.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CommonJava"/>
+	<classpathentry kind="con" path="com.ibm.etools.mft.uri.classpath.MBProjectReference"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/StatementGeneratorPDFJava"/>
+	<classpathentry kind="lib" path="io-7.1.11.jar"/>
+	<classpathentry kind="lib" path="kernel-7.1.2.jar"/>
+	<classpathentry kind="lib" path="layout-7.1.11.jar"/>
+	<classpathentry kind="lib" path="logging-java.jar"/>
+	<classpathentry kind="lib" path="slf4j-api-1.7.13.jar"/>
+	<classpathentry kind="lib" path="json-20180813.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.systemsltd.com/ubl/omni" xmlns="http://www.systemsltd.com/ubl/omni">
+
+	<xsd:element name="BalanceEnquiryRequest" type="BalanceEnquiryRequest" />
+	<xsd:element name="BalanceEnquiryResponse" type="BalanceEnquiryResponse" />
+
+
+	<xsd:complexType name="BalanceEnquiryRequest">
+		<xsd:sequence>
+			<xsd:element name="OMNI_BALANCEINQUIRY_REQUEST">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="P_SEC_CHANNEL" type="xsd:string" />
+						<xsd:element name="P_SEC_PASSWORD" type="xsd:string" />
+						<xsd:element name="P_ACCOUNT_NO" type="xsd:string" />
+						<xsd:element name="P_CHANNEL_CODE" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="BalanceEnquiryResponse">
+		<xsd:sequence>
+			<xsd:element name="OMNI_BALANCEINQUIRY_RESPONSE">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="P_BALANCE" type="xsd:decimal" />
+						<xsd:element name="P_RET_VALUE" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

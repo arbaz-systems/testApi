@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.systemsltd.com/common/transaction"
+	xmlns:cmn="http://www.systemsltd.com/common"
+	targetNamespace="http://www.systemsltd.com/common/transaction"
+	xmlns:pref="http://www.systemsltd.com/common">
+
+	<xsd:include schemaLocation="CommonTransactionTypes.xsd" />
+	<xsd:import schemaLocation="com/systemsltd/common/model/CommonTypes.xsd" namespace="http://www.systemsltd.com/common" />
+
+	<xsd:complexType name="MessageDetailType">
+		<xsd:sequence>
+			<xsd:element name="ID" type="xsd:integer" minOccurs="0" />
+			<xsd:element name="MessageDomain" type="xsd:string" minOccurs="1" />
+			<xsd:element name="MessageSets" type="xsd:string" minOccurs="0" />
+			<xsd:element name="MessageType" type="xsd:string" minOccurs="1" />
+			<xsd:element name="MessageFormat" type="xsd:string" minOccurs="0" />
+			<xsd:element name="Encoding" type="xsd:integer" minOccurs="1" />
+			<xsd:element name="CCSID" type="xsd:integer" minOccurs="1" />
+			<xsd:element name="Message" type="xsd:string" minOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="TransactionMessageType">
+		<xsd:sequence>
+			<xsd:element name="ID" type="xsd:integer" minOccurs="1" />
+			<xsd:element name="ParentTransactionID" type="xsd:integer"
+				minOccurs="0" />
+			<xsd:element name="TransactionInfo"
+				type="TransactionInfoType" minOccurs="1" />
+			<xsd:element name="SourceSystem" type="xsd:string"
+				minOccurs="1" />
+			<xsd:element name="DestinationSystem" type="xsd:string"
+				minOccurs="1" />
+			<xsd:element name="RequestMessageInfo"
+				type="MessageDetailType" minOccurs="0" />
+			<xsd:element name="ResponseMessageInfo"
+				type="MessageDetailType" minOccurs="0" />
+			<xsd:element name="ExceptionDetail" type="xsd:string"
+				minOccurs="0">
+			</xsd:element>
+			<xsd:element name="TransactionReferenceId"
+				type="xsd:string" minOccurs="0">
+			</xsd:element>
+			<xsd:element name="TransactionReferenceIdCR"
+				type="xsd:string" minOccurs="0">
+			</xsd:element>
+			<xsd:element name="TransactionStatus" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+			<xsd:element name="SourceIp" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+
+	<xsd:complexType name="TransactionInfoType">
+		<xsd:sequence>
+			<xsd:element name="ID" type="xsd:integer" minOccurs="0"></xsd:element>
+			<xsd:element name="Channel" type="xsd:string"
+				minOccurs="1">
+			</xsd:element>
+			<xsd:element name="TransactionType" type="TransactionType"
+				minOccurs="1">
+			</xsd:element>
+			<xsd:element name="TransactionSubtype"
+				type="TransactionType" minOccurs="0">
+			</xsd:element>
+
+			<xsd:element name="ReferenceID" type="xsd:string"
+				minOccurs="1">
+			</xsd:element>
+			<xsd:element name="ProcessingNature"
+				type="ProcessingNatureType" minOccurs="1">
+			</xsd:element>
+			<xsd:element name="ProcessingMode" type="ProcessingModeType"
+				minOccurs="1">
+			</xsd:element>
+			<xsd:element name="Narration" type="xsd:string"
+				minOccurs="0">
+			</xsd:element>
+			<xsd:element name="TransactionDateTime" type="xsd:string"
+				minOccurs="1">
+			</xsd:element>
+			<xsd:element name="TransmissionDateTime" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+			<xsd:element name="Stan" type="xsd:string" minOccurs="1"
+				maxOccurs="1">
+			</xsd:element>
+			<xsd:element name="ReceivedTime" type="xsd:dateTime"
+				minOccurs="1">
+			</xsd:element>
+			<xsd:element name="CompletionTime" type="xsd:dateTime"
+				minOccurs="0">
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+    <xsd:element name="TransactionMessage" type="TransactionMessageType"></xsd:element>
+</xsd:schema>

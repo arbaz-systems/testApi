@@ -1,0 +1,54 @@
+BROKER SCHEMA com.systemsltd.ubl.caps
+
+PATH com.systemsltd.common, com.systemsltd.ubl.common;
+
+CREATE PROCEDURE CAPSWEBEX_TRANSINPUT_CALL
+(
+	IN TrackingNo CHARACTER, -- Correlation ID. To confirm
+	IN STAN CHARACTER,
+	IN CNIC CHARACTER,
+	IN TRAN_CODE CHARACTER,
+	IN CHANNEL CHARACTER,
+	IN REQUEST CHARACTER,
+	OUT RESPONSE CHARACTER,
+	OUT RESPONSE_CODE CHARACTER,
+	OUT RESPONSE_DESC CHARACTER
+)
+LANGUAGE DATABASE
+EXTERNAL NAME "CAPSWEBEX_TRANSINPUT_CALL";
+
+
+CREATE FUNCTION populateCAPSRequestParams(capsReqRef REFERENCE, inputRef REFERENCE)
+BEGIN
+	SET capsReqRef.TrackingNo = inputRef.[<].referenceNo;
+	SET capsReqRef.STAN = inputRef.transactionInfo.stan;
+	SET capsReqRef.CNIC = inputRef.[<].cnic;
+	
+	DECLARE itemRef REFERENCE TO inputRef.transactionInfo.attributeList.Item;
+	SET capsReqRef.TRAN_CODE = findItemValueInList(itemRef, 'attributeKey', 'tranCode');
+	
+	DECLARE mappedChannel CHARACTER getChannelMapping(inputRef.serviceHeader.channel, 'CAPS');
+	SET capsReqRef.CHANNEL = COALESCE(mappedChannel, inputRef.serviceHeader.channel);
+END;
+
+
+CREATE FUNCTION validateCAPSRequestParams(inputRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	IF LENGTH(inputRef.[<].referenceNo) > 20 THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'lenght of reference no. should not be more than 20';
+	END IF;
+	
+	IF LENGTH(inputRef.[<].cnic) > 30 THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'lenght of cnic should not be more than 30';
+	END IF;
+	
+	IF LENGTH(inputRef.transactionInfo.stan) > 40 THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'lenght of stan should not be more than 40';
+	END IF;
+END;
+
+
+CREATE FUNCTION capsTransactionSuccessfull (resultCode CHARACTER) RETURNS BOOLEAN
+BEGIN
+	RETURN (resultCode = '00');
+END;

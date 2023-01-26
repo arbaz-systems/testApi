@@ -1,0 +1,112 @@
+BROKER SCHEMA com.systemsltd.ubl.gnb
+
+PATH com.systemsltd.common, com.systemsltd.ubl.common, com.systemsltd.ubl.common.config,com.systemsltd.common.logging;
+
+CREATE PROCEDURE BE_MARK_REVOKE_STATUS
+( 
+	IN P_CHANNEL CHARACTER,
+	IN P_USER_ID CHARACTER,
+	IN P_PASSWORD CHARACTER,
+	IN P_REF_GUID CHARACTER,
+	OUT RET_RESPONSE CHARACTER,
+	OUT RET_RES INTEGER
+)
+LANGUAGE DATABASE 
+EXTERNAL NAME "%.be_mark_revoke_status";
+
+DECLARE FETCH_ORIGINAL_TRANSACTION_PAYLOAD CONSTANT CHARACTER 
+		'SELECT TI.ID, TI.REFERENCE_ID, TI.CHANNEL, MI.MESSAGE, MI.CCSID, MI.ENCODING, MI.MESSAGE_DOMAIN FROM MESSAGE_INFO MI
+		INNER JOIN TRANSACTION_DETAIL TD ON TD.MESSAGE_INFO_ID = MI.ID
+		INNER JOIN TRANSACTION_INFO TI ON TD.TRANSACTION_INFO_ID = TI.ID
+		WHERE TI.REFERENCE_ID = ? AND TI.CHANNEL = ? AND TRANSACTION_TYPE = ? ';
+
+
+CREATE COMPUTE MODULE PrepareNotifyGNBChannelRequest
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = Environment.Variables.Transaction.Properties;
+		DECLARE dbresult ROW;
+		DECLARE inMsgRef REFERENCE TO InputBody.*[1];
+		DECLARE reqItemRef REFERENCE TO inMsgRef.transactionInfo.attributeList.Item;
+		DECLARE requestingChannel CHARACTER findItemValueInList(reqItemRef, 'attributeKey', 'requestingChannel');
+		SET dbresult.data = PASSTHRU(FETCH_ORIGINAL_TRANSACTION_PAYLOAD VALUES(inMsgRef.originalTransactionInfo.referenceId, requestingChannel, inMsgRef.originalTransactionInfo.transactionType));
+		DECLARE dbresultRef REFERENCE TO dbresult.data;
+		DECLARE reqRow ROW;
+		
+		SET OutputRoot.Properties.CodedCharSetId = CAST(dbresultRef.CCSID AS INTEGER);
+		SET OutputRoot.Properties.Encoding = CAST(dbresultRef.ENCODING AS INTEGER);
+		
+		IF LASTMOVE(dbresultRef) THEN	
+			DECLARE msgBlob BLOB CAST(dbresultRef.MESSAGE AS BLOB CCSID OutputRoot.Properties.CodedCharSetId);
+			
+			CREATE LASTCHILD OF reqRow DOMAIN(dbresultRef.MESSAGE_DOMAIN)
+				PARSE(msgBlob, OutputRoot.Properties.Encoding, OutputRoot.Properties.CodedCharSetId);
+			
+			DECLARE cbsReqRef REFERENCE TO reqRow.JSON.Data;
+			
+			CREATE FIELD OutputRoot.XMLNSC.GNB_REVOKE_REQUEST;
+			DECLARE outRef REFERENCE TO OutputRoot.XMLNSC.GNB_REVOKE_REQUEST;
+			DECLARE itemRef REFERENCE TO cbsReqRef.transactionInfo.attributeList.Item;
+			DECLARE mappedChannel CHARACTER getGroupConfigProperty(getGNBDBHost(), mappedChannel, 'CHANNEL');
+			DECLARE password CHARACTER getGroupConfigProperty(getGNBDBHost(), mappedChannel, 'PASSWORD');
+			DECLARE userId CHARACTER getGroupConfigProperty(getGNBDBHost(), mappedChannel, 'USERNAME');
+
+			SET outRef.channel = COALESCE(mappedChannel, cbsReqRef.serviceHeader.channel);
+			SET outRef.userId = COALESCE(userId, cbsReqRef.serviceHeader.authInfo.username);
+			SET outRef.password = COALESCE(password, cbsReqRef.serviceHeader.authInfo.password);
+			SET outRef.refGuid = findItemValueInList(itemRef, 'attributeKey', 'externalTransactionId');
+
+		END IF;
+
+		RETURN TRUE;
+	END; 
+	
+END MODULE;
+
+
+CREATE COMPUTE MODULE ProcessNotifyGNBChannelRequest
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef, outRef REFERENCE TO InputRoot.XMLNSC.GNB_REVOKE_REQUEST;
+		DECLARE response CHARACTER '';
+		DECLARE result INTEGER;
+		
+		CALL BE_MARK_REVOKE_STATUS(inputRef.channel, inputRef.userId, inputRef.password, inputRef.refGuid, response, result);
+
+		CALL logDebugMessage('GNB Revoke Response: ' || COALESCE(response, '') || ', Result: ' || COALESCE(CAST(result AS CHARACTER), ''));
+
+		SET OutputRoot.Properties = InputProperties;
+		CREATE FIELD OutputRoot.XMLNSC.GNB_REVOKE_RESPONSE AS outRef;
+
+		SET outRef.response = response;
+		SET outRef.result = result;
+		SET Environment.Variables.Transaction.systemCode = CAST(result AS CHARACTER);
+		SET Environment.Variables.Transaction.systemError = outRef.response;
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareNotifyGNBResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef,outRef REFERENCE TO InputRoot.XMLNSC.GNB_REVOKE_RESPONSE;
+		DECLARE envRef REFERENCE TO Environment.Variables.Transaction.Request;
+
+		SET OutputRoot.Properties = InputProperties;
+		CREATE FIELD OutputRoot.JSON.Data AS outRef;
+
+		SET outRef.serviceHeader = envRef.serviceHeader;
+		SET outRef.transactionInfo = envRef.transactionInfo;
+
+		CALL PopulateSuccessResponseHeader(outRef, 'SUCCESS');
+
+		IF (FIELDTYPE(inputRef.result) IS NULL OR inputRef.result <> 0) THEN
+			SET outRef.responseHeader.responseCode = COALESCE(inputRef.result,'50');
+			SET outRef.responseHeader.responseDetails.Item = COALESCE(inputRef.response, 'UNKNOWN');
+			SET outRef.responseHeader.responseDetails.retryRequired = false;
+		END IF;
+
+		RETURN TRUE;
+	END;
+END MODULE;

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" 
+xmlns:xmi="http://www.omg.org/XMI" xmlns:com_systemsltd_ubl_common_ValidationErrorHandler.subflow="com/systemsltd/ubl/common/ValidationErrorHandler.subflow" xmlns:com_systemsltd_common_logging_LogMessage.subflow="com/systemsltd/common/logging/LogMessage.subflow" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:com_systemsltd_ubl_common_SaveTransaction.subflow="com/systemsltd/ubl/common/SaveTransaction.subflow" xmlns:ComIbmFilter.msgnode="ComIbmFilter.msgnode" xmlns:com_systemsltd_ubl_common_ResponseMapping.subflow="com/systemsltd/ubl/common/ResponseMapping.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" 
+xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="postAmendment.subflow" 
+nsPrefix="postAmendment.subflow">
+<eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1">
+<eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.loggerName" name="loggerName"  defaultValueLiteral="AccountManagementService">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.MappingDatasource" name="MappingDatasource"  defaultValueLiteral="IIBDSN">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<translation xmi:type="utility:TranslatableString" key="postAmendment" bundleName="postAmendment" pluginId="flowAPIgenerated"/>
+<colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj16/postAmendment.gif"/>
+<colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj30/postAmendment.gif"/>
+<composition>
+<nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input_1" location="15,109">
+<translation xmi:type="utility:TranslatableString" key="Input" bundleName="postAmendment" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output_1" location="1128,209">
+<translation xmi:type="utility:TranslatableString" key="Output" bundleName="postAmendment" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_ubl_common_ValidationErrorHandler.subflow:FCMComposite_1" xmi:id="FCMComposite_1_1" location="384,205">
+<translation xmi:type="utility:ConstantString" string="ValidationErrorHandler"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_2" location="187,105" databaseLoggingRequired="true" decoration="Account Amendment JSON Request Received" newRequest="true">
+<translation xmi:type="utility:ConstantString" string="Log Request"/>
+</nodes>
+<nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="667,110" computeExpression="esql://routine/com.systemsltd.ubl.accountmanagementservice#CallAccountAmendment.Main">
+<translation xmi:type="utility:ConstantString" string="Call Amendment"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_4" location="1030,209" databaseLoggingRequired="true" decoration="Account Amendment JSON Response Prepared" status="(InputRoot.JSON.Data.responseHeader.responseCode = getSuccessResponseCode())">
+<translation xmi:type="utility:ConstantString" string="Log Response"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_5" location="798,111" databaseLoggingRequired="true" decoration="CBS - Account Amendment Response Received" destinationSystem="CBS" idPath="Environment.Variables.Transaction.AccountAmendment" status="(Environment.Variables.Transaction.HostResponse.ErrorCode = getSuccessResponseCode())">
+<translation xmi:type="utility:ConstantString" string="Log CBS Response"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_6" location="550,110" databaseLoggingRequired="true" decoration="CBS - Account Amendment Request Received" destinationSystem="CBS" idPath="Environment.Variables.Transaction.AccountAmendment" newRequest="true">
+<translation xmi:type="utility:ConstantString" string="Log CBS Request"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_ubl_common_SaveTransaction.subflow:FCMComposite_1" xmi:id="FCMComposite_1_7" location="83,109" syncOverrideRequired="true">
+<translation xmi:type="utility:ConstantString" string="Save Transaction"/>
+</nodes>
+<nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_8" location="953,111" dataSource="IIBDSN" computeExpression="esql://routine/com.systemsltd.ubl.accountmanagementservice#PrepareJSONResponse.Main">
+<translation xmi:type="utility:ConstantString" string="Prepare JSON Response"/>
+</nodes>
+<nodes xmi:type="ComIbmFilter.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_9" location="271,105" filterExpression="esql://routine/com.systemsltd.ubl.accountmanagementservice#ValidateAccountAmendment.Main">
+<translation xmi:type="utility:ConstantString" string="Validation Errors"/>
+</nodes>
+<nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_10" location="366,109" computeExpression="esql://routine/com.systemsltd.ubl.accountmanagementservice#PrepareAccountAmendmentRequest.Main">
+<translation xmi:type="utility:ConstantString" string="Prepare Amendment Request"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_ubl_common_ResponseMapping.subflow:FCMComposite_1" xmi:id="FCMComposite_1_11" location="806,36" hostSystem="CBS" hostSystemResponseCodePath="Root.XMLNSC.REQUEST_OUT.ERRORS.ERROR_NO" hostSystemResponseDetailsPath="Root.XMLNSC.REQUEST_OUT.ERRORS.ERROR_MSG" mappedResponseCodePath="Environment.Variables.Transaction.HostResponse.ErrorCode" mappedResponseDescPath="Environment.Variables.Transaction.HostResponse.Error.Item">
+<translation xmi:type="utility:ConstantString" string="CBS Response Mapping"/>
+</nodes>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_10" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_11" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_9" sourceTerminalName="OutTerminal.false" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.Output1" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_9" sourceTerminalName="OutTerminal.true" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_11" targetNode="FCMComposite_1_7" sourceNode="InTerminal.Input_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_12" targetNode="OutTerminal.Output_1" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_13" targetNode="OutTerminal.Output_1" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.Output1" targetTerminalName="InTerminal.in">
+<bendPoints>23,163,-999,63</bendPoints>
+<bendPoints>1004,164,-18,64</bendPoints>
+</connections>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_14" targetNode="FCMComposite_1_9" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+</composition>
+<propertyOrganizer>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.loggerName">
+<propertyName xmi:type="utility:TranslatableString" key="Property.loggerName" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="UBLCommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" describedAttribute="Property.MappingDatasource">
+<propertyName xmi:type="utility:TranslatableString" key="Property.MappingDatasource" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="UBLCommonLibrary"/>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyOrganizer>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_11">
+<overriddenAttribute href="com/systemsltd/ubl/common/ResponseMapping.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.MappingDatasource" overriddenNodes="FCMComposite_1_11">
+<overriddenAttribute href="com/systemsltd/ubl/common/ResponseMapping.subflow#Property.MappingDatasource"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_6 FCMComposite_1_5 FCMComposite_1_2 FCMComposite_1_4">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_7">
+<overriddenAttribute href="com/systemsltd/ubl/common/SaveTransaction.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.MappingDatasource" overriddenNodes="FCMComposite_1_8">
+<overriddenAttribute href="ComIbmCompute.msgnode#Property.dataSource"/>
+</attributeLinks>
+<stickyBoard/>
+</eClassifiers>
+</ecore:EPackage>

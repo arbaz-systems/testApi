@@ -1,0 +1,2146 @@
+<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:s1="CTL.COM.Services" xmlns:s2="http://microsoft.com/wsdl/types/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:tns="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices">
+  <wsdl:documentation>
+    <wsdl:appinfo source="WMQI_APPINFO">
+      <MRWSDLAppInfo imported="true">
+        <generatedXSD location="PrimeIssuerAPI_InlineSchema1.xsd"/>
+        <generatedXSD location="PrimeIssuerAPI_InlineSchema2.xsd"/>
+        <generatedXSD location="PrimeIssuerAPI_InlineSchema3.xsd"/>
+        <binding hasEncoding="false" imported="true" name="PrimeIssuerServicesSoap" originalBindingStyle="document"/>
+        <binding hasEncoding="false" imported="true" name="PrimeIssuerServicesSoap12" originalBindingStyle="document"/>
+      </MRWSDLAppInfo>
+    </wsdl:appinfo>
+  </wsdl:documentation>
+  <wsdl:types>
+    
+    
+    
+          <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions">
+<xsd:import namespace="CTL.COM.Services" schemaLocation="PrimeIssuerAPI_InlineSchema2.xsd"/>
+<xsd:import namespace="http://microsoft.com/wsdl/types/" schemaLocation="PrimeIssuerAPI_InlineSchema3.xsd"/>
+<xsd:include schemaLocation="PrimeIssuerAPI_InlineSchema1.xsd"/>
+    </xsd:schema>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="CTL.COM.Services">
+<xsd:import namespace="http://microsoft.com/wsdl/types/" schemaLocation="PrimeIssuerAPI_InlineSchema3.xsd"/>
+<xsd:include schemaLocation="PrimeIssuerAPI_InlineSchema2.xsd"/>
+    </xsd:schema>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
+<xsd:include schemaLocation="PrimeIssuerAPI_InlineSchema3.xsd"/>
+    </xsd:schema>
+    </wsdl:types>
+  <wsdl:message name="InstalmentInquirySoapIn">
+    <wsdl:part element="tns:InstalmentInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentInquirySoapOut">
+    <wsdl:part element="tns:InstalmentInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="StatementInquirySoapIn">
+    <wsdl:part element="tns:StatementInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="StatementInquirySoapOut">
+    <wsdl:part element="tns:StatementInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EntityInquirySoapIn">
+    <wsdl:part element="tns:EntityInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EntityInquirySoapOut">
+    <wsdl:part element="tns:EntityInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PostTransactionSoapIn">
+    <wsdl:part element="tns:PostTransaction" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PostTransactionSoapOut">
+    <wsdl:part element="tns:PostTransactionResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="MaintenanceUpdateSoapIn">
+    <wsdl:part element="tns:MaintenanceUpdate" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="MaintenanceUpdateSoapOut">
+    <wsdl:part element="tns:MaintenanceUpdateResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ServiceRequestSoapIn">
+    <wsdl:part element="tns:ServiceRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ServiceRequestSoapOut">
+    <wsdl:part element="tns:ServiceRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CISUpdateRequestSoapIn">
+    <wsdl:part element="tns:CISUpdateRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CISUpdateRequestSoapOut">
+    <wsdl:part element="tns:CISUpdateRequestResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReplaceCardSoapIn">
+    <wsdl:part element="tns:ReplaceCard" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReplaceCardSoapOut">
+    <wsdl:part element="tns:ReplaceCardResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ConvertTrxnToInstalmentSoapIn">
+    <wsdl:part element="tns:ConvertTrxnToInstalment" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ConvertTrxnToInstalmentSoapOut">
+    <wsdl:part element="tns:ConvertTrxnToInstalmentResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentPlanInquirySoapIn">
+    <wsdl:part element="tns:InstalmentPlanInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentPlanInquirySoapOut">
+    <wsdl:part element="tns:InstalmentPlanInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RenewCardSoapIn">
+    <wsdl:part element="tns:RenewCard" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RenewCardSoapOut">
+    <wsdl:part element="tns:RenewCardResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CreditInformationMaintenanceSoapIn">
+    <wsdl:part element="tns:CreditInformationMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CreditInformationMaintenanceSoapOut">
+    <wsdl:part element="tns:CreditInformationMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="JoinCardToRewardsSoapIn">
+    <wsdl:part element="tns:JoinCardToRewards" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="JoinCardToRewardsSoapOut">
+    <wsdl:part element="tns:JoinCardToRewardsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="JoinAccountToRewardsSoapIn">
+    <wsdl:part element="tns:JoinAccountToRewards" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="JoinAccountToRewardsSoapOut">
+    <wsdl:part element="tns:JoinAccountToRewardsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="JoinLevelToRewardsSoapIn">
+    <wsdl:part element="tns:JoinLevelToRewards" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="JoinLevelToRewardsSoapOut">
+    <wsdl:part element="tns:JoinLevelToRewardsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetRewardInformationSoapIn">
+    <wsdl:part element="tns:GetRewardInformation" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetRewardInformationSoapOut">
+    <wsdl:part element="tns:GetRewardInformationResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ProductChangeSoapIn">
+    <wsdl:part element="tns:ProductChange" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ProductChangeSoapOut">
+    <wsdl:part element="tns:ProductChangeResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="DebitOrderUpdateSoapIn">
+    <wsdl:part element="tns:DebitOrderUpdate" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="DebitOrderUpdateSoapOut">
+    <wsdl:part element="tns:DebitOrderUpdateResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AcquireTicketSoapIn">
+    <wsdl:part element="tns:AcquireTicket" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AcquireTicketSoapOut">
+    <wsdl:part element="tns:AcquireTicketResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ServiceMaintenanceSoapIn">
+    <wsdl:part element="tns:ServiceMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ServiceMaintenanceSoapOut">
+    <wsdl:part element="tns:ServiceMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ExtensionFieldMaintenanceSoapIn">
+    <wsdl:part element="tns:ExtensionFieldMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ExtensionFieldMaintenanceSoapOut">
+    <wsdl:part element="tns:ExtensionFieldMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="StatementsListSoapIn">
+    <wsdl:part element="tns:StatementsList" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="StatementsListSoapOut">
+    <wsdl:part element="tns:StatementsListResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="LoadBridgeXmlSoapIn">
+    <wsdl:part element="tns:LoadBridgeXml" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="LoadBridgeXmlSoapOut">
+    <wsdl:part element="tns:LoadBridgeXmlResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FindApplicationsSoapIn">
+    <wsdl:part element="tns:FindApplications" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FindApplicationsSoapOut">
+    <wsdl:part element="tns:FindApplicationsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetApplicationSoapIn">
+    <wsdl:part element="tns:GetApplication" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetApplicationSoapOut">
+    <wsdl:part element="tns:GetApplicationResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RetrieveMemosSoapIn">
+    <wsdl:part element="tns:RetrieveMemos" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RetrieveMemosSoapOut">
+    <wsdl:part element="tns:RetrieveMemosResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="MemoMaintenanceSoapIn">
+    <wsdl:part element="tns:MemoMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="MemoMaintenanceSoapOut">
+    <wsdl:part element="tns:MemoMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AddressRoleMaintenanceSoapIn">
+    <wsdl:part element="tns:AddressRoleMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AddressRoleMaintenanceSoapOut">
+    <wsdl:part element="tns:AddressRoleMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FindEntitySoapIn">
+    <wsdl:part element="tns:FindEntity" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FindEntitySoapOut">
+    <wsdl:part element="tns:FindEntityResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetDirectDebitInformationSoapIn">
+    <wsdl:part element="tns:GetDirectDebitInformation" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetDirectDebitInformationSoapOut">
+    <wsdl:part element="tns:GetDirectDebitInformationResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetCountryDetailsSoapIn">
+    <wsdl:part element="tns:GetCountryDetails" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetCountryDetailsSoapOut">
+    <wsdl:part element="tns:GetCountryDetailsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetGlobalParametersSoapIn">
+    <wsdl:part element="tns:GetGlobalParameters" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetGlobalParametersSoapOut">
+    <wsdl:part element="tns:GetGlobalParametersResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetStatisticsSoapIn">
+    <wsdl:part element="tns:GetStatistics" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetStatisticsSoapOut">
+    <wsdl:part element="tns:GetStatisticsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ProductInquirySoapIn">
+    <wsdl:part element="tns:ProductInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ProductInquirySoapOut">
+    <wsdl:part element="tns:ProductInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ProfileInquirySoapIn">
+    <wsdl:part element="tns:ProfileInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ProfileInquirySoapOut">
+    <wsdl:part element="tns:ProfileInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="SetTermsInformationSoapIn">
+    <wsdl:part element="tns:SetTermsInformation" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="SetTermsInformationSoapOut">
+    <wsdl:part element="tns:SetTermsInformationResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AdditionalAgreementsInquirySoapIn">
+    <wsdl:part element="tns:AdditionalAgreementsInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AdditionalAgreementsInquirySoapOut">
+    <wsdl:part element="tns:AdditionalAgreementsInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AdditionalAgreementsMaintenanceSoapIn">
+    <wsdl:part element="tns:AdditionalAgreementsMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AdditionalAgreementsMaintenanceSoapOut">
+    <wsdl:part element="tns:AdditionalAgreementsMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetPostCodesSoapIn">
+    <wsdl:part element="tns:GetPostCodes" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetPostCodesSoapOut">
+    <wsdl:part element="tns:GetPostCodesResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PeopleLinksMaintenanceSoapIn">
+    <wsdl:part element="tns:PeopleLinksMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PeopleLinksMaintenanceSoapOut">
+    <wsdl:part element="tns:PeopleLinksMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PostponeTransactionSoapIn">
+    <wsdl:part element="tns:PostponeTransaction" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PostponeTransactionSoapOut">
+    <wsdl:part element="tns:PostponeTransactionResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PostponedTransactionsInquirySoapIn">
+    <wsdl:part element="tns:PostponedTransactionsInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="PostponedTransactionsInquirySoapOut">
+    <wsdl:part element="tns:PostponedTransactionsInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetAdditionalEntityInfoSoapIn">
+    <wsdl:part element="tns:GetAdditionalEntityInfo" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetAdditionalEntityInfoSoapOut">
+    <wsdl:part element="tns:GetAdditionalEntityInfoResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="BankAccountInformationSoapIn">
+    <wsdl:part element="tns:BankAccountInformation" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="BankAccountInformationSoapOut">
+    <wsdl:part element="tns:BankAccountInformationResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="BankAccountMaintenanceSoapIn">
+    <wsdl:part element="tns:BankAccountMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="BankAccountMaintenanceSoapOut">
+    <wsdl:part element="tns:BankAccountMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="StartDisputeCaseSoapIn">
+    <wsdl:part element="tns:StartDisputeCase" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="StartDisputeCaseSoapOut">
+    <wsdl:part element="tns:StartDisputeCaseResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentPlanMaintenanceSoapIn">
+    <wsdl:part element="tns:InstalmentPlanMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentPlanMaintenanceSoapOut">
+    <wsdl:part element="tns:InstalmentPlanMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="APIPingSoapIn">
+    <wsdl:part element="tns:APIPing" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="APIPingSoapOut">
+    <wsdl:part element="tns:APIPingResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GiftRedemptionSoapIn">
+    <wsdl:part element="tns:GiftRedemption" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GiftRedemptionSoapOut">
+    <wsdl:part element="tns:GiftRedemptionResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentActionsSoapIn">
+    <wsdl:part element="tns:InstalmentActions" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentActionsSoapOut">
+    <wsdl:part element="tns:InstalmentActionsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="DisputeCaseInquirySoapIn">
+    <wsdl:part element="tns:DisputeCaseInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="DisputeCaseInquirySoapOut">
+    <wsdl:part element="tns:DisputeCaseInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InvoiceInquirySoapIn">
+    <wsdl:part element="tns:InvoiceInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InvoiceInquirySoapOut">
+    <wsdl:part element="tns:InvoiceInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="HierarchyInquirySoapIn">
+    <wsdl:part element="tns:HierarchyInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="HierarchyInquirySoapOut">
+    <wsdl:part element="tns:HierarchyInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="HierarchyRiskDomainInquirySoapIn">
+    <wsdl:part element="tns:HierarchyRiskDomainInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="HierarchyRiskDomainInquirySoapOut">
+    <wsdl:part element="tns:HierarchyRiskDomainInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CardEmbossingMaintenanceSoapIn">
+    <wsdl:part element="tns:CardEmbossingMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CardEmbossingMaintenanceSoapOut">
+    <wsdl:part element="tns:CardEmbossingMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ExecutionTrackingSoapIn">
+    <wsdl:part element="tns:ExecutionTracking" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ExecutionTrackingSoapOut">
+    <wsdl:part element="tns:ExecutionTrackingResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CustomerAlertsInquirySoapIn">
+    <wsdl:part element="tns:CustomerAlertsInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CustomerAlertsInquirySoapOut">
+    <wsdl:part element="tns:CustomerAlertsInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CustomerAlertsMaintenanceSoapIn">
+    <wsdl:part element="tns:CustomerAlertsMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CustomerAlertsMaintenanceSoapOut">
+    <wsdl:part element="tns:CustomerAlertsMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetEntityHistorySoapIn">
+    <wsdl:part element="tns:GetEntityHistory" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetEntityHistorySoapOut">
+    <wsdl:part element="tns:GetEntityHistoryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetServiceHistorySoapIn">
+    <wsdl:part element="tns:GetServiceHistory" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetServiceHistorySoapOut">
+    <wsdl:part element="tns:GetServiceHistoryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentAmortizationInquirySoapIn">
+    <wsdl:part element="tns:InstalmentAmortizationInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="InstalmentAmortizationInquirySoapOut">
+    <wsdl:part element="tns:InstalmentAmortizationInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FeeOverrideInquirySoapIn">
+    <wsdl:part element="tns:FeeOverrideInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FeeOverrideInquirySoapOut">
+    <wsdl:part element="tns:FeeOverrideInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FeeOverrideMaintenanceSoapIn">
+    <wsdl:part element="tns:FeeOverrideMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="FeeOverrideMaintenanceSoapOut">
+    <wsdl:part element="tns:FeeOverrideMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CorporateEntityInquirySoapIn">
+    <wsdl:part element="tns:CorporateEntityInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CorporateEntityInquirySoapOut">
+    <wsdl:part element="tns:CorporateEntityInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EntityListSoapIn">
+    <wsdl:part element="tns:EntityList" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="EntityListSoapOut">
+    <wsdl:part element="tns:EntityListResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AcquireOTPSoapIn">
+    <wsdl:part element="tns:AcquireOTP" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AcquireOTPSoapOut">
+    <wsdl:part element="tns:AcquireOTPResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="OTPActivitiesSoapIn">
+    <wsdl:part element="tns:OTPActivities" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="OTPActivitiesSoapOut">
+    <wsdl:part element="tns:OTPActivitiesResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetProbeDetailsSoapIn">
+    <wsdl:part element="tns:GetProbeDetails" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetProbeDetailsSoapOut">
+    <wsdl:part element="tns:GetProbeDetailsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetCardSecurityDataSoapIn">
+    <wsdl:part element="tns:GetCardSecurityData" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="GetCardSecurityDataSoapOut">
+    <wsdl:part element="tns:GetCardSecurityDataResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AccountDelinquencyInquirySoapIn">
+    <wsdl:part element="tns:AccountDelinquencyInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AccountDelinquencyInquirySoapOut">
+    <wsdl:part element="tns:AccountDelinquencyInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AccountDelinquencyActionsSoapIn">
+    <wsdl:part element="tns:AccountDelinquencyActions" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="AccountDelinquencyActionsSoapOut">
+    <wsdl:part element="tns:AccountDelinquencyActionsResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ConvertBalanceToInstalmentSoapIn">
+    <wsdl:part element="tns:ConvertBalanceToInstalment" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ConvertBalanceToInstalmentSoapOut">
+    <wsdl:part element="tns:ConvertBalanceToInstalmentResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CureAccountFromCollectionSoapIn">
+    <wsdl:part element="tns:CureAccountFromCollection" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="CureAccountFromCollectionSoapOut">
+    <wsdl:part element="tns:CureAccountFromCollectionResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RepaymentPlanInquirySoapIn">
+    <wsdl:part element="tns:RepaymentPlanInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RepaymentPlanInquirySoapOut">
+    <wsdl:part element="tns:RepaymentPlanInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RepaymentPlanMaintenanceSoapIn">
+    <wsdl:part element="tns:RepaymentPlanMaintenance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RepaymentPlanMaintenanceSoapOut">
+    <wsdl:part element="tns:RepaymentPlanMaintenanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="PrimeIssuerServicesSoap">
+    <wsdl:operation name="InstalmentInquiry">
+      <wsdl:input message="tns:InstalmentInquirySoapIn"/>
+      <wsdl:output message="tns:InstalmentInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="StatementInquiry">
+      <wsdl:input message="tns:StatementInquirySoapIn"/>
+      <wsdl:output message="tns:StatementInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="EntityInquiry">
+      <wsdl:input message="tns:EntityInquirySoapIn"/>
+      <wsdl:output message="tns:EntityInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="PostTransaction">
+      <wsdl:input message="tns:PostTransactionSoapIn"/>
+      <wsdl:output message="tns:PostTransactionSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="MaintenanceUpdate">
+      <wsdl:input message="tns:MaintenanceUpdateSoapIn"/>
+      <wsdl:output message="tns:MaintenanceUpdateSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ServiceRequest">
+      <wsdl:input message="tns:ServiceRequestSoapIn"/>
+      <wsdl:output message="tns:ServiceRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CISUpdateRequest">
+      <wsdl:input message="tns:CISUpdateRequestSoapIn"/>
+      <wsdl:output message="tns:CISUpdateRequestSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ReplaceCard">
+      <wsdl:input message="tns:ReplaceCardSoapIn"/>
+      <wsdl:output message="tns:ReplaceCardSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ConvertTrxnToInstalment">
+      <wsdl:input message="tns:ConvertTrxnToInstalmentSoapIn"/>
+      <wsdl:output message="tns:ConvertTrxnToInstalmentSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentPlanInquiry">
+      <wsdl:input message="tns:InstalmentPlanInquirySoapIn"/>
+      <wsdl:output message="tns:InstalmentPlanInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="RenewCard">
+      <wsdl:input message="tns:RenewCardSoapIn"/>
+      <wsdl:output message="tns:RenewCardSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CreditInformationMaintenance">
+      <wsdl:input message="tns:CreditInformationMaintenanceSoapIn"/>
+      <wsdl:output message="tns:CreditInformationMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="JoinCardToRewards">
+      <wsdl:input message="tns:JoinCardToRewardsSoapIn"/>
+      <wsdl:output message="tns:JoinCardToRewardsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="JoinAccountToRewards">
+      <wsdl:input message="tns:JoinAccountToRewardsSoapIn"/>
+      <wsdl:output message="tns:JoinAccountToRewardsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="JoinLevelToRewards">
+      <wsdl:input message="tns:JoinLevelToRewardsSoapIn"/>
+      <wsdl:output message="tns:JoinLevelToRewardsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetRewardInformation">
+      <wsdl:input message="tns:GetRewardInformationSoapIn"/>
+      <wsdl:output message="tns:GetRewardInformationSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ProductChange">
+      <wsdl:input message="tns:ProductChangeSoapIn"/>
+      <wsdl:output message="tns:ProductChangeSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="DebitOrderUpdate">
+      <wsdl:input message="tns:DebitOrderUpdateSoapIn"/>
+      <wsdl:output message="tns:DebitOrderUpdateSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireTicket">
+      <wsdl:input message="tns:AcquireTicketSoapIn"/>
+      <wsdl:output message="tns:AcquireTicketSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ServiceMaintenance">
+      <wsdl:input message="tns:ServiceMaintenanceSoapIn"/>
+      <wsdl:output message="tns:ServiceMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ExtensionFieldMaintenance">
+      <wsdl:input message="tns:ExtensionFieldMaintenanceSoapIn"/>
+      <wsdl:output message="tns:ExtensionFieldMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="StatementsList">
+      <wsdl:input message="tns:StatementsListSoapIn"/>
+      <wsdl:output message="tns:StatementsListSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="LoadBridgeXml">
+      <wsdl:input message="tns:LoadBridgeXmlSoapIn"/>
+      <wsdl:output message="tns:LoadBridgeXmlSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="FindApplications">
+      <wsdl:input message="tns:FindApplicationsSoapIn"/>
+      <wsdl:output message="tns:FindApplicationsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetApplication">
+      <wsdl:input message="tns:GetApplicationSoapIn"/>
+      <wsdl:output message="tns:GetApplicationSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="RetrieveMemos">
+      <wsdl:input message="tns:RetrieveMemosSoapIn"/>
+      <wsdl:output message="tns:RetrieveMemosSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="MemoMaintenance">
+      <wsdl:input message="tns:MemoMaintenanceSoapIn"/>
+      <wsdl:output message="tns:MemoMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AddressRoleMaintenance">
+      <wsdl:input message="tns:AddressRoleMaintenanceSoapIn"/>
+      <wsdl:output message="tns:AddressRoleMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="FindEntity">
+      <wsdl:input message="tns:FindEntitySoapIn"/>
+      <wsdl:output message="tns:FindEntitySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetDirectDebitInformation">
+      <wsdl:input message="tns:GetDirectDebitInformationSoapIn"/>
+      <wsdl:output message="tns:GetDirectDebitInformationSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetCountryDetails">
+      <wsdl:input message="tns:GetCountryDetailsSoapIn"/>
+      <wsdl:output message="tns:GetCountryDetailsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetGlobalParameters">
+      <wsdl:input message="tns:GetGlobalParametersSoapIn"/>
+      <wsdl:output message="tns:GetGlobalParametersSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetStatistics">
+      <wsdl:input message="tns:GetStatisticsSoapIn"/>
+      <wsdl:output message="tns:GetStatisticsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ProductInquiry">
+      <wsdl:input message="tns:ProductInquirySoapIn"/>
+      <wsdl:output message="tns:ProductInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ProfileInquiry">
+      <wsdl:input message="tns:ProfileInquirySoapIn"/>
+      <wsdl:output message="tns:ProfileInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="SetTermsInformation">
+      <wsdl:input message="tns:SetTermsInformationSoapIn"/>
+      <wsdl:output message="tns:SetTermsInformationSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AdditionalAgreementsInquiry">
+      <wsdl:input message="tns:AdditionalAgreementsInquirySoapIn"/>
+      <wsdl:output message="tns:AdditionalAgreementsInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AdditionalAgreementsMaintenance">
+      <wsdl:input message="tns:AdditionalAgreementsMaintenanceSoapIn"/>
+      <wsdl:output message="tns:AdditionalAgreementsMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetPostCodes">
+      <wsdl:input message="tns:GetPostCodesSoapIn"/>
+      <wsdl:output message="tns:GetPostCodesSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="PeopleLinksMaintenance">
+      <wsdl:input message="tns:PeopleLinksMaintenanceSoapIn"/>
+      <wsdl:output message="tns:PeopleLinksMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="PostponeTransaction">
+      <wsdl:input message="tns:PostponeTransactionSoapIn"/>
+      <wsdl:output message="tns:PostponeTransactionSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="PostponedTransactionsInquiry">
+      <wsdl:input message="tns:PostponedTransactionsInquirySoapIn"/>
+      <wsdl:output message="tns:PostponedTransactionsInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetAdditionalEntityInfo">
+      <wsdl:input message="tns:GetAdditionalEntityInfoSoapIn"/>
+      <wsdl:output message="tns:GetAdditionalEntityInfoSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="BankAccountInformation">
+      <wsdl:input message="tns:BankAccountInformationSoapIn"/>
+      <wsdl:output message="tns:BankAccountInformationSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="BankAccountMaintenance">
+      <wsdl:input message="tns:BankAccountMaintenanceSoapIn"/>
+      <wsdl:output message="tns:BankAccountMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="StartDisputeCase">
+      <wsdl:input message="tns:StartDisputeCaseSoapIn"/>
+      <wsdl:output message="tns:StartDisputeCaseSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentPlanMaintenance">
+      <wsdl:input message="tns:InstalmentPlanMaintenanceSoapIn"/>
+      <wsdl:output message="tns:InstalmentPlanMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="APIPing">
+      <wsdl:input message="tns:APIPingSoapIn"/>
+      <wsdl:output message="tns:APIPingSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GiftRedemption">
+      <wsdl:input message="tns:GiftRedemptionSoapIn"/>
+      <wsdl:output message="tns:GiftRedemptionSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentActions">
+      <wsdl:input message="tns:InstalmentActionsSoapIn"/>
+      <wsdl:output message="tns:InstalmentActionsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="DisputeCaseInquiry">
+      <wsdl:input message="tns:DisputeCaseInquirySoapIn"/>
+      <wsdl:output message="tns:DisputeCaseInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="InvoiceInquiry">
+      <wsdl:input message="tns:InvoiceInquirySoapIn"/>
+      <wsdl:output message="tns:InvoiceInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="HierarchyInquiry">
+      <wsdl:input message="tns:HierarchyInquirySoapIn"/>
+      <wsdl:output message="tns:HierarchyInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="HierarchyRiskDomainInquiry">
+      <wsdl:input message="tns:HierarchyRiskDomainInquirySoapIn"/>
+      <wsdl:output message="tns:HierarchyRiskDomainInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CardEmbossingMaintenance">
+      <wsdl:input message="tns:CardEmbossingMaintenanceSoapIn"/>
+      <wsdl:output message="tns:CardEmbossingMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ExecutionTracking">
+      <wsdl:input message="tns:ExecutionTrackingSoapIn"/>
+      <wsdl:output message="tns:ExecutionTrackingSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CustomerAlertsInquiry">
+      <wsdl:input message="tns:CustomerAlertsInquirySoapIn"/>
+      <wsdl:output message="tns:CustomerAlertsInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CustomerAlertsMaintenance">
+      <wsdl:input message="tns:CustomerAlertsMaintenanceSoapIn"/>
+      <wsdl:output message="tns:CustomerAlertsMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetEntityHistory">
+      <wsdl:input message="tns:GetEntityHistorySoapIn"/>
+      <wsdl:output message="tns:GetEntityHistorySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceHistory">
+      <wsdl:input message="tns:GetServiceHistorySoapIn"/>
+      <wsdl:output message="tns:GetServiceHistorySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentAmortizationInquiry">
+      <wsdl:input message="tns:InstalmentAmortizationInquirySoapIn"/>
+      <wsdl:output message="tns:InstalmentAmortizationInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="FeeOverrideInquiry">
+      <wsdl:input message="tns:FeeOverrideInquirySoapIn"/>
+      <wsdl:output message="tns:FeeOverrideInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="FeeOverrideMaintenance">
+      <wsdl:input message="tns:FeeOverrideMaintenanceSoapIn"/>
+      <wsdl:output message="tns:FeeOverrideMaintenanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CorporateEntityInquiry">
+      <wsdl:input message="tns:CorporateEntityInquirySoapIn"/>
+      <wsdl:output message="tns:CorporateEntityInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="EntityList">
+      <wsdl:input message="tns:EntityListSoapIn"/>
+      <wsdl:output message="tns:EntityListSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireOTP">
+      <wsdl:input message="tns:AcquireOTPSoapIn"/>
+      <wsdl:output message="tns:AcquireOTPSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="OTPActivities">
+      <wsdl:input message="tns:OTPActivitiesSoapIn"/>
+      <wsdl:output message="tns:OTPActivitiesSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetProbeDetails">
+      <wsdl:input message="tns:GetProbeDetailsSoapIn"/>
+      <wsdl:output message="tns:GetProbeDetailsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetCardSecurityData">
+      <wsdl:input message="tns:GetCardSecurityDataSoapIn"/>
+      <wsdl:output message="tns:GetCardSecurityDataSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AccountDelinquencyInquiry">
+      <wsdl:input message="tns:AccountDelinquencyInquirySoapIn"/>
+      <wsdl:output message="tns:AccountDelinquencyInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="AccountDelinquencyActions">
+      <wsdl:input message="tns:AccountDelinquencyActionsSoapIn"/>
+      <wsdl:output message="tns:AccountDelinquencyActionsSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ConvertBalanceToInstalment">
+      <wsdl:input message="tns:ConvertBalanceToInstalmentSoapIn"/>
+      <wsdl:output message="tns:ConvertBalanceToInstalmentSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="CureAccountFromCollection">
+      <wsdl:input message="tns:CureAccountFromCollectionSoapIn"/>
+      <wsdl:output message="tns:CureAccountFromCollectionSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="RepaymentPlanInquiry">
+      <wsdl:input message="tns:RepaymentPlanInquirySoapIn"/>
+      <wsdl:output message="tns:RepaymentPlanInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="RepaymentPlanMaintenance">
+      <wsdl:input message="tns:RepaymentPlanMaintenanceSoapIn"/>
+      <wsdl:output message="tns:RepaymentPlanMaintenanceSoapOut"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PrimeIssuerServicesSoap" type="tns:PrimeIssuerServicesSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="InstalmentInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StatementInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/StatementInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EntityInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/EntityInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostTransaction">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/PostTransaction" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MaintenanceUpdate">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/MaintenanceUpdate" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ServiceRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ServiceRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CISUpdateRequest">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CISUpdateRequest" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReplaceCard">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ReplaceCard" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConvertTrxnToInstalment">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ConvertTrxnToInstalment" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentPlanInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentPlanInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RenewCard">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/RenewCard" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreditInformationMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CreditInformationMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="JoinCardToRewards">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/JoinCardToRewards" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="JoinAccountToRewards">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/JoinAccountToRewards" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="JoinLevelToRewards">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/JoinLevelToRewards" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRewardInformation">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetRewardInformation" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProductChange">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ProductChange" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DebitOrderUpdate">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/DebitOrderUpdate" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireTicket">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AcquireTicket" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ServiceMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ServiceMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ExtensionFieldMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ExtensionFieldMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StatementsList">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/StatementsList" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LoadBridgeXml">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/LoadBridgeXml" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindApplications">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/FindApplications" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetApplication">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetApplication" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RetrieveMemos">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/RetrieveMemos" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MemoMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/MemoMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddressRoleMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AddressRoleMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindEntity">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/FindEntity" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDirectDebitInformation">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetDirectDebitInformation" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCountryDetails">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetCountryDetails" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetGlobalParameters">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetGlobalParameters" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStatistics">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetStatistics" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProductInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ProductInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProfileInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ProfileInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetTermsInformation">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/SetTermsInformation" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AdditionalAgreementsInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AdditionalAgreementsInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AdditionalAgreementsMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AdditionalAgreementsMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPostCodes">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetPostCodes" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PeopleLinksMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/PeopleLinksMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostponeTransaction">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/PostponeTransaction" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostponedTransactionsInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/PostponedTransactionsInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAdditionalEntityInfo">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetAdditionalEntityInfo" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="BankAccountInformation">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/BankAccountInformation" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="BankAccountMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/BankAccountMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StartDisputeCase">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/StartDisputeCase" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentPlanMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentPlanMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="APIPing">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/APIPing" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GiftRedemption">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GiftRedemption" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentActions">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentActions" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DisputeCaseInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/DisputeCaseInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InvoiceInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InvoiceInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="HierarchyInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/HierarchyInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="HierarchyRiskDomainInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/HierarchyRiskDomainInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CardEmbossingMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CardEmbossingMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ExecutionTracking">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ExecutionTracking" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CustomerAlertsInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CustomerAlertsInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CustomerAlertsMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CustomerAlertsMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEntityHistory">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetEntityHistory" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceHistory">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetServiceHistory" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentAmortizationInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentAmortizationInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FeeOverrideInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/FeeOverrideInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FeeOverrideMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/FeeOverrideMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CorporateEntityInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CorporateEntityInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EntityList">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/EntityList" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireOTP">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AcquireOTP" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OTPActivities">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/OTPActivities" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetProbeDetails">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetProbeDetails" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCardSecurityData">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetCardSecurityData" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AccountDelinquencyInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AccountDelinquencyInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AccountDelinquencyActions">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AccountDelinquencyActions" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConvertBalanceToInstalment">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ConvertBalanceToInstalment" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CureAccountFromCollection">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CureAccountFromCollection" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RepaymentPlanInquiry">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/RepaymentPlanInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RepaymentPlanMaintenance">
+      <soap:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/RepaymentPlanMaintenance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PrimeIssuerServicesSoap12" type="tns:PrimeIssuerServicesSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="InstalmentInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StatementInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/StatementInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EntityInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/EntityInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostTransaction">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/PostTransaction" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MaintenanceUpdate">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/MaintenanceUpdate" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ServiceRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ServiceRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CISUpdateRequest">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CISUpdateRequest" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReplaceCard">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ReplaceCard" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConvertTrxnToInstalment">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ConvertTrxnToInstalment" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentPlanInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentPlanInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RenewCard">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/RenewCard" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreditInformationMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CreditInformationMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="JoinCardToRewards">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/JoinCardToRewards" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="JoinAccountToRewards">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/JoinAccountToRewards" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="JoinLevelToRewards">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/JoinLevelToRewards" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetRewardInformation">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetRewardInformation" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProductChange">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ProductChange" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DebitOrderUpdate">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/DebitOrderUpdate" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireTicket">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AcquireTicket" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ServiceMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ServiceMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ExtensionFieldMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ExtensionFieldMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StatementsList">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/StatementsList" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LoadBridgeXml">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/LoadBridgeXml" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindApplications">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/FindApplications" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetApplication">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetApplication" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RetrieveMemos">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/RetrieveMemos" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MemoMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/MemoMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddressRoleMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AddressRoleMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindEntity">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/FindEntity" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDirectDebitInformation">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetDirectDebitInformation" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCountryDetails">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetCountryDetails" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetGlobalParameters">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetGlobalParameters" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStatistics">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetStatistics" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProductInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ProductInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProfileInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ProfileInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SetTermsInformation">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/SetTermsInformation" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AdditionalAgreementsInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AdditionalAgreementsInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AdditionalAgreementsMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AdditionalAgreementsMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPostCodes">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetPostCodes" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PeopleLinksMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/PeopleLinksMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostponeTransaction">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/PostponeTransaction" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PostponedTransactionsInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/PostponedTransactionsInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAdditionalEntityInfo">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetAdditionalEntityInfo" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="BankAccountInformation">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/BankAccountInformation" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="BankAccountMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/BankAccountMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StartDisputeCase">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/StartDisputeCase" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentPlanMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentPlanMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="APIPing">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/APIPing" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GiftRedemption">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GiftRedemption" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentActions">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentActions" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DisputeCaseInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/DisputeCaseInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InvoiceInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InvoiceInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="HierarchyInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/HierarchyInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="HierarchyRiskDomainInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/HierarchyRiskDomainInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CardEmbossingMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CardEmbossingMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ExecutionTracking">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ExecutionTracking" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CustomerAlertsInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CustomerAlertsInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CustomerAlertsMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CustomerAlertsMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEntityHistory">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetEntityHistory" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceHistory">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetServiceHistory" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="InstalmentAmortizationInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/InstalmentAmortizationInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FeeOverrideInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/FeeOverrideInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FeeOverrideMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/FeeOverrideMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CorporateEntityInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CorporateEntityInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EntityList">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/EntityList" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AcquireOTP">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AcquireOTP" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="OTPActivities">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/OTPActivities" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetProbeDetails">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetProbeDetails" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCardSecurityData">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/GetCardSecurityData" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AccountDelinquencyInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AccountDelinquencyInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AccountDelinquencyActions">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/AccountDelinquencyActions" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConvertBalanceToInstalment">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/ConvertBalanceToInstalment" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CureAccountFromCollection">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/CureAccountFromCollection" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RepaymentPlanInquiry">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/RepaymentPlanInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RepaymentPlanMaintenance">
+      <soap12:operation soapAction="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices/RepaymentPlanMaintenance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PrimeIssuerServices">
+    <wsdl:port binding="tns:PrimeIssuerServicesSoap" name="PrimeIssuerServicesSoap">
+      <soap:address location="https://prime.tdl.ubl.com/PRIME4_MGRDBAPI/Issuer/PrimeIssuerServices.asmx"/>
+    </wsdl:port>
+    <wsdl:port binding="tns:PrimeIssuerServicesSoap12" name="PrimeIssuerServicesSoap12">
+      <soap12:address location="https://prime.tdl.ubl.com/PRIME4_MGRDBAPI/Issuer/PrimeIssuerServices.asmx"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

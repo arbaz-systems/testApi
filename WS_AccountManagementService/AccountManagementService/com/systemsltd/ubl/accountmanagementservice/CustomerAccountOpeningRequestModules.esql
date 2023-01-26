@@ -1,0 +1,344 @@
+BROKER SCHEMA com.systemsltd.ubl.accountmanagementservice
+
+PATH com.systemsltd.common, com.systemsltd.ubl.cbs, com.systemsltd.ubl.common, 
+com.systemsltd.ubl.common.config, com.systemsltd.ubl.common.database, com.systemsltd.ubl.caps;
+
+CREATE FILTER MODULE ValidateCustomerAccountOpeningRequest
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE inMsgRef REFERENCE TO Root.JSON.Data;
+		
+		CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+		
+		CALL validateServiceHeader(inMsgRef.serviceHeader, transactionRef);
+		CALL validateTransactionInfo(inMsgRef.transactionInfo, transactionRef, 'CUSTOMER_ACCOUNT', 'OPENING_REQUEST');
+		CALL validateCAPSRequestParams(inMsgRef, transactionRef);
+--		CALL ValidateCNIC(inMsgRef.[<], transactionRef);
+		
+		RETURN EXISTS(transactionRef.Error.Item[]);
+	END; 
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareCustomerAccountOpeningRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CREATE FIELD OutputRoot.XMLNSC.CAPS_REQUEST;
+		DECLARE capsReqRef REFERENCE TO OutputRoot.XMLNSC.CAPS_REQUEST;
+		
+		SET OutputRoot.Properties = InputProperties;
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CLIENT_SHORT = COALESCE(inputRef.customerAccountOpeningRequest.client.clientShort, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CLIENT_NAME = COALESCE(inputRef.customerAccountOpeningRequest.client.clientName, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.STREET = COALESCE(inputRef.customerAccountOpeningRequest.client.street, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.US_PERMANENT_RESIDENCE = COALESCE(inputRef.customerAccountOpeningRequest.client.usPermanentResidence, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.FATCA_COUNTRY_OF_BIRTH = COALESCE(inputRef.customerAccountOpeningRequest.client.fatcaCountryOfBirth, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.FATCA_ADDRESS = COALESCE(inputRef.customerAccountOpeningRequest.client.fatcaAddress, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.FATCA_MANDATE = COALESCE(inputRef.customerAccountOpeningRequest.client.fatcaMandate, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.COUNTRY_LOC = COALESCE(inputRef.customerAccountOpeningRequest.client.countryLoc, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.STATE_LOC = COALESCE(inputRef.customerAccountOpeningRequest.client.stateLoc, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.NON_RESIDENT_CTRL = COALESCE(inputRef.customerAccountOpeningRequest.client.nonResidentCtrl, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.MAJOR_CATEGORY = COALESCE(inputRef.customerAccountOpeningRequest.client.majorCategory, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.TITLE = COALESCE(inputRef.customerAccountOpeningRequest.client.title, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.GIVEN_NAME_1 = COALESCE(inputRef.customerAccountOpeningRequest.client.givenName1, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.SURNAME = COALESCE(inputRef.customerAccountOpeningRequest.client.surname, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.MAIDEN_FIRST_NAME = COALESCE(inputRef.customerAccountOpeningRequest.client.maidenFirstname, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.FATHER_HUSBAND_NAME = COALESCE(inputRef.customerAccountOpeningRequest.client.fatherHusbandName, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.SEX = COALESCE(inputRef.customerAccountOpeningRequest.client.sex, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.MARITAL_STATUS = COALESCE(inputRef.customerAccountOpeningRequest.client.maritalStatus, '');
+
+		IF fieldAndValueExists(inputRef.customerAccountOpeningRequest.client.birthDate, 'birthDate') THEN
+			SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.BIRTH_DATE = CAST(CAST(inputRef.customerAccountOpeningRequest.client.birthDate AS DATE FORMAT 'yyyy-MM-dd') AS CHARACTER FORMAT 'dd-MMM-yyyy');
+		ELSE
+			SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.BIRTH_DATE = '';
+		END IF;
+
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.COUNTRY_CITIZEN = COALESCE(inputRef.customerAccountOpeningRequest.client.countryCitizen, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.COUNTRY_CITIZEN1 = COALESCE(inputRef.customerAccountOpeningRequest.client.countryCitizen1, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.COUNTRY_CITIZEN2 = COALESCE(inputRef.customerAccountOpeningRequest.client.countryCitizen2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.OCCUPATION_CODE = COALESCE(inputRef.customerAccountOpeningRequest.client.occupationCode, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.EMPLOYER = COALESCE(inputRef.customerAccountOpeningRequest.client.employer, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.RESIDENT_STATUS = COALESCE(inputRef.customerAccountOpeningRequest.client.residentStatus, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.PLACE_OF_BIRTH = COALESCE(inputRef.customerAccountOpeningRequest.client.placeOfBirth, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.GLOBAL_ID_TYPE = COALESCE(inputRef.customerAccountOpeningRequest.client.globalIdType, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.GLOBAL_ID = COALESCE(inputRef.customerAccountOpeningRequest.client.globalId, '');
+
+		IF fieldAndValueExists(inputRef.customerAccountOpeningRequest.client.dtOfIssuance, 'dtOfIssuance') THEN
+			SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.DT_OF_ISSUANCE = CAST(CAST(inputRef.customerAccountOpeningRequest.client.dtOfIssuance AS DATE FORMAT 'yyyy-MM-dd') AS CHARACTER FORMAT 'dd-MMM-yyyy');
+		ELSE
+			SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.DT_OF_ISSUANCE = '';
+		END IF;
+
+		IF fieldAndValueExists(inputRef.customerAccountOpeningRequest.client.expiryDate, 'expiryDate') THEN
+			SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.EXPIRY_DATE = CAST(CAST(inputRef.customerAccountOpeningRequest.client.expiryDate AS DATE FORMAT 'yyyy-MM-dd') AS CHARACTER FORMAT 'dd-MMM-yyyy');
+		ELSE
+			SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.EXPIRY_DATE = '';
+		END IF;
+
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.COUNTRY_ISSUE = COALESCE(inputRef.customerAccountOpeningRequest.client.countryIssue, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_KIN.RELATIONSHIP = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoKin.relationship, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_KIN.NAME = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoKin.name, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_KIN.ADDRESS = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoKin.address, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_KIN.TELEPHONE = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoKin.telephone, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_KIN.CNIC = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoKin.cnic, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CLIENT_INDICATOR = COALESCE(inputRef.customerAccountOpeningRequest.client.clientIndicator, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.ZAKAT_EXEMPTED = COALESCE(inputRef.customerAccountOpeningRequest.client.zakatExempted, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.ZAKAT_EXEMPTION_CODE = COALESCE(inputRef.customerAccountOpeningRequest.client.zakatExemptionCode, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.ACCT_EXEC = COALESCE(inputRef.customerAccountOpeningRequest.client.acctExec, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.SECTOR_CODE = COALESCE(inputRef.customerAccountOpeningRequest.client.sectorCode, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.INDUSTRY = COALESCE(inputRef.customerAccountOpeningRequest.client.industry, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.BUSINESS = COALESCE(inputRef.customerAccountOpeningRequest.client.business, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.ADDRESS1 = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.address1, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.ADDRESS2 = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.address2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.ADDRESS3 = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.address3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.ADDRESS4 = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.address4, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.COUNTRY = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.country, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.POSTAL_CODE = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.postalCode, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.MOBILE_NO = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.mobileNo, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.EMAIL_ADDRESS = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.emailAddress, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.PHONE_NO = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.phoneNo, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.FAX_NO = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.faxNo, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.TEHSIL_DISTRICT = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.tehsilDistrict, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.CITY = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.city, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_PER.MNP = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoPer.mnp, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_CBR.ADDRESS1 = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoCbr.address1, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_CBR.ADDRESS2 = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoCbr.address2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_CBR.ADDRESS3 = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoCbr.address3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_CBR.ADDRESS4 = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoCbr.address4, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_CBR.COUNTRY = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoCbr.country, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_CBR.POSTAL_CODE = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoCbr.postalCode, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_CBR.TEHSIL_DISTRICT = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoCbr.tehsilDistrict, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CONTACT_INFO_CBR.CITY = COALESCE(inputRef.customerAccountOpeningRequest.client.contactInfoCbr.city, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CRS.CLIENTCRS.CTRY_TAX_RES = COALESCE(inputRef.customerAccountOpeningRequest.client.crs.clientCrs.ctryTaxres, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CRS.CLIENTCRS.TIN = COALESCE(inputRef.customerAccountOpeningRequest.client.crs.clientCrs.tin, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CRS.CLIENTCRS.VALID_DOC_SUPPORT = COALESCE(inputRef.customerAccountOpeningRequest.client.crs.clientCrs.validDocSupport, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CRS.CLIENTCRS.REAS_TIN_UNAVAIL = COALESCE(inputRef.customerAccountOpeningRequest.client.crs.clientCrs.reasTinUnavail, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CRS.CLIENTCRS.REASON_NARRATION = COALESCE(inputRef.customerAccountOpeningRequest.client.crs.clientCrs.reasonNarration, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CLIENT_CITY = COALESCE(inputRef.customerAccountOpeningRequest.client.clientCity, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.CLIENT_TYPE = COALESCE(inputRef.customerAccountOpeningRequest.client.clientType, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.EDUCATION = COALESCE(inputRef.customerAccountOpeningRequest.client.education, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.EDUCATION_OTHERS = COALESCE(inputRef.customerAccountOpeningRequest.client.educationOthers, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.DESIGNATION = COALESCE(inputRef.customerAccountOpeningRequest.client.designation, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.PLACE_OF_ISSUANCE_CNIC_CITY = COALESCE(inputRef.customerAccountOpeningRequest.client.placeOfIssuanceCnicCity, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.PEP.ROW.NAME = COALESCE(inputRef.customerAccountOpeningRequest.client.pep.row.name, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.PEP.ROW.RELATIONSHIP = COALESCE(inputRef.customerAccountOpeningRequest.client.pep.row.relationship, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.PEP.ROW.DESIGNATION = COALESCE(inputRef.customerAccountOpeningRequest.client.pep.row.designation, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.PEP.ROW.ORGANIZATION = COALESCE(inputRef.customerAccountOpeningRequest.client.pep.row.organization, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.CLIENT.PUBLIC_FIGURE = COALESCE(inputRef.customerAccountOpeningRequest.client.publicFigure, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.BRANCH = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.branch, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.ACCT_TYPE = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.acctType, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.CCY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.ccy, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.OWNERSHIP_TYPE = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.ownershipType, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.ACCT_DESC = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.acctDesc, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SECRETKEYWORD = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.secretKeyword, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SPECIAL_INSTRUCTIONS = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.specialInstructions, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.TYPE_OF_CUSTOMER = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.typeOfCustomer, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_FUNDS = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfFunds, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_FUNDS2 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfFunds2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_FUNDS3 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfFunds3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfIncome, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME2 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfIncome2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME3 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfIncome3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME_OTHER = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfIncomeOther, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME_REMITTANCE.ROW.COUNTRY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfIncomeRemittance.row.country, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_INCOME_REMITTANCE.RELATIONSHIP = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfIncomeRemittance.row.relationship, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfWealth, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH2 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfWealth2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH3 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfWealth3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH4 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfWealth4, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SOURCE_OF_WEALTH_OTHERS = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.sourceOfWealthothers, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.MONTHLY_INCOME = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.monthlyIncome, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_CREDIT_TRANSACTION = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.usualModeOfCreditTransaction, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_CREDIT_TRANSACTION2 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.usualModeOfCreditTransaction2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_CREDIT_TRANSACTION3 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.usualModeOfCreditTransaction3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.MODE_CREDIT_OTHER = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.modeCreditOther, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_DEBIT_TRANSACTION = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.usualModeOfDebitTransaction, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_DEBIT_TRANSACTION2 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.usualModeOfDebitTransaction2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.USUAL_MODE_OF_DEBIT_TRANSACTION3 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.usualModeOfDebitTransaction3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.MODE_DEBIT_OTHER = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.modeDebitOther, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.PURPOSE_OF_ACCOUNT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.purposeOfAccount, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.PURPOSE_OTHER = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.purposeOther, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.ULTIMATE_BENEF_OF_ACCOUNT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.ultimateBenefOfAccount, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.RELATIONSHIP_WITH_CUSTOMER = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.relationshipWithCustomer, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.GLOBAL_ID_OF_ULT_BENEFICIARY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.globalIdOfUltBeneficiary, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_AGG_CREDIT_AMT_PER_MONTH = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.expAggCreditAmtPerMonth, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_NO_CREDIT_TRAN_PER_MONTH = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.expNoCreditTranPerMonth, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_AGG_DEBIT_AMT_PER_MONTH = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.expAggDebitAmtPerMonth, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_NO_DEBIT_TRAN_PER_MONTH = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.expNoDebitTranPerMonth, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_IFTT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.expIftt, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.EXP_OFTT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.expOftt, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.PHYSICAL_VERYIFICATION_CONDUCTED = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.physicalVeryificationConducted, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SEGMENTED_CODE = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.segmentedCode, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.MukammalPKG = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.mukammalPkg, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.CLIENT_IND = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.clientInd, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.PROFIT_CENTRE = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.profitCentre, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.NO_OF_TRANSACTION = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.noOfTransaction, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.SINGLE_JOINT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.singleJoint, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.ACCT_TYPE_ID = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.acctTypeId, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.LIMIT_DAILY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.limitDaily, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.LIMIT_MONTHLY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.limitMonthly, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.INITIALDEPOSITAMOUNT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.initialDepositAmount, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_DETAILS.TPIN = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountDetails.tpin, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.STATEMENT_TYPE = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.statementType, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.STATEMENT_FREQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.statementFreq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.CONTACT_TYPE = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.contactType, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.MAILING_ADDRESS = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.mailingAddress, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.MAILING_ADDRESS1 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.mailingAddress1, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.MAILING_ADDRESS2 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.mailingAddress2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.MAILING_ADDRESS3 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.mailingAddress3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.HOLD_MAIL = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.holdMail, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.CITY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.city, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.REFERRAL_EMP_NO = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.referralEmpNo, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.REFERRAL_EMP_NAME = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.referralEmpName, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_STATEMENTDETAIL.POSTAL_CODE = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountStatementDetail.postalCode, '');
+		
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_VISACARD_INFO.CARD_TYPE_ID = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountVisaCardInfo.cardTypeId, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_VISACARD_INFO.NAME_ON_CARD = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountVisaCardInfo.nameOnCard, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_VISACARD_INFO.SUPPLEMENTARY_CARD_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountVisaCardInfo.supplementaryCardReq, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.NETBANKING_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.netBankingReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.DAILY_LIMIT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.dailyLimit, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.MONTHLY_LIMIT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.monthlyLimit, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.OMNIBRANCHLESSBANKING_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.omniBranchlessBankingReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.OMNI_INITIAL_AMOUNT = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.omniInitialAmount, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.CREDIT_CARD_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.creditCardReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.PERSONAL_LOAN = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.personalLoan, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.CAR_FINANCING_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.carFinancingReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.MORTGAGE_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.mortgageReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.BUSINESS_FINANCE_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.businessFinanceReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.UBL_TERM_LIFE_INSURANCE = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.ublTermLifeInsurance, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.INTRESTED_IN_TPIN = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.intrestedInTpin, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.OTHER = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.other, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOL_ACCOUNT_OTHERPRODUCTS.LOCKERS = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolAccountOtherProducts.lockers, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_CHEQUE_BK_REQUISITION.CHEQUE_BK_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsChequeBkRequisition.chequeBkReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_CHEQUE_BK_REQUISITION.NO_OF_LEAVES = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsChequeBkRequisition.noOfLeaves, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_CHEQUE_BK_REQUISITION.QTY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsChequeBkRequisition.qty, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_ADDITIONALINFO.COMPANY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountAdditionalInfo.company, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_ADDITIONALINFO.COMPANY_EMP = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountAdditionalInfo.companyEmp, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMBOLS_ACCOUNT_ADDITIONALINFO.OFFICER_ID = COALESCE(inputRef.customerAccountOpeningRequest.account.symbolsAccountAdditionalInfo.officerId, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.STAFF_LSF.STAFF = COALESCE(inputRef.customerAccountOpeningRequest.account.staffLsf.staff, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.STAFF_LSF.LSF = COALESCE(inputRef.customerAccountOpeningRequest.account.staffLsf.lsf, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.STAFF_LSF.EMP_NO = COALESCE(inputRef.customerAccountOpeningRequest.account.staffLsf.empNo, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.STAFF_LSF.AOF_FILLED_BY_CSR_NAME = COALESCE(inputRef.customerAccountOpeningRequest.account.staffLsf.aofFilledByCsrName, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.STAFF_LSF.CSR_EMPLOYEE_NAME = COALESCE(inputRef.customerAccountOpeningRequest.account.staffLsf.csrEmployeeName, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.STAFF_LSF.AOF_FILLED_BY_CSM_OR_BM_NAME = COALESCE(inputRef.customerAccountOpeningRequest.account.staffLsf.aofFilledByCsmOrBmName, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.STAFF_LSF.CSM_OR_BM_EMPLOYEE_NAME = COALESCE(inputRef.customerAccountOpeningRequest.account.staffLsf.csmOrBmEmployeeName, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.SERVICE_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symAcctSmsAlertDetails.serviceReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.SERVICE_TYPE = COALESCE(inputRef.customerAccountOpeningRequest.account.symAcctSmsAlertDetails.serviceType, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.ALL_ALERT_REQ = COALESCE(inputRef.customerAccountOpeningRequest.account.symAcctSmsAlertDetails.allAlertReq, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.DBT_TRN_MIN = COALESCE(inputRef.customerAccountOpeningRequest.account.symAcctSmsAlertDetails.dbtTrnMin, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.CRDT_TRN_MIN = COALESCE(inputRef.customerAccountOpeningRequest.account.symAcctSmsAlertDetails.crdtTrnMin, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYM_ACCT_SMS_ALERT_DETAILS.NO_LMT_DEFINED = COALESCE(inputRef.customerAccountOpeningRequest.account.symAcctSmsAlertDetails.noLmtDefined, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMB_CLIENT_POSTAL.ADDRESS = COALESCE(inputRef.customerAccountOpeningRequest.account.symbClientPostal.address, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMB_CLIENT_POSTAL.ADDRESS2 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbClientPostal.address2, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMB_CLIENT_POSTAL.ADDRESS3 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbClientPostal.address3, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMB_CLIENT_POSTAL.ADDRESS4 = COALESCE(inputRef.customerAccountOpeningRequest.account.symbClientPostal.address4, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMB_CLIENT_POSTAL.COUNTRY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbClientPostal.country, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.ACCOUNT.SYMB_CLIENT_POSTAL.CITY = COALESCE(inputRef.customerAccountOpeningRequest.account.symbClientPostal.city, '');
+		
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.AORID = COALESCE(inputRef.customerAccountOpeningRequest.aorId, '');
+		SET capsReqRef.PUSH_CLIENT_ACCOUNT_INFO.RMID = COALESCE(inputRef.customerAccountOpeningRequest.rmId, '');
+		
+		CALL populateCAPSRequestParams(capsReqRef, inputRef);
+		
+		RETURN TRUE;
+	END;	
+END MODULE;
+
+
+CREATE COMPUTE MODULE CallCustomerAccountOpening
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE serializedRequest, serializedResponse CHARACTER '';
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;		
+		DECLARE capsSchemaName CHARACTER getCAPSSchemaName();
+		
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE capsReqRef REFERENCE TO InputRoot.XMLNSC.CAPS_REQUEST;
+--		DECLARE spXMLRef REFERENCE TO capsReqRef.TRACKING_INQUERY;
+		
+		SET serializedRequest = serializeField(capsReqRef.PUSH_CLIENT_ACCOUNT_INFO, InputProperties);
+		
+		DECLARE responseCode, responseDesc CHARACTER '';
+
+		CALL CAPSWEBEX_TRANSINPUT_CALL(
+			capsReqRef.TrackingNo,
+		 	capsReqRef.STAN,
+		 	capsReqRef.CNIC,
+		 	capsReqRef.TRAN_CODE,
+		 	capsReqRef.CHANNEL,
+		 	serializedRequest,
+		 	serializedResponse,
+		 	responseCode,
+		 	responseDesc) EXTERNAL SCHEMA capsSchemaName;
+		
+		DECLARE capsResponse BLOB 
+		CAST(serializedResponse AS BLOB CCSID InputProperties.CodedCharSetId);
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC')
+		PARSE(capsResponse, InputProperties.Encoding, InputProperties.CodedCharSetId);
+		
+		DECLARE requestOut REFERENCE TO OutputRoot.XMLNSC.[<];
+		
+		IF capsTransactionSuccessfull(responseCode) THEN
+			SET  transactionRef.HostResponse.ErrorCode = getSuccessResponseCode();
+		ELSE
+			CALL transformSyetemErrorIntoXml(requestOut, responseCode, responseDesc);
+			PROPAGATE TO TERMINAL 1 DELETE NONE;
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareCustomerAccountOpeningResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE capsRespRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE requestOutRef REFERENCE TO InputRoot.XMLNSC.PUSH_CLIENT_ACCOUNT_INFO;
+		
+		CALL copyAndConvertServiceHeader(transactionRef.Request.serviceHeader, capsRespRef);
+		CALL copyAndConvertTransactionInfo(transactionRef.Request.transactionInfo, capsRespRef);
+		
+		CALL PopulateSuccessResponseHeader(capsRespRef, getTransactionStatusSuccess());
+		
+		IF transactionRef.HostResponse.ErrorCode <> getSuccessResponseCode() THEN
+			SET capsRespRef.responseHeader.responseCode = transactionRef.HostResponse.ErrorCode;
+			SET capsRespRef.responseHeader.responseDetails = transactionRef.HostResponse.Error;
+		ELSE
+			
+			SET capsRespRef.customerAccountOpeningResponse.accountNumber = requestOutRef.ACCOUNTNUMBER;
+			SET capsRespRef.customerAccountOpeningResponse.iban = requestOutRef.IBAN;
+			SET capsRespRef.customerAccountOpeningResponse.clientNumber = requestOutRef.CLIENTNUMBER;
+			
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;

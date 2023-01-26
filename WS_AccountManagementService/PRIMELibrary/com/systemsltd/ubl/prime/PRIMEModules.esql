@@ -1,0 +1,102 @@
+BROKER SCHEMA com.systemsltd.ubl.prime
+
+PATH com.systemsltd.common, com.systemsltd.common.logging;
+
+DECLARE ns NAMESPACE 'http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices';
+DECLARE errorCode EXTERNAL CHARACTER '';
+
+--CREATE PROCEDURE httpPostWithNTLM(IN requestURL CHARACTER, IN requestMessage CHARACTER,
+--									IN operation CHARACTER, IN ntDomain CHARACTER,
+--									IN userName CHARACTER, IN password CHARACTER) RETURNS CHARACTER
+--LANGUAGE JAVA
+--EXTERNAL NAME "com.systemsltd.common.http.util.HttpRequestOverNTLM.httpPostWithNTLM";
+
+
+CREATE FILTER MODULE PRIMESOAPError 
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET LocalEnvironment.SOAPError = errorCode;
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE OnlineServiceAcquireTicket 
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		CREATE FIELD OutputRoot.XMLNSC.ns:AcquireTicket.ns:xmlRequest;
+		DECLARE outRef REFERENCE TO OutputRoot.XMLNSC.ns:AcquireTicket.ns:xmlRequest;
+
+		SET OutputRoot.Properties = InputProperties;
+		SET OutputRoot.Properties.MessageSet = '{PRIMELibrary}';
+		SET outRef.ns:Header.ns:MessageID = '';
+
+--		SET outRef.ns:Ticket.ns:applicationName = 'IIB';
+--		SET outRef.ns:Ticket.ns:hostIP = '127.0.0.1';
+
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrimeIssuerAcquireTicket 
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		CREATE FIELD OutputRoot.XMLNSC.ns:AcquireTicket.ns:xmlRequest;
+		DECLARE outRef REFERENCE TO OutputRoot.XMLNSC.ns:AcquireTicket.ns:xmlRequest;
+		
+		DECLARE inputRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE attrListRef REFERENCE TO inputRef.transactionInfo.attributeList;
+		DECLARE itemRef REFERENCE TO attrListRef.Item;
+
+		SET OutputRoot.Properties = InputProperties;
+		
+		SET OutputRoot.Properties.MessageSet = '{PRIMELibrary}';
+		SET outRef.ns:Header.ns:MessageID = InputRoot.JSON.Data.transactionInfo.referenceId;
+		
+		SET outRef.ns:Ticket.ns:applicationName = COALESCE(findItemValueInList(itemRef, 'attributeKey', 'applicationName'), '');
+		SET outRef.ns:Ticket.ns:hostIP = COALESCE(findItemValueInList(itemRef, 'attributeKey', 'hostIP'), '');
+
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE CallAcquireTicket 
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = Environment.Variables.Transaction.Properties;
+		Declare serializedRequest, serializedResponse CHARACTER '';
+		
+		SET serializedRequest = serializeMessage(InputRoot);
+		
+		CALL logDebugMessage('SOAP envelop added in request : ' || COALESCE(serializedRequest, ''));
+		
+--		SET serializedResponse = httpPostWithNTLM('https://prime.tdl.ubl.com/PRIME4_MGRDBAPI/Issuer/PrimeIssuerServices.asmx',
+--								serializedRequest, '', 'TDL', 'itpm.creditcards', 'ubl@123');
+		
+		CALL logInfoMessage('Response received from Service : ' || COALESCE(serializedResponse, ''));
+		
+		DECLARE serviceResponse BLOB CAST( serializedResponse AS BLOB CCSID InputProperties.CodedCharSetId);
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') PARSE(serviceResponse, InputProperties.Encoding, 
+															  InputProperties.CodedCharSetId);
+		
+
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FILTER MODULE VerifyAndSaveAcquireTicket
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE responseRef REFERENCE TO Root.XMLNSC.ns:AcquireTicketResponse;
+		DECLARE isSuccess BOOLEAN (responseRef.ns:AcquireTicketResult.ns:Result.ns:Code = 0);
+
+		IF isSuccess THEN
+			SET Environment.Variables.Ticket = responseRef.ns:AcquireTicketResult.ns:Ticket;
+		END IF;
+
+		RETURN isSuccess;
+	END;
+END MODULE;

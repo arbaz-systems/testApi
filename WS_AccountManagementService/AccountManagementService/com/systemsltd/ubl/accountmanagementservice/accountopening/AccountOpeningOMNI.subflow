@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" 
+xmlns:xmi="http://www.omg.org/XMI" xmlns:com_systemsltd_common_logging_LogMessage.subflow="com/systemsltd/common/logging/LogMessage.subflow" xmlns:com_systemsltd_ubl_common_ResponseMapping.subflow="com/systemsltd/ubl/common/ResponseMapping.subflow" xmlns:ComIbmSOAPRequest.msgnode="ComIbmSOAPRequest.msgnode" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:com_systemsltd_common_FaultHandler.subflow="com/systemsltd/common/FaultHandler.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" 
+xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="com/systemsltd/ubl/accountmanagementservice/accountopening/AccountOpeningOMNI.subflow" 
+nsPrefix="com_systemsltd_ubl_accountmanagementservice_accountopening_AccountOpeningOMNI.subflow">
+<eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true">
+<eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.OMNI_URL" name="OMNI_URL" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.loggerName" name="loggerName" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<translation xmi:type="utility:TranslatableString" key="AccountOpeningOMNI" bundleName="com/systemsltd/ubl/accountmanagementservice/accountopening/AccountOpeningOMNI" pluginId="flowAPIgenerated"/>
+<colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj16/AccountOpeningOMNI.gif"/>
+<colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj30/AccountOpeningOMNI.gif"/>
+<composition>
+<nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="42,148">
+<translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="com/systemsltd/ubl/accountmanagementservice/accountopening/AccountOpeningOMNI" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="874,149">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="com/systemsltd/ubl/accountmanagementservice/accountopening/AccountOpeningOMNI" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_1" location="293,149" databaseLoggingRequired="true" decoration="OMNI - Account Opening Request Received" destinationSystem="OMNI" idPath="Environment.Variables.Transaction.OMNI" newRequest="true">
+<translation xmi:type="utility:ConstantString" string="Log OMNI Request"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_2" location="687,149" databaseLoggingRequired="true" decoration="OMNI - Account Opening Response Received" idPath="Environment.Variables.Transaction.OMNI" status="(InputRoot.SOAP.Body.*:ProcessSelfAccountOpeningResponse.*:ProcessSelfAccountOpeningResult = 0)">
+<translation xmi:type="utility:ConstantString" string="Log OMNI Response"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_ubl_common_ResponseMapping.subflow:FCMComposite_1" xmi:id="FCMComposite_1_3" location="530,149" hostSystem="OMNI" hostSystemResponseCodePath="Root.SOAP.Body.*:ProcessSelfAccountOpeningResponse.*:ProcessSelfAccountOpeningResult" hostSystemResponseDetailsPath="Root.SOAP.Body.*:ProcessSelfAccountOpeningResponse.*:responseMessage" mappedResponseCodePath="Environment.Variables.Transaction.HostResponse.ErrorCode" mappedResponseDescPath="Environment.Variables.Transaction.HostResponse.Error">
+<translation xmi:type="utility:ConstantString" string="OMNI Response Mapping"/>
+</nodes>
+<nodes xmi:type="ComIbmSOAPRequest.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="403,149" wsdlFileName="AccountManagement.wsdl" selectedPortType="ServiceSoap" selectedBinding="ServiceSoap" selectedOperation="ProcessSelfAccountOpening" selectedPort="ServiceSoap" targetNamespace="http://tempuri.org/" useHTTPTransport="true" webServiceURL="http://localhost:8088/mockServiceSoap" sslProtocol="TLS" messageSetProperty="{OMNILibrary}">
+<translation xmi:type="utility:ConstantString" string="Self Account Opening"/>
+</nodes>
+<nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="159,148" computeExpression="esql://routine/com.systemsltd.ubl.accountmanagementservice#PrepareAccountOpeningOMNIRequest.Main" computeMode="destinationAndMessage">
+<translation xmi:type="utility:ConstantString" string="Prepare OMNI Request"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_FaultHandler.subflow:FCMComposite_1" xmi:id="FCMComposite_1_7" location="473,246">
+<translation xmi:type="utility:ConstantString" string="FaultHandler"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output1" location="485,49">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Failure" bundleName="com/systemsltd/ubl/accountmanagementservice/accountopening/AccountOpeningOMNI" pluginId="flowAPIgenerated"/>
+</nodes>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.fault" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_5" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="OutTerminal.Output1" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.in"/>
+</composition>
+<propertyOrganizer>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.OMNI_URL">
+<propertyName xmi:type="utility:TranslatableString" key="Property.OMNI_URL" bundleName="com/systemsltd/ubl/accountmanagementservice/accountopening/AccountOpeningOMNI" pluginId="flowAPIgenerated"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.loggerName">
+<propertyName xmi:type="utility:TranslatableString" key="Property.loggerName" bundleName="com/systemsltd/common/logging/ProcessLogMessage" pluginId="CommonLibrary"/>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyOrganizer>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_7">
+<overriddenAttribute href="com/systemsltd/common/FaultHandler.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_1 FCMComposite_1_2">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_3">
+<overriddenAttribute href="com/systemsltd/ubl/common/ResponseMapping.subflow#Property.loggerName"/>
+</attributeLinks>
+<stickyBoard/>
+</eClassifiers>
+</ecore:EPackage>

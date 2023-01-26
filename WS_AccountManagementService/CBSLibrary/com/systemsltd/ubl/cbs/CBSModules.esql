@@ -1,0 +1,447 @@
+BROKER SCHEMA com.systemsltd.ubl.cbs
+
+PATH com.systemsltd.common, com.systemsltd.common.logging, com.systemsltd.ubl.common, com.systemsltd.ubl.common.config;
+
+DECLARE cbs NAMESPACE 'http://www.systemsltd.com/ubl/cbs';
+
+DECLARE TRANSACTION_NATURE SHARED CONSTANT CHARACTER 'BATCH';
+
+CREATE PROCEDURE PROCESS_INQ
+(
+	IN P_XML_IN CHARACTER,
+	OUT P_XML_OUT CHARACTER
+)
+LANGUAGE DATABASE
+EXTERNAL NAME "%.TM_CBS_SRV_WS.PROCESS_INQ";
+
+CREATE PROCEDURE SYM_RB_ACCT_CASA_MAINT_IN
+(
+	IN P_XML_IN CHARACTER,
+	OUT P_XML_OUT CHARACTER
+)
+LANGUAGE DATABASE
+EXTERNAL NAME "%.SYM_RB_ACCT_CASA_MAINT_IN";
+
+CREATE PROCEDURE SYM_RB_ACCT_CASA_OPEN_IN
+(
+	IN P_XML_IN CHARACTER,
+	OUT P_XML_OUT CHARACTER
+)
+LANGUAGE DATABASE
+EXTERNAL NAME "%.SYM_RB_ACCT_CASA_OPEN_IN";
+
+CREATE PROCEDURE PROCESS_TRAN
+(
+	IN P_XML_IN CHARACTER,
+	OUT P_XML_OUT CHARACTER
+)
+LANGUAGE DATABASE
+EXTERNAL NAME "%.TM_CBS_FINTRAN.PROCESS_TRAN";
+
+
+CREATE PROCEDURE PROCESS_BATCH
+(
+	IN P_XML_IN CHARACTER,
+	OUT P_XML_OUT CHARACTER
+)
+LANGUAGE DATABASE
+EXTERNAL NAME "%.TM_CBS_FINTRAN.PROCESS_BATCH";
+
+
+CREATE PROCEDURE getCBSMappedResponseCode(IN inResponseCode CHARACTER, OUT outResponseCode CHARACTER)
+BEGIN
+	SET outResponseCode = CASE inResponseCode 
+		WHEN '0' THEN '00' --Success
+		WHEN '1' THEN '21' --Invalid amount 
+		WHEN '2' THEN '22' -- From account is null
+		WHEN '3' THEN '23' -- To account is null
+		WHEN '4' THEN '24' -- To and From account are same
+		WHEN '5' THEN '25' -- Invalid Reference Id
+		WHEN '6' THEN '29' -- Time out	    
+	END;
+
+END;
+
+
+CREATE FUNCTION cbsTransactionSuccessfull (IN resultCode CHARACTER) RETURNS BOOLEAN
+BEGIN
+	RETURN (resultCode = '0');
+END;
+
+CREATE FUNCTION populateCBSMessageHeader(inputRef REFERENCE, cbsReqRef REFERENCE)
+BEGIN	
+	DECLARE attrListRef REFERENCE TO inputRef.transactionInfo.attributeList;
+	DECLARE mappedChannel CHARACTER getChannelMapping(inputRef.serviceHeader.channel, getCBSHost());
+	DECLARE userId CHARACTER getGroupConfigProperty(getCBSHost(), mappedChannel, 'USERNAME');
+
+	SET cbsReqRef.HEADER_IN.CORR_ID = inputRef.serviceHeader.channel || inputRef.transactionInfo.referenceId;
+	SET cbsReqRef.HEADER_IN.USER_NAME = userId;
+	SET cbsReqRef.HEADER_IN.CHANNEL = COALESCE(mappedChannel, inputRef.serviceHeader.channel);
+	
+	DECLARE itemRef REFERENCE TO attrListRef.Item;
+	
+	SET cbsReqRef.HEADER_IN.APPLICATION = findItemValueInList(itemRef, 'attributeKey', 'appCode');
+	SET cbsReqRef.HEADER_IN.WORKSTATION = findItemValueInList(itemRef, 'attributeKey', 'workstation');
+	SET cbsReqRef.HEADER_IN.SCREEN_NO = findItemValueInList(itemRef,'attributeKey', 'screenNo');
+	SET cbsReqRef.HEADER_IN.AUTH_KEY = '';
+END;
+
+
+CREATE FUNCTION populateTransactionNature(transactionNature CHARACTER) RETURNS CHARACTER 
+BEGIN
+	DECLARE natureType CHARACTER CASE UPPER(transactionNature) WHEN 'CREDIT' THEN 'C' WHEN 'DEBIT' THEN 'D' ELSE '' END;
+	RETURN natureType;
+END;
+
+
+CREATE PROCEDURE prepareCBSRequestMessage(IN inMsgRef REFERENCE, INOUT outMsgRef REFERENCE, IN msgType CHARACTER)
+BEGIN
+	CREATE FIELD outMsgRef.CBS_TRAN_IN;
+	DECLARE cbsReqRef REFERENCE TO outMsgRef.CBS_TRAN_IN;
+	
+	DECLARE attrListRef, fundTransfer REFERENCE TO inMsgRef.transactionInfo.attributeList;
+	DECLARE attrItemRef REFERENCE TO attrListRef.Item;
+
+	IF(inMsgRef.transactionInfo.transactionType = 'FUND_TRANSFER') THEN
+		MOVE fundTransfer TO inMsgRef.[<];
+	ELSE
+		MOVE fundTransfer TO inMsgRef.[<].fundTransfer;
+	END IF;
+
+	DECLARE accountAttrListRef REFERENCE TO fundTransfer.account.accountAttributeList;
+	DECLARE accountItemRef REFERENCE TO accountAttrListRef.Item;
+	
+	DECLARE toAccountAttrListRef REFERENCE TO fundTransfer.toAccount.accountAttributeList;
+	DECLARE toAccountItemRef REFERENCE TO toAccountAttrListRef.Item;
+
+	DECLARE mappedChannel CHARACTER getChannelMapping(inMsgRef.serviceHeader.channel, getCBSHost());
+	DECLARE userName CHARACTER getGroupConfigProperty(getCBSHost(), mappedChannel, 'USERNAME');
+--	CALL populateCBSMessageHeader(inMsgRef, cbsReqRef);
+	SET cbsReqRef.HEADER_IN.CORR_ID = inMsgRef.serviceHeader.channel || inMsgRef.transactionInfo.referenceId;
+	SET cbsReqRef.HEADER_IN.USER_NAME = COALESCE(userName,'');
+	SET cbsReqRef.HEADER_IN.CHANNEL = COALESCE(mappedChannel, inMsgRef.serviceHeader.channel);
+	
+	
+	SET cbsReqRef.HEADER_IN.APPLICATION = findItemValueInList(attrItemRef, 'attributeKey', 'appCode');
+	SET cbsReqRef.HEADER_IN.WORK_STATION = findItemValueInList(attrItemRef, 'attributeKey', 'workstation');
+		
+	SET cbsReqRef.HEADER_IN.AUTH_KEY = '';
+
+	SET cbsReqRef.MSG_TYPE = msgType;
+	SET cbsReqRef.STAN = inMsgRef.transactionInfo.stan;
+	
+	SET cbsReqRef.TRAN_DATETIME = characterTimestampToCharacter(inMsgRef.transactionInfo.transactionDate  || 'T' || inMsgRef.transactionInfo.transactionTime, 'yyyy-MM-dd''T''HH:mm:ss', 'dd.MM.yyyy HH:mm:ss');
+	
+	SET cbsReqRef.TRAN_AMT = CAST(fundTransfer.amount AS DECIMAL);
+	SET cbsReqRef.TRAN_DESC = COALESCE(fundTransfer.debitNarration.value , fundTransfer.creditNarration.value);
+	
+	SET cbsReqRef.CHEQUE_NO = findItemValueInList(attrItemRef, 'attributeKey', 'instrumentNo');
+	
+	DECLARE ccyRate CHARACTER findItemValueInList(attrItemRef, 'attributeKey', 'ccyRate');
+	IF NOT isEmptyString(ccyRate) THEN
+		SET cbsReqRef.CCY_RATE = CAST(CAST(ccyRate AS INTEGER) AS DECIMAL);
+	ELSE
+		CREATE FIELD cbsReqRef.CCY_RATE;
+	END IF;
+		
+	--  Populating Debit Account Fields
+	SET cbsReqRef.DR_INFO.DR_BANK_CODE = fundTransfer.account.branchInfo.bankInfo.bankIMD;
+	SET cbsReqRef.DR_INFO.DR_BANK_NAME = fundTransfer.account.branchInfo.bankInfo.name;
+	SET cbsReqRef.DR_INFO.DR_ACCT_TITLE = fundTransfer.account.accountTitle;
+
+	DECLARE iban, accountNumber CHARACTER '';
+	IF fieldAndValueExists(fundTransfer.account.accountId.iban, 'iban') THEN	
+		SET iban = fundTransfer.account.accountId.iban;
+	ELSE
+		SET accountNumber = fundTransfer.account.accountId.accountNumber;
+	END IF;
+
+	SET cbsReqRef.DR_INFO.DR_ACCT_IBAN = iban;
+	SET cbsReqRef.DR_INFO.DR_ACCT_TYPE = fundTransfer.account.accountType;
+	SET cbsReqRef.DR_INFO.DR_ACCT_NO =  accountNumber;
+	SET cbsReqRef.DR_INFO.DR_BRANCH = fundTransfer.account.branchInfo.branchCode;
+	SET cbsReqRef.DR_INFO.DR_CCY = fundTransfer.account.accountCurrency;
+	
+	SET cbsReqRef.DR_INFO.DR_CLIENT_NO  = findItemValueInList(accountItemRef, 'attributeKey', 'drClientNo');
+	SET cbsReqRef.DR_INFO.DR_CRC = findItemValueInList(accountItemRef, 'attributeKey', 'drCRC');
+	
+	DECLARE drValueDate CHARACTER findItemValueInList(accountItemRef, 'attributeKey', 'drValueDate');
+	CALL logDebugMessage('Found drValueDate in attributeList' || COALESCE(drValueDate, ''));
+	IF NOT isEmptyString(drValueDate) THEN	
+		SET cbsReqRef.DR_INFO.DR_VALUE_DATE = characterTimestampToCharacter(drValueDate, 'yyyy-MM-dd', 'dd.MM.yyyy');
+	ELSE
+		SET cbsReqRef.DR_INFO.DR_VALUE_DATE = drValueDate;
+	END IF;
+	
+	--  Populating Credit Account Fields
+	SET cbsReqRef.CR_INFO.CR_BANK_CODE = fundTransfer.toAccount.branchInfo.bankInfo.bankIMD;
+	SET cbsReqRef.CR_INFO.CR_BANK_NAME = fundTransfer.toAccount.branchInfo.bankInfo.name;
+	SET cbsReqRef.CR_INFO.CR_ACCT_TITLE = fundTransfer.toAccount.accountTitle;
+	SET cbsReqRef.CR_INFO.CR_ACCT_IBAN = fundTransfer.toAccount.accountId.iban;
+	SET cbsReqRef.CR_INFO.CR_ACCT_TYPE = fundTransfer.toAccount.accountType;
+	SET cbsReqRef.CR_INFO.CR_ACCT_NO = fundTransfer.toAccount.accountId.accountNumber;
+	SET cbsReqRef.CR_INFO.CR_BRANCH = fundTransfer.toAccount.branchInfo.branchCode;
+	SET cbsReqRef.CR_INFO.CR_CCY = fundTransfer.toAccount.accountCurrency;
+	
+	SET cbsReqRef.CR_INFO.CR_CLIENT_NO = findItemValueInList(toAccountItemRef, 'attributeKey', 'crClientNo');
+	SET cbsReqRef.CR_INFO.CR_CRC = findItemValueInList(toAccountItemRef, 'attributeKey', 'crCRC');
+	
+	DECLARE crValueDate CHARACTER findItemValueInList(toAccountItemRef, 'attributeKey', 'crValueDate');
+	CALL logDebugMessage('Found crValueDate in attributeList' || COALESCE(crValueDate, ''));
+	IF NOT isEmptyString(crValueDate) THEN
+		SET cbsReqRef.CR_INFO.CR_VALUE_DATE = characterTimestampToCharacter(crValueDate, 'yyyy-MM-dd', 'dd.MM.yyyy');
+	ELSE
+		SET cbsReqRef.CR_INFO.CR_VALUE_DATE = crValueDate;
+	END IF;
+		
+	-- Populating Sucharges
+	DECLARE surchargeListRef REFERENCE TO inMsgRef.transactionInfo.surcharges;
+	CALL populateCBSSurcharge(surchargeListRef, cbsReqRef, '');
+	
+	IF msgType = 'O' THEN 
+		SET cbsReqRef.REV_DETAIL.TRAN_SEQ_NO = '';
+		SET cbsReqRef.REV_DETAIL.TRAN_DATE = '';
+	 
+	ELSEIF msgType = 'R' THEN
+	-- 	SET cbsReqRef.REV_DETAIL.TRAN_SEQ_NO = inMsgRef.transactionInfo.referenceId;
+	-- 	SET cbsReqRef.REV_DETAIL.TRAN_DATE = characterTimestampToCharacter(inMsgRef.transactionInfo.transmissionDateTime, 'yyyy-MM-dd''T''HH:mm:ss', 'YYYYMMddHHmmss');
+	END IF;
+	
+	--1st child always contains META_ENTITY_TYPE value
+	DECLARE metaDataListRef REFERENCE TO inMsgRef.transactionInfo.metaDataList.Item[1];
+	SET cbsReqRef.META_DATA.META_ENTITY_TYPE = metaDataListRef.attributeValue;
+	MOVE metaDataListRef NEXTSIBLING REPEAT NAME;
+	
+	CREATE FIELD cbsReqRef.META_DATA.META_COLUMNS;
+	DECLARE cbsMetaDataListRef REFERENCE TO cbsReqRef.META_DATA.META_COLUMNS;
+	DECLARE cbsMetaColumnTRef REFERENCE TO cbsReqRef.META_DATA.META_COLUMNS.SA_META_COLUMN_T;
+	DECLARE cbsMetaDataRef REFERENCE TO cbsMetaDataListRef.SA_META_COLUMN_T.META_SIMPLE;
+	
+	WHILE LASTMOVE(metaDataListRef) DO
+		CREATE LASTCHILD OF cbsMetaDataListRef AS cbsMetaColumnTRef NAME 'SA_META_COLUMN_T';
+		CREATE LASTCHILD OF cbsMetaColumnTRef AS cbsMetaDataRef NAME 'META_SIMPLE';
+		
+		SET cbsMetaDataRef.META_ID = metaDataListRef.attributeKey;
+		SET cbsMetaDataRef.META_VALUE = metaDataListRef.attributeValue;
+		
+		MOVE metaDataListRef NEXTSIBLING REPEAT NAME;
+	END WHILE;
+	
+END;
+	
+
+CREATE PROCEDURE prepareCBSBatchRequestMessage(IN inMsgRef REFERENCE, INOUT outMsgRef REFERENCE, IN batchId CHARACTER, IN appCode CHARACTER, IN batchDate CHARACTER)
+BEGIN
+	CREATE FIELD outMsgRef.CBS_BATCH_TRAN_IN;
+	DECLARE cbsBatchReqRef REFERENCE TO outMsgRef.CBS_BATCH_TRAN_IN;
+	
+	-- CALL populateCBSMessageHeader(inMsgRef, cbsBatchReqRef);
+	
+	DECLARE attrListRef REFERENCE TO inMsgRef.transactionInfo.attributeList;
+	DECLARE itemRef REFERENCE TO attrListRef.Item;
+	
+	SET cbsBatchReqRef.HEADER_IN.CORR_ID = inMsgRef.serviceHeader.channel || inMsgRef.transactionInfo.referenceId;
+	
+	DECLARE mappedChannel CHARACTER getChannelMapping(inMsgRef.serviceHeader.channel, getCBSHost());
+	DECLARE userName CHARACTER getGroupConfigProperty(getCBSHost(), mappedChannel, 'USERNAME');
+	SET cbsBatchReqRef.HEADER_IN.USER_NAME = COALESCE(userName, '');
+	SET cbsBatchReqRef.HEADER_IN.CHANNEL = COALESCE(mappedChannel, inMsgRef.serviceHeader.channel);
+	
+	SET cbsBatchReqRef.HEADER_IN.APPLICATION = appCode;
+	
+	SET cbsBatchReqRef.HEADER_IN.WORK_STATION = findItemValueInList(itemRef, 'attributeKey', 'workstation');
+	
+	SET cbsBatchReqRef.HEADER_IN.AUTH_KEY = '';
+	
+	SET cbsBatchReqRef.BATCH_ID = COALESCE(batchId, '');
+
+	DECLARE tempDate CHARACTER characterTimestampToCharacter(inMsgRef.transactionInfo.transactionDate, 'yyyy-MM-dd', 'dd.MM.yyyy');
+	SET cbsBatchReqRef.BATCH_DATE = COALESCE(batchDate, tempDate);
+
+	IF appCode = getPopulateBatchAppCode() THEN
+		SET cbsBatchReqRef.CR_DR_IND = populateTransactionNature(inMsgRef.singleFundTransfer.transactionNature);
+	ELSE
+		SET cbsBatchReqRef.CR_DR_IND = '';
+	END IF;
+	
+	SET cbsBatchReqRef.STAN = inMsgRef.transactionInfo.stan;
+	SET cbsBatchReqRef.TRAN_DATETIME = characterTimestampToCharacter(inMsgRef.transactionInfo.transactionDate  || 'T' || inMsgRef.transactionInfo.transactionTime, 'yyyy-MM-dd''T''HH:mm:ss', 'dd.MM.yyyy HH:mm:ss');
+	SET cbsBatchReqRef.TRAN_AMT = CAST(inMsgRef.singleFundTransfer.amount AS DECIMAL);  
+	SET cbsBatchReqRef.TRAN_DESC = COALESCE(inMsgRef.singleFundTransfer.debitNarration.value , inMsgRef.singleFundTransfer.creditNarration.value);
+	
+	SET cbsBatchReqRef.CHEQUE_NO = findItemValueInList(itemRef, 'attributeKey', 'instrumentNo');
+	
+	SET cbsBatchReqRef.ACCT_TYPE = inMsgRef.singleFundTransfer.account.accountType;
+	SET cbsBatchReqRef.IBAN = inMsgRef.singleFundTransfer.account.accountId.iban;
+	SET cbsBatchReqRef.ACCT_NO =  inMsgRef.singleFundTransfer.account.accountId.accountNumber;
+	SET cbsBatchReqRef.BRANCH = inMsgRef.singleFundTransfer.account.branchInfo.branchCode;
+	SET cbsBatchReqRef.CCY = inMsgRef.singleFundTransfer.account.accountCurrency;
+	
+	DECLARE accountAttrListRef REFERENCE TO inMsgRef.singleFundTransfer.account.accountAttributeList;
+	DECLARE accountItemRef REFERENCE TO accountAttrListRef.Item;
+	
+	SET cbsBatchReqRef.CLIENT_NO = findItemValueInList(accountItemRef, 'attributeKey', 'clientNo');
+	SET cbsBatchReqRef.CRC = findItemValueInList(accountItemRef, 'attributeKey', 'CRC');
+	
+	DECLARE valueDate CHARACTER findItemValueInList(accountItemRef, 'attributeKey', 'valueDate');
+	CALL logDebugMessage('Found valueDate in attributeList' || COALESCE(valueDate, ''));
+	IF NOT isEmptyString(valueDate) THEN
+--		SET cbsBatchReqRef.VALUE_DATE = characterTimestampToCharacter(accountItemRef.attributeValue, 'yyyy-MM-dd', 'dd.MM.yyyy');
+		SET cbsBatchReqRef.VALUE_DATE = characterTimestampToCharacter(valueDate, 'yyyy-MM-dd', 'dd.MM.yyyy');
+	ELSE
+		SET cbsBatchReqRef.VALUE_DATE = valueDate;	
+	END IF;
+	
+	DECLARE ccyRate CHARACTER findItemValueInList(itemRef, 'attributeKey', 'ccyRate');
+	CALL logDebugMessage('Found ccyRate in attributeList' || COALESCE(ccyRate, ''));
+	IF NOT isEmptyString(ccyRate) THEN
+		SET cbsBatchReqRef.CCY_RATE = CAST(CAST(ccyRate AS INTEGER) AS DECIMAL);
+	ELSE
+		CREATE FIELD cbsBatchReqRef.CCY_RATE;
+	END IF;
+	
+	DECLARE surchargeListRef REFERENCE TO inMsgRef.transactionInfo.surcharges;
+	CALL populateCBSSurcharge(surchargeListRef,cbsBatchReqRef, TRANSACTION_NATURE);
+	
+	DECLARE metaDataListRef REFERENCE TO inMsgRef.transactionInfo.metaDataList.Item[1];
+	SET cbsBatchReqRef.META_DATA.META_ENTITY_TYPE = '';--To be confirmed	
+	
+	CREATE FIELD cbsBatchReqRef.META_DATA.META_COLUMNS;
+	DECLARE cbsMetaDataListRef REFERENCE TO cbsBatchReqRef.META_DATA.META_COLUMNS;
+	DECLARE cbsMetaColumnTRef REFERENCE TO cbsBatchReqRef.META_DATA.META_COLUMNS.SA_META_COLUMN_T;
+	DECLARE cbsMetaDataRef REFERENCE TO cbsMetaDataListRef.SA_META_COLUMN_T.META_SIMPLE;
+	
+	WHILE LASTMOVE(metaDataListRef) DO
+		CREATE LASTCHILD OF cbsMetaDataListRef AS cbsMetaColumnTRef NAME 'SA_META_COLUMN_T';
+		CREATE LASTCHILD OF cbsMetaColumnTRef AS cbsMetaDataRef NAME 'META_SIMPLE';
+		
+		SET cbsMetaDataRef.META_ID = metaDataListRef.attributeKey;
+		SET cbsMetaDataRef.META_VALUE = metaDataListRef.attributeValue;
+		
+		MOVE metaDataListRef NEXTSIBLING REPEAT NAME;
+	END WHILE;
+	
+END;
+
+
+CREATE PROCEDURE populateCBSSurcharge(IN surchargeListRef REFERENCE, INOUT inMsgRef REFERENCE, IN transactionNature CHARACTER)
+BEGIN
+	DECLARE surchargeListItemRef REFERENCE TO surchargeListRef.Item;
+	DECLARE surchargeAttrListRef REFERENCE TO surchargeListItemRef.surchargeAttributeList;
+	DECLARE surchargeAttrItemRef REFERENCE TO surchargeAttrListRef.Item;
+	
+	WHILE LASTMOVE(surchargeListItemRef) DO 
+		IF UPPER(surchargeListItemRef.type) = 'FEE' THEN
+			SET inMsgRef.SC_DETAIL.FEE_AMT = surchargeListItemRef.amount;
+			
+		ELSEIF UPPER(surchargeListItemRef.type) = 'TAX' THEN
+			SET inMsgRef.SC_DETAIL.TAX_AMT = surchargeListItemRef.amount;
+		END IF;	
+		 
+		MOVE surchargeListItemRef NEXTSIBLING REPEAT TYPE NAME;
+	END WHILE;
+	
+	IF transactionNature <> TRANSACTION_NATURE THEN  
+		SET inMsgRef.SC_DETAIL.ORIG_TRAN_REF = findItemValueInList(surchargeAttrItemRef, 'attributeKey', 'originalTransRef');
+	END IF;
+END;
+	
+	
+CREATE COMPUTE MODULE VerifyAndPrepareCBSBatchFundTransferResponse
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+
+		SET OutputRoot.Properties = InputProperties;
+        -- CALL logInfoMessage('CBS Batch Fund Transfer Request Prepared: ' || serializeMessage(InputRoot));	
+		DECLARE inMsgRef REFERENCE TO InputRoot;
+		DECLARE serializedRequest, serializedResponse, responseCode, responseDescription CHARACTER;
+		DECLARE cbsSchemaName CHARACTER getCBSSchemaName();
+		  
+		CALL logDebugMessage('Calling CBS Batch Fund Transfer Stored Procedure');		
+		SET serializedRequest = serializeMessage(inMsgRef);
+		CALL PROCESS_BATCH(serializedRequest, serializedResponse) EXTERNAL SCHEMA cbsSchemaName;
+		
+		DECLARE xmlBlobResponse BLOB CAST(serializedResponse AS BLOB CCSID OutputRoot.Properties.CodedCharSetId);    
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') PARSE(xmlBlobResponse, OutputRoot.Properties.Encoding ,  OutputRoot.Properties.CodedCharSetId, 'BLOB', 'XMLNSC');
+		
+		-- CALL logInfoMessage('CBS Batch Fund Transfer Response Received: ' || serializeMessage(OutputRoot));
+		DECLARE outMsgRef REFERENCE TO OutputRoot.XMLNSC;
+		
+		CALL getCBSMappedResponseCode(outMsgRef.CBS_BATCH_TRAN_OUT.HEADER_IN.RESULT_CODE, responseCode);
+	
+		SET Environment.Variables.Transaction.BatchResponse = outMsgRef;
+		SET Environment.Variables.Transaction.BatchResponse.CBS_BATCH_TRAN_OUT.HEADER_IN.RESULT_CODE = responseCode;
+		
+		SET OutputLocalEnvironment.HostResponse.transactionRefNo = Environment.Variables.Transaction.BatchResponse.CBS_BATCH_TRAN_OUT.BATCH_DTL.TRAN_DTL.CBS_REF_NO;
+		SET Environment.Variables.Transaction.systemCode = outMsgRef.CBS_BATCH_TRAN_OUT.RESP_CODE;
+		SET Environment.Variables.Transaction.systemError = outMsgRef.CBS_BATCH_TRAN_OUT.RESP_MSG;
+		
+		RETURN TRUE;
+	END;	
+END MODULE;
+
+
+CREATE FILTER MODULE ValidateCBSFundTransferRequest 
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inMsgRef REFERENCE TO Body.*[1];
+		DECLARE attrListRef REFERENCE TO inMsgRef.transactionInfo.attributeList;
+		DECLARE attrItemRef REFERENCE TO attrListRef.Item;
+		
+		DECLARE appCode CHARACTER findItemValueInList(attrItemRef, 'attributeKey', 'appCode');
+		IF isEmptyString(appCode) THEN
+			THROW USER EXCEPTION MESSAGE 2952 VALUES ('App Code Missing or Invalid');
+		END IF;
+		
+		DECLARE ccyRate CHARACTER findItemValueInList(attrItemRef, 'attributeKey', 'ccyRate');
+		IF NOT isEmptyString(ccyRate) THEN
+			IF NOT checkStringValue(ccyRate) THEN
+				THROW USER EXCEPTION MESSAGE 2953 VALUES ('ccyRate must be Number');
+			END IF;
+		
+		END IF;	
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FUNCTION populateMetaData(IN inMetaData REFERENCE, IN outMetaData REFERENCE)
+BEGIN
+	DECLARE inputRequestRef REFERENCE TO inMetaData.metaColumns.metaSimple.Item;
+	CREATE FIELD outMetaData.META_DATA;
+	DECLARE requestIn REFERENCE TO outMetaData.META_DATA;
+	
+	SET requestIn.META_ENTITY_TYPE = COALESCE(inMetaData.metaEntityType, '');
+	CREATE FIELD requestIn.META_COLUMNS AS requestIn;
+	DECLARE metaDataRef, complexMetaSimpleRef, nestedmetaDataRef REFERENCE TO requestIn.META_DATA;
+
+	--Meta_Simple
+	WHILE LASTMOVE(inputRequestRef) DO
+		CREATE LASTCHILD OF requestIn AS metaDataRef NAME 'SA_META_COLUMN_T';
+		SET metaDataRef.META_SIMPLE.META_ID = COALESCE(inputRequestRef.metaId, '');
+		SET metaDataRef.META_SIMPLE.META_VALUE = COALESCE(inputRequestRef.metaValue, '');
+
+		MOVE inputRequestRef NEXTSIBLING REPEAT NAME;
+	END WHILE;
+
+	MOVE inputRequestRef TO inMetaData.metaColumns.metaComplex.Item;
+
+	--Meta_Complex
+	WHILE LASTMOVE(inputRequestRef) DO
+		CREATE LASTCHILD OF requestIn AS metaDataRef NAME 'SA_META_COLUMN_T';
+		SET metaDataRef.META_COMPLEX.META_ID = COALESCE(inputRequestRef.metaId, '');
+
+		MOVE complexMetaSimpleRef TO inputRequestRef.metaSimple.Item;
+		CREATE FIELD metaDataRef.META_COMPLEX.META_RECORDS.SA_META_SIMPLE_COLL AS metaDataRef;
+
+		WHILE LASTMOVE(complexMetaSimpleRef) DO
+			CREATE LASTCHILD OF metaDataRef AS nestedmetaDataRef NAME 'SA_META_SIMPLE_T';
+			SET nestedmetaDataRef.META_ID = COALESCE(complexMetaSimpleRef.metaId, '');
+			SET nestedmetaDataRef.META_VALUE = COALESCE(complexMetaSimpleRef.metaValue, '');
+
+			MOVE complexMetaSimpleRef NEXTSIBLING REPEAT NAME;
+		END WHILE;
+		MOVE inputRequestRef NEXTSIBLING REPEAT NAME;
+	END WHILE;
+END;

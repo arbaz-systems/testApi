@@ -1,0 +1,154 @@
+BROKER SCHEMA com.systemsltd.ubl.common.acl
+
+PATH com.systemsltd.common.database, com.systemsltd.ubl.common, com.systemsltd.common,
+	 com.systemsltd.common.logging, com.systemsltd.ubl.common.config, com.systemsltd.common.util,
+	 com.systemsltd.common.cache;
+
+DECLARE ACCESS_GRANTED CONSTANT CHARACTER 'Y';
+DECLARE ACCESS_DENIED CONSTANT CHARACTER 'N';
+
+DECLARE VERIFY_CHANNEL_ACCESS CONSTANT CHARACTER
+	'SELECT CAC.IS_ACCESS_GRANTED, CAC.TRANSACTION_TYPE, 
+	CI.CHANNEL_TYPE, CAC.ACCT_VERF_REQD, CAC.TRANSACTION_SUBTYPE, CI.PASSWORD, CI.AUTHENTICATION_KEY, 
+	CI.PASSWORD_RENEWED, CI.STATUS, CI.ID, CI.FAILED_ATTEMPTS
+	FROM CHANNEL_INFO CI 
+	LEFT JOIN CHANNEL_ACCESS_CONTROL CAC ON CI.ID = CAC.CHANNEL_INFO_ID AND CAC.TRANSACTION_TYPE = ? 
+	AND (CAC.TRANSACTION_SUBTYPE IS NULL OR CAC.TRANSACTION_SUBTYPE = ?)
+	AND CAC.ACTIVE_IND = 1
+	WHERE CI.CHANNEL_NAME = ?';
+
+
+CREATE PROCEDURE verifyAccessControl(IN serviceHeader REFERENCE, IN transactionInfo REFERENCE, IN properties REFERENCE,IN envRef REFERENCE, OUT aclResult CHARACTER) RETURNS BOOLEAN
+BEGIN
+	DECLARE accessAllowed BOOLEAN TRUE;
+	DECLARE result ROW;
+	SET result.data[] =
+		PASSTHRU(VERIFY_CHANNEL_ACCESS
+		VALUES(transactionInfo.transactionType, transactionInfo.transactionSubType, serviceHeader.channel));
+	
+	DECLARE dataRef REFERENCE TO result.data;
+	SET aclResult = getTransactionStatusSuccess();
+	
+	IF LASTMOVE(dataRef) THEN
+		
+		CALL logDebugMessage('ACL Configurations found for channel');
+		
+		IF dataRef.STATUS = 'LOCKED' THEN
+			CALL logDebugMessage('Account status: ' || dataRef.STATUS);
+			
+			SET aclResult = 'Account has been locked. Please contact your service administrator.';
+			SET accessAllowed = FALSE;	
+		
+		ELSE
+			DECLARE key CHARACTER dataRef.AUTHENTICATION_KEY; -- key from DB
+			DECLARE asymmetricAlgo CHARACTER getConfigProperty('ASYMMETRIC_ALGORITHM');
+			IF NOT isEmptyString(asymmetricAlgo) THEN
+				CALL logDebugMessage('Asymmetric Algo Found');
+			ELSE
+				CALL logDebugMessage('Asymmetric Algo Not Found');
+			END IF;
+				
+			DECLARE symmetricAlgo CHARACTER getConfigProperty('SYMMETRIC_ALGORITHM');
+			IF NOT isEmptyString(symmetricAlgo) THEN
+				CALL logDebugMessage('Symmetric Algo Found');
+			ELSE
+				CALL logDebugMessage('Asymmetric Algo Not Found');	
+			END IF;
+			
+			
+			IF isValidBase64(serviceHeader.authInfo.authKey) AND isValidBase64(serviceHeader.authInfo.password) THEN
+				--Get secret key from cache (loaded from secret keystore) then decrypt authKey (private key) from db.
+				DECLARE secretKey BLOB getConfigPropertyBLOB('SECRET_KEY');
+				IF NOT isEmptyString(CAST(COALESCE(secretKey, '') AS CHARACTER)) THEN
+					CALL logDebugMessage('Secret Key Found');
+				ELSE
+					CALL logDebugMessage('Secret Key Not Found');	
+				END IF;	
+				
+				DECLARE privateKey BLOB decrypt(BASE64DECODE(key), symmetricAlgo, secretKey, null);
+				IF NOT isEmptyString(CAST(COALESCE(privateKey, '') AS CHARACTER)) THEN
+					CALL logDebugMessage('Private Key Found');
+				ELSE
+					CALL logDebugMessage('Private Key Not Found');		
+				END IF;
+				
+				DECLARE decodedKey BLOB decryptAsymmetric(BASE64DECODE(serviceHeader.authInfo.authKey), asymmetricAlgo, privateKey);
+				DECLARE decodedPass BLOB BASE64DECODE(serviceHeader.authInfo.password);
+				DECLARE decryptedPassword BLOB decrypt(decodedPass, symmetricAlgo, decodedKey, null);
+				
+				DECLARE password CHARACTER CAST(decryptedPassword AS CHARACTER CCSID properties.CodedCharSetId);
+				
+				DECLARE hashFromDB BLOB BASE64DECODE(dataRef.PASSWORD);
+				DECLARE rawPass CHARACTER SUBSTRING(password BEFORE ':');
+				DECLARE passRefKey CHARACTER SUBSTRING(password AFTER ':');
+				DECLARE hashPass BLOB;
+				DECLARE maxFailedAttempts INTEGER getConfigProperty('MAX_FAILED_ATTEMPTS');
+				
+				IF passRefKey = transactionInfo.referenceId THEN
+					DECLARE hashingTechnique CHARACTER getConfigProperty('HASHING_TECH_KEY');
+					SET hashPass = generateHash(CAST(rawPass AS BLOB CCSID properties.CodedCharSetId), hashingTechnique);
+				END IF;
+				
+				IF hashPass IS NULL OR hashPass <> hashFromDB OR passRefKey <> transactionInfo.referenceId THEN
+					CALL logDebugMessage('Invalid Password or reference id');
+					SET aclResult = 'Authentication failed';
+					SET accessAllowed = FALSE;
+					
+					IF (maxFailedAttempts <= COALESCE(dataRef.FAILED_ATTEMPTS, 0) + 1) THEN
+						UPDATE Database.{'CHANNEL_INFO'} AS CI SET STATUS = 'LOCKED', 
+							FAILED_ATTEMPTS = COALESCE(CAST(dataRef.FAILED_ATTEMPTS AS INTEGER), 0) + 1,
+							MODIFIED_DATETIME = CURRENT_TIMESTAMP 
+						WHERE CI.ID = CAST (dataRef.ID AS INTEGER);
+					
+					ELSE 
+						UPDATE Database.{'CHANNEL_INFO'} AS CI SET
+							FAILED_ATTEMPTS = COALESCE(CAST(dataRef.FAILED_ATTEMPTS AS INTEGER), 0) + 1,
+							MODIFIED_DATETIME = CURRENT_TIMESTAMP 
+						WHERE CI.ID = CAST(dataRef.ID AS INTEGER);
+						
+					END IF;
+					
+				ELSEIF dataRef.PASSWORD_RENEWED = 0 AND COALESCE(transactionInfo.transactionSubType, '') <> 'CHANGE_PASSWORD' THEN --  Password not activated yet
+					CALL logDebugMessage('Access not allowed');
+					SET aclResult = 'Authorization failed';
+					SET accessAllowed = FALSE;
+				END IF;
+				
+				IF accessAllowed THEN
+					X : WHILE LASTMOVE(dataRef) DO
+						IF (dataRef.IS_ACCESS_GRANTED IS NULL) AND (dataRef.TRANSACTION_TYPE IS NULL) AND UPPER(COALESCE(dataRef.IS_ACCESS_GRANTED, '')) <> ACCESS_GRANTED THEN
+							SET aclResult = 'Authorization failed';
+							SET accessAllowed = FALSE;
+							
+						ELSEIF (NOT isEmptyString(dataRef.TRANSACTION_SUBTYPE)) AND UPPER(dataRef.IS_ACCESS_GRANTED) = ACCESS_GRANTED THEN
+							SET aclResult = 'Authorization allowed';
+							SET accessAllowed = TRUE;
+							
+							UPDATE Database.{'CHANNEL_INFO'} AS CI SET
+							FAILED_ATTEMPTS = 0 WHERE CI.ID = dataRef.ID;
+							LEAVE X;
+						END IF;
+						
+						MOVE dataRef NEXTSIBLING;
+					END WHILE;
+				END IF;
+			
+			ELSE
+				CALL logDebugMessage('Invalid Base64 Key/Password');
+				SET aclResult = 'Authentication failed';
+				SET accessAllowed = FALSE;
+			END IF;
+		END IF;
+		
+		SET envRef.channelId = dataRef.ID;
+		SET envRef.channelType = dataRef.CHANNEL_TYPE;
+		SET envRef.acctVerfReqd = dataRef.ACCT_VERF_REQD;
+	ELSE
+		CALL logDebugMessage('Channel configuration not found for ACL');
+		
+		SET aclResult = 'Configuration not found';
+		SET accessAllowed = FALSE;
+	END IF;
+					 			
+	RETURN accessAllowed;
+END;

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://tempuri.org/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:tns="http://tempuri.org/">
+  <wsdl:documentation>
+    <wsdl:appinfo source="WMQI_APPINFO">
+      <MRWSDLAppInfo imported="true">
+        <generatedXSD location="CNICToFundTransfer_InlineSchema1.xsd"/>
+        <binding hasEncoding="false" imported="true" name="RemittanceServicesSoap" originalBindingStyle="document"/>
+        <binding hasEncoding="false" imported="true" name="RemittanceServicesSoap12" originalBindingStyle="document"/>
+      </MRWSDLAppInfo>
+    </wsdl:appinfo>
+  </wsdl:documentation>
+  <wsdl:types>
+    
+          <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions">
+<xsd:include schemaLocation="CNICToFundTransfer_InlineSchema1.xsd"/>
+    </xsd:schema>
+    </wsdl:types>
+  <wsdl:message name="BeneficiaryInquirySoapIn">
+    <wsdl:part element="tns:BeneficiaryInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="BeneficiaryInquirySoapOut">
+    <wsdl:part element="tns:BeneficiaryInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RemittanceInquirySoapIn">
+    <wsdl:part element="tns:RemittanceInquiry" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RemittanceInquirySoapOut">
+    <wsdl:part element="tns:RemittanceInquiryResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="SendRemittanceSoapIn">
+    <wsdl:part element="tns:SendRemittance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="SendRemittanceSoapOut">
+    <wsdl:part element="tns:SendRemittanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReverseRemittanceSoapIn">
+    <wsdl:part element="tns:ReverseRemittance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReverseRemittanceSoapOut">
+    <wsdl:part element="tns:ReverseRemittanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="SearchRemittanceSoapIn">
+    <wsdl:part element="tns:SearchRemittance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="SearchRemittanceSoapOut">
+    <wsdl:part element="tns:SearchRemittanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReceiveRemittanceSoapIn">
+    <wsdl:part element="tns:ReceiveRemittance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReceiveRemittanceSoapOut">
+    <wsdl:part element="tns:ReceiveRemittanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReverseReceiveRemittanceSoapIn">
+    <wsdl:part element="tns:ReverseReceiveRemittance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReverseReceiveRemittanceSoapOut">
+    <wsdl:part element="tns:ReverseReceiveRemittanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RevokeRemittanceSoapIn">
+    <wsdl:part element="tns:RevokeRemittance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="RevokeRemittanceSoapOut">
+    <wsdl:part element="tns:RevokeRemittanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReverseRevokeRemittanceSoapIn">
+    <wsdl:part element="tns:ReverseRevokeRemittance" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="ReverseRevokeRemittanceSoapOut">
+    <wsdl:part element="tns:ReverseRevokeRemittanceResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="RemittanceServicesSoap">
+    <wsdl:operation name="BeneficiaryInquiry">
+      <wsdl:input message="tns:BeneficiaryInquirySoapIn"/>
+      <wsdl:output message="tns:BeneficiaryInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="RemittanceInquiry">
+      <wsdl:input message="tns:RemittanceInquirySoapIn"/>
+      <wsdl:output message="tns:RemittanceInquirySoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="SendRemittance">
+      <wsdl:input message="tns:SendRemittanceSoapIn"/>
+      <wsdl:output message="tns:SendRemittanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseRemittance">
+      <wsdl:input message="tns:ReverseRemittanceSoapIn"/>
+      <wsdl:output message="tns:ReverseRemittanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="SearchRemittance">
+      <wsdl:input message="tns:SearchRemittanceSoapIn"/>
+      <wsdl:output message="tns:SearchRemittanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ReceiveRemittance">
+      <wsdl:input message="tns:ReceiveRemittanceSoapIn"/>
+      <wsdl:output message="tns:ReceiveRemittanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseReceiveRemittance">
+      <wsdl:input message="tns:ReverseReceiveRemittanceSoapIn"/>
+      <wsdl:output message="tns:ReverseReceiveRemittanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="RevokeRemittance">
+      <wsdl:input message="tns:RevokeRemittanceSoapIn"/>
+      <wsdl:output message="tns:RevokeRemittanceSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseRevokeRemittance">
+      <wsdl:input message="tns:ReverseRevokeRemittanceSoapIn"/>
+      <wsdl:output message="tns:ReverseRevokeRemittanceSoapOut"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="RemittanceServicesSoap" type="tns:RemittanceServicesSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="BeneficiaryInquiry">
+      <soap:operation soapAction="http://tempuri.org/BeneficiaryInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemittanceInquiry">
+      <soap:operation soapAction="http://tempuri.org/RemittanceInquiry" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendRemittance">
+      <soap:operation soapAction="http://tempuri.org/SendRemittance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseRemittance">
+      <soap:operation soapAction="http://tempuri.org/ReverseRemittance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SearchRemittance">
+      <soap:operation soapAction="http://tempuri.org/SearchRemittance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReceiveRemittance">
+      <soap:operation soapAction="http://tempuri.org/ReceiveRemittance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseReceiveRemittance">
+      <soap:operation soapAction="http://tempuri.org/ReverseReceiveRemittance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RevokeRemittance">
+      <soap:operation soapAction="http://tempuri.org/RevokeRemittance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseRevokeRemittance">
+      <soap:operation soapAction="http://tempuri.org/ReverseRevokeRemittance" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="RemittanceServicesSoap12" type="tns:RemittanceServicesSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="BeneficiaryInquiry">
+      <soap12:operation soapAction="http://tempuri.org/BeneficiaryInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemittanceInquiry">
+      <soap12:operation soapAction="http://tempuri.org/RemittanceInquiry" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendRemittance">
+      <soap12:operation soapAction="http://tempuri.org/SendRemittance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseRemittance">
+      <soap12:operation soapAction="http://tempuri.org/ReverseRemittance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SearchRemittance">
+      <soap12:operation soapAction="http://tempuri.org/SearchRemittance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReceiveRemittance">
+      <soap12:operation soapAction="http://tempuri.org/ReceiveRemittance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseReceiveRemittance">
+      <soap12:operation soapAction="http://tempuri.org/ReverseReceiveRemittance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RevokeRemittance">
+      <soap12:operation soapAction="http://tempuri.org/RevokeRemittance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ReverseRevokeRemittance">
+      <soap12:operation soapAction="http://tempuri.org/ReverseRevokeRemittance" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="RemittanceServices">
+    <wsdl:port binding="tns:RemittanceServicesSoap" name="RemittanceServicesSoap">
+      <soap:address location="http://localhost/QATSOA/RemittanceServices.asmx"/>
+    </wsdl:port>
+    <wsdl:port binding="tns:RemittanceServicesSoap12" name="RemittanceServicesSoap12">
+      <soap12:address location="http://localhost/QATSOA/RemittanceServices.asmx"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" 
+xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmSOAPExtract.msgnode="ComIbmSOAPExtract.msgnode" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:com_systemsltd_common_logging_LogMessage.subflow="com/systemsltd/common/logging/LogMessage.subflow" xmlns:com_systemsltd_common_FaultHandler.subflow="com/systemsltd/common/FaultHandler.subflow" xmlns:ComIbmSOAPRequest.msgnode="ComIbmSOAPRequest.msgnode" xmlns:com_systemsltd_ubl_prime_CallPrimeService.subflow="com/systemsltd/ubl/prime/CallPrimeService.subflow" xmlns:ComIbmFilter.msgnode="ComIbmFilter.msgnode" xmlns:com_systemsltd_ubl_common_ResponseMapping.subflow="com/systemsltd/ubl/common/ResponseMapping.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" 
+xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="com/systemsltd/ubl/prime/PrimeIssuerAcquireTicket.subflow" 
+nsPrefix="com_systemsltd_ubl_prime_PrimeIssuerAcquireTicket.subflow">
+<eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true">
+<eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.loggerName" name="loggerName" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.PRIME_URL" name="PRIME_URL" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<translation xmi:type="utility:TranslatableString" key="PrimeIssuerAcquireTicket" bundleName="com/systemsltd/ubl/prime/PrimeIssuerAcquireTicket" pluginId="flowAPIgenerated"/>
+<colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj16/PrimeIssuerAcquireTicket.gif"/>
+<colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj30/PrimeIssuerAcquireTicket.gif"/>
+<composition>
+<nodes xmi:type="ComIbmSOAPExtract.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="491,108">
+<translation xmi:type="utility:ConstantString" string="SOAP Extract"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="790,19">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Failure" bundleName="com/systemsltd/ubl/prime/PrimeIssuerAcquireTicket" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="85,111" computeExpression="esql://routine/com.systemsltd.ubl.prime#PrimeIssuerAcquireTicket.Main">
+<translation xmi:type="utility:ConstantString" string="Prepare Request"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_4" location="401,108" databaseLoggingRequired="true" decoration="Log Acquire Ticket Response" destinationSystem="PRIME" idPath="Environment.Variables.Transaction.Ticket" status="(InputRoot.SOAP.Body.*:AcquireTicketResponse.*:AcquireTicketResult.*:Result.*:Code = &apos;0&apos;)">
+<translation xmi:type="utility:ConstantString" string="Log Response"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="25,111">
+<translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="com/systemsltd/ubl/prime/PrimeIssuerAcquireTicket" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_5" location="195,112" databaseLoggingRequired="true" decoration="Log Acquire Ticket Request" destinationSystem="PRIME" idPath="Environment.Variables.Transaction.Ticket" newRequest="true">
+<translation xmi:type="utility:ConstantString" string="Log Request"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_FaultHandler.subflow:FCMComposite_1" xmi:id="FCMComposite_1_6" location="524,217" databaseLoggingRequired="true" decoration="Log Acquire Ticket Fault" idPath="Environment.Variables.Transaction.Ticket" status="(InputRoot.SOAP.Body.*:AcquireTicketResponse.*:AcquireTicketResult.*:Result.*:Code = &apos;0&apos;)">
+<translation xmi:type="utility:ConstantString" string="Fault Handler"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_common_logging_LogMessage.subflow:FCMComposite_1" xmi:id="FCMComposite_1_7" location="536,19" databaseLoggingRequired="true" decoration="Acquire Ticket Failure" destinationSystem="PRIME" idPath="Environment.Variables.Transaction.Ticket" status="(InputRoot.SOAP.Body.*:AcquireTicketResponse.*:AcquireTicketResult.*:Result.*:Code = &apos;0&apos;)">
+<translation xmi:type="utility:ConstantString" string="Log Failure"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output1" location="679,191">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="com/systemsltd/ubl/prime/PrimeIssuerAcquireTicket" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="ComIbmSOAPRequest.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_10" location="241,29" wsdlFileName="PrimeIssuerAPI.wsdl" selectedPortType="PrimeIssuerServicesSoap" selectedBinding="PrimeIssuerServicesSoap12" selectedOperation="AcquireTicket" selectedPort="PrimeIssuerServicesSoap12" targetNamespace="http://CTL.COM.Services.Prime.Issuer.WebServices/PrimeIssuerServices" useHTTPTransport="true" webServiceURL="http://localhost:7739/BPSService.svc" sslProtocol="TLS">
+<translation xmi:type="utility:ConstantString" string="SOAP Request"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_ubl_prime_CallPrimeService.subflow:FCMComposite_1" xmi:id="FCMComposite_1_1" location="288,112">
+<translation xmi:type="utility:ConstantString" string="CallPrimeService"/>
+</nodes>
+<nodes xmi:type="ComIbmFilter.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_8" location="576,112" filterExpression="esql://routine/com.systemsltd.ubl.prime#VerifyAndSaveAcquireTicket.Main">
+<translation xmi:type="utility:ConstantString" string="Verify and Save Acquire Ticket"/>
+</nodes>
+<nodes xmi:type="com_systemsltd_ubl_common_ResponseMapping.subflow:FCMComposite_1" xmi:id="FCMComposite_1_9" location="746,116" hostSystem="PRIME" hostSystemResponseCodePath="Root.XMLNSC.*:AcquireTicketResponse.*:AcquireTicketResult.*:Result.*:Code" hostSystemResponseDetailsPath="Root.XMLNSC.*:AcquireTicketResponse.*:AcquireTicketResult.*:Result.*:Description" mappedResponseCodePath="Environment.Variables.Transaction.HostResponse.ErrorCode" mappedResponseDescPath="Environment.Variables.Transaction.HostResponse.Error.Item">
+<translation xmi:type="utility:ConstantString" string="Response AT Mapping"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output2" location="879,116">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Acquire%20Ticket%20Mapped%20Failure" bundleName="com/systemsltd/ubl/prime/PrimeIssuerAcquireTicket" pluginId="flowAPIgenerated"/>
+</nodes>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_3" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_9" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.false" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="OutTerminal.Output1" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.true" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="OutTerminal.Output2" sourceNode="FCMComposite_1_9" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.Input"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.Input"/>
+</composition>
+<propertyOrganizer>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.loggerName">
+<propertyName xmi:type="utility:TranslatableString" key="Property.loggerName" bundleName="com/systemsltd/common/logging/ProcessLogMessage" pluginId="CommonLibrary"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.PRIME_URL">
+<propertyName xmi:type="utility:TranslatableString" key="Property.PRIME_URL" bundleName="com/systemsltd/ubl/prime/CallPrimeService" pluginId="PRIMELibrary"/>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyOrganizer>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_6">
+<overriddenAttribute href="com/systemsltd/common/FaultHandler.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.PRIME_URL" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/ubl/prime/CallPrimeService.subflow#Property.PRIME_URL"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_5 FCMComposite_1_4 FCMComposite_1_7">
+<overriddenAttribute href="com/systemsltd/common/logging/LogMessage.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="com/systemsltd/ubl/prime/CallPrimeService.subflow#Property.loggerName"/>
+</attributeLinks>
+<attributeLinks promotedAttribute="Property.loggerName" overriddenNodes="FCMComposite_1_9">
+<overriddenAttribute href="com/systemsltd/ubl/common/ResponseMapping.subflow#Property.loggerName"/>
+</attributeLinks>
+<stickyBoard/>
+</eClassifiers>
+</ecore:EPackage>

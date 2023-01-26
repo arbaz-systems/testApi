@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.systemsltd.com/ubl/cbs"	targetNamespace="http://www.systemsltd.com/ubl/cbs">
+
+	<xsd:include schemaLocation="CBSCommonMessageModel.xsd"></xsd:include>
+	<xsd:element name="BalanceInquiryRequest"
+		type="BalanceInquiryRequest">
+	</xsd:element>
+	<xsd:element name="BalanceInquiryResponse"
+		type="BalanceInquiryResponse">
+	</xsd:element>
+
+	<xsd:complexType name="BalanceInquiryRequest">
+		<xsd:sequence>
+			<xsd:element name="REQUEST_IN">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HEADER_IN"
+							type="GeneralHeaderIn">
+						</xsd:element>
+						<xsd:element name="DETAIL_IN">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="ACCT_NO"
+										type="xsd:string" />
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="BalanceInquiryResponse">
+		<xsd:sequence>
+			<xsd:element name="REQUEST_OUT">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HEADER_OUT"
+							type="GeneralHeaderOut">
+						</xsd:element>
+						<xsd:element name="ERRORS" type="ERRORS"></xsd:element>
+						<xsd:element name="DETAIL_OUT">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="ACCT_NO"
+										type="xsd:string" />
+									<xsd:element name="AVAIL_BAL"
+										type="xsd:string" />
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>
