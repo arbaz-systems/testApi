@@ -1,0 +1,28 @@
+{
+    "serviceHeader": {
+        "channel": "IVR",
+        "processingType": "SYNCHRONOUS",
+        "authInfo": {
+            "username": "SOA",
+            "password": "ybprXiuNltkZVJDQr/eTK4MO20i1KogIWCMdD/5r7luz/bV2Wh5xjdh6lt8q0H9h",
+            "authenticationType": "PASSWORD",
+            "authKey": "FujBAsSIygeZ2Qz4ok8yI6By5TWImzKlsgZyT+7B9wFkBltIqCw+sFKbDyQbPRYPK/2qoWAFZzdYFjW660i+UbqQqbdXx/nwCzrrNgPMCu46RbosNRkVBHwpL44NIF0KiQaVtFP+AzALgbwNs/84noLnOcv5p99N1lUjqh5dhvg="
+        },
+        "fromRegionInfo": {
+            "bicCode": "UNILPKKA",
+            "countryCode": "PAKISTAN"
+        }
+    },
+    "transactionInfo": {
+        "transactionType": "PAYEELIST",
+        "transactionSubType": "GETMOBILETOPUPLIST",
+        "referenceId": "5aa03bdc-5a75-4b61-9240-7ed1aae6fde6",
+        "transactionDate": "2020-03-11",
+        "transactionTime": "16:56:00",
+        "stan": "811163",
+        "transmissionDateTime": "2020-03-11T16:56:00"
+    },
+    "getMobileTopUpListRequest": {
+        "consumerNo": "03001234567"
+    }
+}
