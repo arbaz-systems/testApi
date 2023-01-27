@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.systemsltd.com/ubl/common">
+
+	<xsd:simpleType name="CoreSystemType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50" />
+			<xsd:whiteSpace value="collapse" />
+
+			<xsd:enumeration value="CBS" />
+			<xsd:enumeration value="OMNI" />
+			<xsd:enumeration value="UNIBANK" />
+			<xsd:enumeration value="IRIS" />
+			<xsd:enumeration value="CMDS" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+</xsd:schema>

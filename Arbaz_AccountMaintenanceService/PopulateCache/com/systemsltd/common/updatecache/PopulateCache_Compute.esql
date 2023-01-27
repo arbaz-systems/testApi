@@ -1,0 +1,66 @@
+BROKER SCHEMA com.systemsltd.common.updatecache
+
+path com.systemsltd.common.cache;
+ 
+CREATE COMPUTE MODULE PopulateCache_configCache
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.JSON.Data.ConfigCache.*[]);
+		WHILE I <= J DO
+			--LOG EVENT VALUES('ConfigCache : ' ||InputRoot.JSON.Data.ConfigCache.*[I].NAME);
+			IF InputRoot.JSON.Data.ConfigCache.*[I].VALUE <>'' AND
+			   InputRoot.JSON.Data.ConfigCache.*[I].VALUE IS NOT NULL THEN
+				CALL insertInCache('ConfigCache',InputRoot.JSON.Data.ConfigCache.*[I].NAME,InputRoot.JSON.Data.ConfigCache.*[I].VALUE);				
+			END IF;
+			SET I = I + 1;
+		END WHILE;
+		
+		LOG EVENT VALUES('ConfigCache updated: '||CAST (J AS CHAR));
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+CREATE COMPUTE MODULE PopulateCache_codeMappingCache
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.JSON.Data.CodeMappingCache.*[]);
+		WHILE I <= J DO
+			--LOG EVENT VALUES('CodeMappingCache : ' ||InputRoot.JSON.Data.CodeMappingCache.*[I].NAME);
+			IF InputRoot.JSON.Data.CodeMappingCache.*[I].VALUE <>'' AND
+			   InputRoot.JSON.Data.CodeMappingCache.*[I].VALUE IS NOT NULL THEN
+				CALL insertInCache('CodeMappingCache',InputRoot.JSON.Data.CodeMappingCache.*[I].NAME,InputRoot.JSON.Data.CodeMappingCache.*[I].VALUE);				
+			END IF;
+			SET I = I + 1;
+		END WHILE;
+		
+		LOG EVENT VALUES('CodeMappingCache updated: '||CAST (J AS CHAR));
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+CREATE COMPUTE MODULE PopulateCache_regionCache
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.JSON.Data.ConfigCache.*[]);
+		WHILE I <= J DO
+			--LOG EVENT VALUES('RegionCache : ' ||InputRoot.JSON.Data.ConfigCache.*[I].CODE);
+			IF InputRoot.JSON.Data.ConfigCache.*[I].PREFIX <>'' AND
+			   InputRoot.JSON.Data.ConfigCache.*[I].PREFIX IS NOT NULL THEN
+				CALL insertInCache('ConfigCache',InputRoot.JSON.Data.ConfigCache.*[I].CODE,InputRoot.JSON.Data.ConfigCache.*[I].PREFIX);				
+			END IF;
+			SET I = I + 1;
+		END WHILE;
+		
+		LOG EVENT VALUES('RegionCache updated: '||CAST (J AS CHAR));
+		
+		RETURN TRUE;
+	END;
+END MODULE;

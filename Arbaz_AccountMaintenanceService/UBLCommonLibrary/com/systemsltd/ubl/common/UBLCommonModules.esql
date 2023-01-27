@@ -1,0 +1,751 @@
+BROKER SCHEMA com.systemsltd.ubl.common
+
+PATH com.systemsltd.common, com.systemsltd.ubl.common.database,  com.systemsltd.ubl.common.config,
+		com.systemsltd.common.logging, com.systemsltd.common.util, com.systemsltd.common.cache;
+
+DECLARE requestPath EXTERNAL CHARACTER 'InputRoot.JSON.Data';
+DECLARE statusUpdateRequired EXTERNAL BOOLEAN TRUE;
+DECLARE arrayToListConversionRequired EXTERNAL BOOLEAN FALSE;
+DECLARE hostRefIdPath EXTERNAL CHARACTER '';
+
+CREATE FILTER MODULE VerifyAsyncTransaction
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		RETURN (Body.*[1].serviceHeader.processingType = 'ASYNCHRONOUS');
+	END;
+END MODULE;
+
+CREATE COMPUTE MODULE PrepareValidationErrorResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		CALL logDebugMessage('Inside PrepareValidationErrorResponse: preparing validation error response');
+		CREATE FIELD OutputRoot.JSON.Data;
+
+		DECLARE responseRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO InputRoot.JSON.Data;
+
+		SET OutputRoot.Properties = InputProperties;
+		SET responseRef.serviceHeader = transactionRef.serviceHeader;
+		SET responseRef.transactionInfo = transactionRef.transactionInfo;
+		SET responseRef.groupHeader = transactionRef.groupHeader;
+		SET responseRef.responseHeader.responseCode = getValidationErrorCode();
+		CREATE FIELD responseRef.responseHeader.responseDetails IDENTITY (JSON.Array);
+		SET responseRef.responseHeader.responseDetails = Environment.Variables.Transaction.Error;
+		DECLARE respDetailsRef REFERENCE TO responseRef.responseHeader.responseDetails;
+		CREATE LASTCHILD OF respDetailsRef NAME ('Item') VALUE '|';
+		
+		IF statusUpdateRequired THEN
+			CALL logDebugMessage('Inside PrepareValidationErrorResponse: updating transaction status failure');
+			CALL updateTransactionStatus(Environment.Variables.Transaction.DetailId, 'TRANSACTION_DETAIL', getTransactionStatusFailure());
+		END IF;
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+CREATE COMPUTE MODULE PrepareExceptionResponseModule
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE exceptionRef REFERENCE TO InputExceptionList;
+		DECLARE transactionRef REFERENCE TO InputRoot;
+		DECLARE transactionRequest CHARACTER 'MOVE transactionRef TO ' || requestPath;
+		EVAL(transactionRequest);
+		
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE respRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		CALL logExceptionMessage(exceptionRef);
+		
+		IF arrayToListConversionRequired THEN
+			CALL copyAndConvertServiceHeader(transactionRef.Request.serviceHeader, respRef);
+			CALL copyAndConvertTransactionInfo(transactionRef.Request.transactionInfo, respRef);
+		ELSE
+--			CALL logExceptionMessage(exceptionRef);
+			SET respRef.serviceHeader = transactionRef.serviceHeader;
+			SET respRef.transactionInfo = transactionRef.transactionInfo;
+		END IF;
+		
+		IF statusUpdateRequired THEN
+			CALL updateTransactionStatus(transactionRef.DetailId, 'TRANSACTION_DETAIL', getTransactionStatusFailure());
+			CALL logInfoMessage('Updated transaction status as : ' || getTransactionStatusFailure());
+		END IF;
+		
+		CALL getExceptionResponseMapping(exceptionRef, transactionRef.HostResponse.ErrorCode,
+											transactionRef.HostResponse.Error.Item);
+											
+		CALL populateFailureResponseHeader(respRef, transactionRef);
+		
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareTimeoutResponseModule
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		CALL logDebugMessage('Service timed out');
+
+		SET OutputRoot.Properties = InputProperties;
+
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE outRef REFERENCE TO OutputRoot.JSON.Data;
+
+--		SET outRef.serviceHeader = inputRef.serviceHeader;
+--		SET outRef.transactionInfo = inputRef.transactionInfo;
+
+		IF fieldAndValueExists(Environment.Variables.Transaction.transactionInfoId, 'transactionInfoId') THEN
+			CALL updateTransactionStatus(Environment.Variables.Transaction.transactionInfoId, 'TRANSACTION_DETAIL', getTransactionStatusFailure());
+			CALL logInfoMessage('Updated transaction status as : ' || getTransactionStatusFailure());
+		END IF;
+
+		SET Environment.Variables.Transaction.HostResponse.ErrorCode = '13';
+		CALL getExceptionResponseDetail(Environment.Variables.Transaction.HostResponse.ErrorCode, Environment.Variables.Transaction.HostResponse.Error.Item);									
+		CALL populateFailureResponseHeader(outRef, Environment.Variables.Transaction);
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PopulateHostTranReferenceIdInLocalEnv
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot = InputRoot;
+		DECLARE hostRefId CHARACTER COALESCE(EVAL(hostRefIdPath), '');
+		SET OutputLocalEnvironment.HostResponse.transactionRefNo = hostRefId;
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareExceptionResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE exceptionRef REFERENCE TO InputExceptionList;
+		DECLARE transactionRef REFERENCE TO InputRoot;
+		DECLARE transactionRequest CHARACTER 'MOVE transactionRef TO ' || requestPath;
+		EVAL(transactionRequest);
+		
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE respRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		CALL logExceptionMessage(exceptionRef);
+		
+		IF arrayToListConversionRequired THEN
+			CALL copyAndConvertServiceHeader(transactionRef.Request.serviceHeader, respRef);
+			CALL copyAndConvertTransactionInfo(transactionRef.Request.transactionInfo, respRef);
+		ELSE
+--			CALL logExceptionMessage(exceptionRef);
+			SET respRef.serviceHeader = transactionRef.serviceHeader;
+			SET respRef.transactionInfo = transactionRef.transactionInfo;
+		END IF;
+		
+		CALL getExceptionResponseMapping(exceptionRef, transactionRef.HostResponse.ErrorCode,
+											transactionRef.HostResponse.Error.Item);
+											
+		CALL populateFailureResponseHeader(respRef, transactionRef);
+		
+		CALL logInfoMessage('Failure Response Prepared: ' ||  serializeMessage(OutputRoot));
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FILTER MODULE UpdateTransactionDetailStatus 
+CREATE FUNCTION Main () RETURNS BOOLEAN
+BEGIN
+	
+	IF statusUpdateRequired THEN
+		CALL updateTransactionStatus(Environment.Variables.Transaction.DetailId, 'TRANSACTION_DETAIL', getTransactionStatusFailure());
+		CALL logInfoMessage('Updated transaction status as : ' || getTransactionStatusFailure());
+	END IF;
+	
+	RETURN TRUE;
+	
+END;	
+END MODULE;
+
+
+CREATE PROCEDURE getMappedResponseDescription(IN responseCode CHARACTER, OUT responseDescription CHARACTER)
+BEGIN
+	SET responseDescription = CASE responseCode
+		WHEN '00' THEN 'Success'
+		WHEN '21' THEN 'Invalid amount'
+		WHEN '22' THEN 'From account is null'
+		WHEN '23' THEN 'To account is null'
+		WHEN '24' THEN 'To and From account are same'
+		WHEN '25' THEN 'Invalid Reference Id'
+		WHEN '29' THEN 'Time out'	
+		WHEN '30' THEN 'System error'
+		WHEN '43' THEN 'Account does not exists'
+		WHEN '94' THEN 'No Matching Records'
+		WHEN '127' THEN 'Host Status Unknown'
+		WHEN '128' THEN 'Host Not Processing'
+		WHEN '133' THEN 'Transaction Timed Out'
+		WHEN '159' THEN 'Password already changed'
+		WHEN '160' THEN 'Password Update Failed'
+		WHEN '165' THEN 'Error in generating pdf'
+	ELSE
+		'UNKNOWN'
+	END;
+END;
+
+
+CREATE FUNCTION validateServiceHeader(serviceHeaderRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	IF NOT fieldAndValueExists(serviceHeaderRef.channel, 'channel') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('channel');
+	END IF;
+	
+	IF NOT fieldAndValueExists(serviceHeaderRef.processingType, 'processingType') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('processingType'); 
+	END IF;
+	
+	IF NOT fieldAndValueExists(serviceHeaderRef.authInfo.username, 'username') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('username');
+	END IF;
+	
+	IF NOT fieldAndValueExists(serviceHeaderRef.authInfo.authenticationType, 'authenticationType') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('authenticationType');
+	END IF;
+END;
+
+
+CREATE FUNCTION validateTransactionInfo(transactionInfoRef REFERENCE, transactionRef REFERENCE, transactionType CHARACTER, transactionSubType CHARACTER)
+BEGIN
+	IF NOT fieldAndValueExists(transactionInfoRef.transactionType, 'transactionType') OR UPPER(transactionInfoRef.transactionType) <> transactionType THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('transactionType');
+	END IF;
+	
+	IF NOT isEmptyString(transactionSubType) THEN
+		IF NOT fieldAndValueExists(transactionInfoRef.transactionSubType, 'transactionSubType') OR UPPER(transactionInfoRef.transactionSubType) <> transactionSubType THEN
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('transactionSubType');
+		END IF;
+	END IF;
+	
+	IF NOT fieldAndValueExists(transactionInfoRef.referenceId, 'referenceId') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('referenceId');
+	END IF;
+	
+	IF NOT fieldAndValueExists(transactionInfoRef.transactionDate, 'transactionDate') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('transactionDate');
+	END IF;
+	
+	IF NOT fieldAndValueExists(transactionInfoRef.transactionTime, 'transactionTime') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('transactionTime');
+	END IF;
+	
+	IF NOT fieldAndValueExists(transactionInfoRef.transmissionDateTime, 'transmissionDateTime') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('transmissionDateTime');
+	END IF;
+
+	IF EXISTS(transactionInfoRef.attributeList[]) THEN
+		CALL validateAttributeList(transactionInfoRef.attributeList, transactionRef);
+	END IF;
+
+END;
+
+
+CREATE FUNCTION validateAttributeList(attributeList REFERENCE, transactionRef REFERENCE)
+BEGIN
+	DECLARE itemRef REFERENCE TO attributeList.Item;
+
+--	IF FIELDTYPE(attributeList.Item) IS NULL THEN
+--		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('attributeList');
+--	ELSE
+		WHILE LASTMOVE(itemRef) DO
+			IF NOT fieldAndValueExists(itemRef.attributeKey, 'attributeKey') THEN
+				CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('attributeKey');
+			END IF;
+	
+			IF NOT fieldAndValueExists(itemRef.attributeValue, 'attributeValue') THEN
+				CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('attributeValue');
+			END IF;
+			MOVE itemRef NEXTSIBLING;
+		END WHILE;
+--	END IF;
+
+END;
+
+
+CREATE FUNCTION validateBranchInfo(accountRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	DECLARE branchInfoRef REFERENCE TO accountRef.branchInfo;
+	
+--	AND	NOT fieldAndValueExists(accountDetail.accountIdentifier.iban, 'iban') 
+--	IF NOT fieldAndValueExists(branchInfoRef.bankInfo.name, 'name') THEN
+--		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('bankInfo.name');
+--	END IF;
+	
+	IF NOT fieldAndValueExists(branchInfoRef.bankInfo.bankIMD, 'bankIMD') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE REPLACE(getValidationErrorMsg('bankIMD'), '?', 'bankIMD');
+	END IF;
+	
+--	IF (NOT fieldAndValueExists(accountRef.accountIdentifier.iban, 'iban')) AND (NOT fieldAndValueExists(branchInfoRef.branchCode, 'branchCode')) THEN
+--		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('branchCode');
+--	END IF;
+
+--	IF NOT fieldAndValueExists(branchInfoRef.branchName, 'branchName') THEN
+--		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('branchName');
+--	END IF;
+	
+	DECLARE branchAddRef REFERENCE TO branchInfoRef.branchAddress;
+	
+	IF LASTMOVE(branchAddRef) THEN
+		CALL validateBranchAddress(branchInfoRef.branchAddress, transactionRef);
+	END IF;
+
+END;
+
+
+CREATE FUNCTION validateBranchAddress(branchAddRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	IF isfieldExistsAndEmpty(branchAddRef.country, 'country') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('country');
+	END IF;
+	
+	IF isfieldExistsAndEmpty(branchAddRef.state, 'state') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('state');
+	END IF;
+	
+	IF isfieldExistsAndEmpty(branchAddRef.city, 'city') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('city');
+	END IF;
+	
+	IF isfieldExistsAndEmpty(branchAddRef.zipCode, 'zipCode') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('zipCode');
+	END IF;
+	
+	IF isfieldExistsAndEmpty(branchAddRef.addressLine, 'addressLine') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('addressLine');
+	END IF;
+END;
+
+
+
+CREATE FUNCTION validateAttributeListData(attrListItemRef REFERENCE, transactionRef REFERENCE, key CHARACTER, value CHARACTER)
+BEGIN
+	WHILE LASTMOVE(attrListItemRef) DO
+		IF attrListItemRef.attributeKey = key AND attrListItemRef.attributeValue <> value THEN
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg(key);
+		END IF;
+		MOVE attrListItemRef NEXTSIBLING;
+	END WHILE;
+END;
+
+
+CREATE FUNCTION ValidateAccount(accontRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	IF NOT fieldAndValueExists(accontRef.accountId.iban, 'iban')
+	AND	NOT fieldAndValueExists(accontRef.accountId.cnic, 'cnic')
+	AND NOT fieldAndValueExists(accontRef.accountId.accountNumber, 'accountNumber') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('iban/cnic/accountNumber');
+	END IF;
+
+	IF NOT fieldAndValueExists(accontRef.accountTitle, 'accountTitle') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('accountTitle');
+	END IF;
+
+	IF NOT fieldAndValueExists(accontRef.accountType, 'accountType') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('accountType');
+	END IF;
+
+--	IF NOT fieldAndValueExists(accontRef.accountBalance, 'accountBalance') THEN
+--		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('accountBalance');
+--	END IF;
+
+	IF NOT fieldAndValueExists(accontRef.accountCurrency, 'accountCurrency') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('accountCurrency');
+	END IF;
+	
+	-- To Validate Account Owner List
+	IF EXISTS(accontRef.accountOwnerList[]) THEN
+		CALL validateAccountOwnerList(accontRef.accountOwnerList, transactionRef);
+	END IF;
+	
+	CALL validateBranchInfo(accontRef, transactionRef);
+END;
+
+
+CREATE FUNCTION validateAccountOwnerList(ownerRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	DECLARE personRef REFERENCE TO ownerRef.Item;
+	
+	WHILE LASTMOVE(personRef) DO
+		CALL validatePerson(personRef, transactionRef);
+		MOVE personRef NEXTSIBLING;
+	END WHILE;
+END;
+
+
+CREATE FUNCTION validatePerson(personRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	IF NOT fieldAndValueExists(personRef.firstName, 'firstName') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('firstName');
+	END IF;
+	
+--	IF NOT fieldAndValueExists(personRef.lastName, 'lastName') THEN
+--		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('lastName');
+--	END IF;
+	
+	IF (NOT fieldAndValueExists(personRef.contactNumber, 'contactNumber')
+			OR checkStringValue(personRef.contactNumber) = FALSE) THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('contactNumber');
+	END IF;
+	
+	CALL ValidateCNIC(personRef, transactionRef);
+END;
+
+
+CREATE FUNCTION validateFTRequest(ftRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+
+	CALL validateCommonFTReqParams(ftRef, transactionRef); 
+	CALL ValidateAccount(ftRef.toAccount, transactionRef);	
+END;
+
+
+CREATE FUNCTION ValidateCNIC(inMsgRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	IF (NOT fieldAndValueExists(inMsgRef.cnic, 'cnic') OR LENGTH(inMsgRef.cnic) <> 13
+			OR checkStringValue(inMsgRef.cnic) = FALSE) THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('cnic');
+	END IF;
+END;
+
+
+CREATE DATABASE MODULE UpdateSyncTransactionStatus
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE status CHARACTER getTransactionStatusSuccess();
+		DECLARE inputRef REFERENCE TO Root.JSON.Data;
+
+		IF inputRef.responseHeader.responseCode = '58' THEN
+			SET status = 'TIMEOUT';
+		
+		ELSEIF inputRef.responseHeader.responseCode <> getSuccessResponseCode() THEN
+			SET status = getTransactionStatusFailure();
+		END IF;
+
+		CALL updateTransactionStatus(transactionRef.DetailId, 'TRANSACTION_DETAIL', status);
+		CALL logDebugMessage('Updated transaction status as ' || status || ' for transaction
+				in TRANSACTION_DETAIL having id ' || CAST(transactionRef.DetailId AS CHARACTER));	
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FUNCTION ValidateChunk(inMsgRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	DECLARE totalGroupCount, totalTransactionReceivedCount INTEGER;
+	DECLARE amount, totalAmount, amountSum DECIMAL;
+	DECLARE inMsgFTListRef REFERENCE TO inMsgRef.[<].Item;
+	DECLARE chunkSize INTEGER 0;
+ 	
+	CALL getGroupTotalCountAndTotalAmount(inMsgRef.groupHeader.groupId, totalGroupCount, totalAmount);
+	CALL getTotalReceivedTransactionCountAndAmountSum(inMsgRef.groupHeader.groupId, totalTransactionReceivedCount, amountSum);
+ 		
+ 	 WHILE LASTMOVE(inMsgFTListRef) DO
+ 	 	SET chunkSize = chunkSize + 1;
+		SET amount = inMsgFTListRef.[<].amount;
+		SET amountSum = amountSum + amount;
+		
+		MOVE inMsgFTListRef NEXTSIBLING REPEAT TYPE NAME;
+	 END WHILE;	
+
+	DECLARE remainingTransactionCount INTEGER totalGroupCount - totalTransactionReceivedCount;
+ 	DECLARE moreTransactionCount INTEGER totalTransactionReceivedCount + chunkSize;
+ 	
+ 	IF chunkSize > getMaxChunkSize() THEN 
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'No of Records in Group are greater than configured Maximum Chunk Size: ' ||  CAST(getMaxChunkSize() AS CHARACTER);  
+	END IF;
+ 		
+	IF (inMsgRef.groupHeader.completed) THEN
+ 		
+ 		IF totalGroupCount > moreTransactionCount  THEN
+	 		CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'Received Transactions (' || CAST(moreTransactionCount AS CHARACTER) || ') are less than Expected No.(' || CAST(totalGroupCount AS CHARACTER) || ') of Transactions in this Group';
+ 		
+ 		ELSEIF totalGroupCount < moreTransactionCount THEN
+ 			CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'Received Transactions (' || CAST(moreTransactionCount AS CHARACTER) || ') are more than Expected No.(' || CAST(totalGroupCount AS CHARACTER) || ') of Transactions in this Group';
+ 		END IF;
+		
+		IF amountSum <> totalAmount THEN			
+ 			CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'Expected Group Total Amount (' || CAST(totalAmount AS CHARACTER) || '),  Received Sum of Transactions Amount (' || CAST(amountSum AS CHARACTER) || ')' ;
+		END IF;
+		
+	ELSE
+		
+		IF moreTransactionCount = totalGroupCount THEN
+			CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'System cannot process this chunk with "completed = false" as no. of transactions in this chunk are equal to Total Transactions';
+ 		END IF;	
+ 		
+		IF chunkSize > remainingTransactionCount THEN
+			CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'NO. OF MORE TRANSACTIONS SYSTEM CAN PROCESS IN THIS GROUP: ' || CAST(remainingTransactionCount AS CHARACTER)  || CR ||
+																			'NO. OF TRANSACTIONS RECEIVED IN THIS CHUNK: '  || CAST(chunkSize  AS CHARACTER);
+		END IF;
+		
+		IF amountSum > totalAmount THEN			
+ 			CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'Expected Group Total Amount (' || CAST(totalAmount AS CHARACTER) || '),  Received Sum of Transactions Amount (' || CAST(amountSum AS CHARACTER) || ')';
+			
+		ELSEIF amountSum = totalAmount THEN
+			CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE 'Expected Group Total Amount (' || CAST(totalAmount AS CHARACTER) || '),  must be completed in predefined number of (' || CAST(totalGroupCount AS CHARACTER) || ') total transactions';
+			
+		END IF;	
+		
+	END IF;
+
+END;
+
+CREATE FILTER MODULE InvalidSystem
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET Environment.Variables.Transaction.HostResponse.ErrorCode = '128';
+		CALL getMappedResponseDescription(Environment.Variables.Transaction.HostResponse.ErrorCode, Environment.Variables.Transaction.HostResponse.Error.Item[1]);
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE FUNCTION copyAndConvertServiceHeader(sourceRef REFERENCE, destinationRef REFERENCE)
+BEGIN
+	SET destinationRef.serviceHeader = sourceRef;
+
+	IF EXISTS(sourceRef.parameterList[]) THEN
+		CALL convertListToArray(sourceRef.parameterList, destinationRef.serviceHeader);
+	END IF;
+END;
+
+
+CREATE FUNCTION copyAndConvertTransactionInfo(sourceRef REFERENCE, destinationRef REFERENCE)
+BEGIN
+	SET destinationRef.transactionInfo = sourceRef;
+
+	IF EXISTS(sourceRef.surcharges[]) THEN
+		CALL convertListToArray(sourceRef.surcharges, destinationRef.transactionInfo);
+
+		DECLARE sourceSurchargeListRef REFERENCE TO sourceRef.surcharges.[1];
+		DECLARE descSurchargeListRef REFERENCE TO destinationRef.transactionInfo.surcharges.[1];
+
+		WHILE LASTMOVE(sourceSurchargeListRef) DO
+			IF EXISTS(sourceSurchargeListRef.surchargeAttributeList[]) THEN
+				CALL convertListToArray(sourceSurchargeListRef.surchargeAttributeList, descSurchargeListRef);
+			END IF;
+
+			MOVE sourceSurchargeListRef NEXTSIBLING;
+			MOVE descSurchargeListRef NEXTSIBLING;
+		END WHILE;
+
+	END IF;
+
+	IF EXISTS(sourceRef.attributeList[]) THEN
+		CALL convertListToArray(sourceRef.attributeList, destinationRef.transactionInfo);
+	END IF;
+
+	IF EXISTS(sourceRef.metaDataList[]) THEN
+		CALL convertListToArray(sourceRef.metaDataList, destinationRef.transactionInfo);
+	END IF;
+END;
+
+
+CREATE FUNCTION copyAndConvertResponseHeader(sourceRef REFERENCE, destinationRef REFERENCE)
+BEGIN
+	SET destinationRef.responseHeader = sourceRef;
+
+	IF EXISTS(sourceRef.responseDetails[]) THEN
+		CALL convertListToArray(sourceRef.responseDetails, destinationRef.responseHeader);
+	END IF;
+END;
+
+
+CREATE FUNCTION copyAndConvertAccountDetail(sourceRef REFERENCE, destinationRef REFERENCE)
+BEGIN
+--	SET destinationRef.transactionInfo = sourceRef;
+
+	IF EXISTS(sourceRef.accoutAttributeList[]) THEN
+		CALL convertListToArray(sourceRef.accoutAttributeList, destinationRef.accountDetail);
+	END IF;
+	
+	IF EXISTS(sourceRef.accoutOwnerList[]) THEN
+		CALL convertListToArray(sourceRef.accoutOwnerList, destinationRef.accountDetail);
+	END IF;
+	
+END;
+
+
+CREATE FUNCTION validateCommonFTReqParams(ftRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	--TODO validate amount
+	
+	IF NOT fieldAndValueExists(ftRef.amountCurrency, 'amountCurrency') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('amountCurrency');
+	END IF;
+
+	IF NOT fieldAndValueExists(ftRef.paymentMode, 'paymentMode') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('paymentMode');
+	END IF;
+	
+	CALL ValidateAccount(ftRef.account, transactionRef);
+END;
+
+
+CREATE FUNCTION populateFailureResponseHeader(outResponseRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+	SET outResponseRef.responseHeader.responseCode = transactionRef.HostResponse.ErrorCode;
+	
+	CREATE FIELD outResponseRef.responseHeader.responseDetails IDENTITY (JSON.Array)responseDetails;
+	DECLARE respDetailsArrayRef REFERENCE TO outResponseRef.responseHeader.responseDetails;
+	
+	-- while last move - Loop for multiple items if required
+	DECLARE errorDetailsRef REFERENCE TO transactionRef.HostResponse.Error.Item;
+	WHILE LASTMOVE(errorDetailsRef) DO
+		CREATE LASTCHILD OF respDetailsArrayRef NAME ('Item') VALUE errorDetailsRef;
+		MOVE errorDetailsRef NEXTSIBLING;
+	END WHILE;
+	CREATE LASTCHILD OF respDetailsArrayRef NAME ('Item') VALUE '|';
+END;
+
+CREATE FUNCTION validateAccountRestraint(restraintRef REFERENCE, transactionRef REFERENCE)
+BEGIN
+--	IF NOT fieldAndValueExists(restraintRef.position, 'position') THEN
+--		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('position');
+--	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.referenceNo, 'referenceNo') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('referenceNo');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.version, 'version') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('version');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.restraintType, 'restraintType') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('restraintType');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.restraintClass, 'restraintClass') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('restraintClass');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.startDate, 'startDate') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('startDate');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.endDate, 'endDate') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('endDate');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.narrative, 'narrative') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('narrative');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.startChequeNo, 'startChequeNo') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('startChequeNo');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.endChequeNo, 'endChequeNo') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('endChequeNo');
+	END IF;
+	
+--	IF NOT fieldAndValueExists(restraintRef.pledgedAmount, 'pledgedAmount') THEN
+--		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('pledgedAmount');
+--	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.pledgedAccountNo, 'pledgedAccountNo') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('pledgedAccountNo');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.pledgedAccountType, 'pledgedAccountType') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('pledgedAccountType');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.description, 'description') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('description');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.ccy, 'ccy') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('ccy');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.lastChangeDate, 'lastChangeDate') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('lastChangeDate');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.lastChangeOfficer, 'lastChangeOfficer') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('lastChangeOfficer');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.feeIndicator, 'feeIndicator') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('feeIndicator');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.forceFH, 'forceFH') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('forceFH');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.stlSequenceNo, 'stlSequenceNo') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('stlSequenceNo');
+	END IF;
+	
+	IF NOT fieldAndValueExists(restraintRef.detailInfo, 'detailInfo') THEN
+		CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('detailInfo');
+	END IF;
+END;
+
+
+CREATE FUNCTION getCurrencyMapping(cur CHARACTER, system CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE value BLOB CAST(getCodeMappingValue(getCurrencyCodeType() || '_' || cur) AS BLOB CCSID 1208);
+	IF value IS NOT NULL THEN
+		DECLARE mappingRow ROW;
+		DECLARE column CHARACTER system || '_CODE';
+		CREATE LASTCHILD OF mappingRow DOMAIN('JSON') PARSE(value CCSID 1208);
+		RETURN mappingRow.JSON.Data.{column};
+	END IF;
+END;
+
+
+CREATE FUNCTION getAccountTypeMapping(acc CHARACTER, system CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE value BLOB CAST(getCodeMappingValue(getAccountTypeCode() || '_' || acc) AS BLOB CCSID 1208);
+	IF value IS NOT NULL THEN
+		DECLARE mappingRow ROW;
+		DECLARE column CHARACTER system || '_CODE';
+		CREATE LASTCHILD OF mappingRow DOMAIN('JSON') PARSE(value CCSID 1208);
+		RETURN mappingRow.JSON.Data.{column};
+	END IF;
+END;
+
+
+CREATE FUNCTION getChannelMapping(channel CHARACTER, system CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE value BLOB CAST(getCodeMappingValue(getChannelCodeType() || '_' || channel) AS BLOB CCSID 1208);
+	IF value IS NOT NULL THEN
+		DECLARE mappingRow ROW;
+		DECLARE column CHARACTER system || '_CODE';
+		CREATE LASTCHILD OF mappingRow DOMAIN('JSON') PARSE(value CCSID 1208);
+		RETURN mappingRow.JSON.Data.{column};
+	END IF;
+END;
+
+
+--CREATE FUNCTION getDataMaskingConfigurations(key CHARACTER) RETURNS BLOB
+--BEGIN
+--	DECLARE value BLOB CAST(readFromCache(getDataMaskConfigCache(), key) AS BLOB CCSID 1208);
+--	RETURN value;
+--END;
+
+
+--CREATE FUNCTION validateNumericField(givenRef REFERENCE, givenName CHARACTER) RETURNS BOOLEAN
+--BEGIN
+--	DECLARE value INTEGER FIELDVALUE(givenRef);
+--	RETURN FIELDTYPE(givenRef) IS NOT NULL AND FIELDNAME(givenRef) = givenName AND isPositiveInteger(value);
+--END;

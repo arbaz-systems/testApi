@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions">
+  <xsd:element ibmSchExtn:docRoot="true" name="Reload">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="0" name="p_userID" nillable="true" type="xsd:string"/>
+        <xsd:element minOccurs="0" name="p_password" nillable="true" type="xsd:string"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element ibmSchExtn:docRoot="true" name="ReloadResponse">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="0" name="ReloadResult" nillable="true" type="xsd:string"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

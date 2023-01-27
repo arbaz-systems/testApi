@@ -1,0 +1,682 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "title" : "AccountMaintenanceService",
+    "version" : "1.0.0",
+    "description" : "AccountMaintenanceService"
+  },
+  "paths" : {
+    "/applyAccountRestraint" : {
+      "post" : {
+        "operationId" : "ApplyAccountRestraint",
+        "responses" : {
+          "200" : {
+            "description" : "The operation was successful.",
+            "schema" : {
+              "$ref" : "#/definitions/ApplyAccountRestraintResponse"
+            }
+          }
+        },
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "description" : "Insert a applyAccountRestraint",
+        "parameters" : [ {
+          "name" : "body",
+          "in" : "body",
+          "schema" : {
+            "$ref" : "#/definitions/ApplyAccountRestraintRequest"
+          },
+          "description" : "The request body for the operation",
+          "required" : true
+        } ]
+      }
+    },
+    "/removeAccountRestraint" : {
+      "post" : {
+        "operationId" : "RemoveAccountRestraint",
+        "responses" : {
+          "200" : {
+            "description" : "The operation was successful.",
+            "schema" : {
+              "$ref" : "#/definitions/RemoveAccountRestraintResponse"
+            }
+          }
+        },
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "description" : "Insert a removeAccountRestraint",
+        "parameters" : [ {
+          "name" : "body",
+          "in" : "body",
+          "schema" : {
+            "$ref" : "#/definitions/RemoveAccountRestraintRequest"
+          },
+          "description" : "The request body for the operation",
+          "required" : true
+        }, {
+          "name" : "param1",
+          "in" : "query",
+          "type" : "string"
+        } ]
+      }
+    },
+    "/accountRestraintInquiry" : {
+      "post" : {
+        "operationId" : "AccountRestraintInquiry",
+        "responses" : {
+          "200" : {
+            "description" : "The operation was successful.",
+            "schema" : {
+              "$ref" : "#/definitions/AccountRestraintInquiryResponse"
+            }
+          }
+        },
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "description" : "Insert a accountRestraintInquiry",
+        "parameters" : [ {
+          "name" : "body",
+          "in" : "body",
+          "schema" : {
+            "$ref" : "#/definitions/AccountRestraintInquiryRequest"
+          },
+          "description" : "The request body for the operation",
+          "required" : true
+        } ]
+      }
+    }
+  },
+  "basePath" : "/accountmaintenanceservice/v1",
+  "definitions" : {
+    "ServiceHeader" : {
+      "type" : "object",
+      "properties" : {
+        "channel" : {
+          "type" : "string"
+        },
+        "processingType" : {
+          "type" : "string"
+        },
+        "authInfo" : {
+          "$ref" : "#/definitions/AuthenticationInfo"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Parameter"
+          }
+        }
+      },
+      "required" : [ "processingType", "channel" ]
+    },
+    "Parameter" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "name", "value" ]
+    },
+    "AccountFundTransfer" : {
+      "type" : "object",
+      "properties" : {
+        "amount" : {
+          "type" : "number"
+        },
+        "amountCurrency" : {
+          "type" : "string"
+        },
+        "paymentMode" : {
+          "type" : "string"
+        },
+        "account" : {
+          "$ref" : "#/definitions/BankAccount"
+        },
+        "cardInfo" : {
+          "$ref" : "#/definitions/BankCard"
+        },
+        "toAccount" : {
+          "$ref" : "#/definitions/BankAccount"
+        }
+      },
+      "required" : [ "amount", "paymentMode" ]
+    },
+    "BankAccount" : {
+      "type" : "object",
+      "properties" : {
+        "accountId" : {
+          "$ref" : "#/definitions/AccountIdentifier"
+        },
+        "accountTitle" : {
+          "type" : "string"
+        },
+        "accountType" : {
+          "type" : "string"
+        },
+        "accountBalance" : {
+          "type" : "number"
+        },
+        "accountCurrency" : {
+          "type" : "string"
+        },
+        "accountStatus" : {
+          "type" : "string"
+        },
+        "accountOwnerList" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Person"
+          }
+        },
+        "branchInfo" : {
+          "$ref" : "#/definitions/BankBranch"
+        },
+        "accountAttributeList" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TransactionAttribute"
+          }
+        }
+      },
+      "required" : [ "accountTitle", "accountType", "accountBalance", "accountCurrency" ]
+    },
+    "AuthenticationInfo" : {
+      "type" : "object",
+      "properties" : {
+        "authenticationType" : {
+          "type" : "string"
+        },
+        "username" : {
+          "type" : "string"
+        },
+        "password" : {
+          "type" : "string"
+        },
+        "authKey" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "username", "authenticationType" ]
+    },
+    "TransactionInfo" : {
+      "type" : "object",
+      "properties" : {
+        "transactionType" : {
+          "type" : "string"
+        },
+        "transactionSubType" : {
+          "type" : "string"
+        },
+        "referenceId" : {
+          "type" : "string"
+        },
+        "transactionDate" : {
+          "type" : "string"
+        },
+        "transactionTime" : {
+          "type" : "string"
+        },
+        "stan" : {
+          "type" : "string"
+        },
+        "transmissionDateTime" : {
+          "type" : "string"
+        },
+        "status" : {
+          "type" : "string"
+        },
+        "narration" : {
+          "type" : "string"
+        },
+        "surchargeList" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Surcharge"
+          }
+        },
+        "attributeList" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TransactionAttribute"
+          }
+        },
+        "metaDataList" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TransactionAttribute"
+          }
+        }
+      },
+      "required" : [ "transactionType", "referenceId", "transactionDate", "transactionTime", "stan", "transmissionDateTime" ]
+    },
+    "TransactionAttribute" : {
+      "type" : "object",
+      "properties" : {
+        "attributeKey" : {
+          "type" : "string"
+        },
+        "attributeValue" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "attributeKey", "attributeValue" ]
+    },
+    "Parameters" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "name", "value" ]
+    },
+    "GroupTransactionHeader" : {
+      "type" : "object",
+      "properties" : {
+        "groupId" : {
+          "type" : "integer"
+        },
+        "totalTransactions" : {
+          "type" : "integer"
+        },
+        "completed" : {
+          "type" : "boolean"
+        },
+        "processingMode" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "processingMode" ]
+    },
+    "AccountIdentifier" : {
+      "type" : "object",
+      "properties" : {
+        "accountNumber" : {
+          "type" : "string"
+        },
+        "cnic" : {
+          "type" : "string"
+        },
+        "iban" : {
+          "type" : "string"
+        }
+      }
+    },
+    "BankBranch" : {
+      "type" : "object",
+      "properties" : {
+        "bankInfo" : {
+          "$ref" : "#/definitions/Bank"
+        },
+        "branchCode" : {
+          "type" : "string"
+        },
+        "branchName" : {
+          "type" : "string"
+        },
+        "telephoneNumber" : {
+          "type" : "integer"
+        },
+        "branchAddress" : {
+          "$ref" : "#/definitions/Address"
+        }
+      }
+    },
+    "Bank" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "bankIMD" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "name", "bankIMD" ]
+    },
+    "Address" : {
+      "type" : "object",
+      "properties" : {
+        "country" : {
+          "type" : "string"
+        },
+        "state" : {
+          "type" : "string"
+        },
+        "city" : {
+          "type" : "string"
+        },
+        "zipCode" : {
+          "type" : "string"
+        },
+        "addressLine" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "country", "state", "city", "zipCode", "addressLine" ]
+    },
+    "BankCard" : {
+      "type" : "object",
+      "properties" : {
+        "cardType" : {
+          "type" : "string"
+        },
+        "cardNumber" : {
+          "type" : "string"
+        },
+        "cardIssuer" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "cardType", "cardNumber", "cardIssuer" ]
+    },
+    "ResponseHeader" : {
+      "type" : "object",
+      "properties" : {
+        "responseCode" : {
+          "type" : "string"
+        },
+        "responseDetails" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        }
+      },
+      "required" : [ "responseCode" ]
+    },
+    "Surcharge" : {
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : "string"
+        },
+        "amount" : {
+          "type" : "number"
+        },
+        "currency" : {
+          "type" : "string"
+        },
+        "details" : {
+          "type" : "string"
+        }
+      },
+      "required" : [ "type", "amount", "currency", "details" ]
+    },
+    "Person" : {
+      "type" : "object",
+      "properties" : {
+        "firstName" : {
+          "type" : "string"
+        },
+        "lastName" : {
+          "type" : "string"
+        },
+        "contactNumber" : {
+          "type" : "string"
+        },
+        "cnic" : {
+          "type" : "string"
+        }
+      }
+    },
+    "AccountRestraint" : {
+      "type" : "object",
+      "properties" : {
+        "position" : {
+          "type" : "integer"
+        },
+        "referenceNo" : {
+          "type" : "string"
+        },
+        "version" : {
+          "type" : "string"
+        },
+        "restraintType" : {
+          "type" : "string"
+        },
+        "restraintClass" : {
+          "type" : "string"
+        },
+        "startDate" : {
+          "type" : "string"
+        },
+        "endDate" : {
+          "type" : "string"
+        },
+        "narrative" : {
+          "type" : "string"
+        },
+        "startChequeNo" : {
+          "type" : "string"
+        },
+        "endChequeNo" : {
+          "type" : "string"
+        },
+        "pledgedAmount" : {
+          "type" : "number"
+        },
+        "pledgedAccountNo" : {
+          "type" : "string"
+        },
+        "pledgedAccountType" : {
+          "type" : "string"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "ccy" : {
+          "type" : "string"
+        },
+        "lastChangeDate" : {
+          "type" : "string"
+        },
+        "lastChangeOfficer" : {
+          "type" : "string"
+        },
+        "feeIndicator" : {
+          "type" : "string"
+        },
+        "forceFH" : {
+          "type" : "string"
+        },
+        "stlSequenceNo" : {
+          "type" : "string"
+        },
+        "detailInfo" : {
+          "type" : "string"
+        }
+      }
+    },
+    "ApplyAccountRestraintRequest" : {
+      "type" : "object",
+      "properties" : {
+        "serviceHeader" : {
+          "$ref" : "#/definitions/ServiceHeader"
+        },
+        "transactionInfo" : {
+          "$ref" : "#/definitions/TransactionInfo"
+        },
+        "restraintMarkingRequest" : {
+          "type" : "object",
+          "properties" : {
+            "accountNo" : {
+              "type" : "string"
+            },
+            "certificateNo" : {
+              "type" : "string"
+            },
+            "accountRestraint" : {
+              "type" : "object",
+              "properties" : {
+                "position" : {
+                  "type" : "string"
+                },
+                "startDate" : {
+                  "type" : "string"
+                },
+                "endDate" : {
+                  "type" : "string"
+                },
+                "restraintType" : {
+                  "type" : "string"
+                },
+                "pledgedAmount" : {
+                  "type" : "string"
+                },
+                "startChequeNo" : {
+                  "type" : "string"
+                },
+                "endChequeNo" : {
+                  "type" : "string"
+                },
+                "lastChangeOfficer" : {
+                  "type" : "string"
+                },
+                "lastChangeDate" : {
+                  "type" : "string"
+                },
+                "pledgedAccountType" : {
+                  "type" : "string"
+                },
+                "narrative" : {
+                  "type" : "string"
+                },
+                "pledgedAccountNo" : {
+                  "type" : "string"
+                },
+                "stlSequenceNo" : {
+                  "type" : "string"
+                },
+                "forceFH" : {
+                  "type" : "string"
+                },
+                "ccy" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ApplyAccountRestraintResponse" : {
+      "type" : "object",
+      "properties" : {
+        "serviceHeader" : {
+          "$ref" : "#/definitions/ServiceHeader"
+        },
+        "transactionInfo" : {
+          "$ref" : "#/definitions/TransactionInfo"
+        },
+        "responseHeader" : {
+          "$ref" : "#/definitions/ResponseHeader"
+        },
+        "restraintMarkingResponse" : {
+          "type" : "object",
+          "properties" : {
+            "referenceNo" : {
+              "type" : "string"
+            },
+            "version" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "RemoveAccountRestraintRequest" : {
+      "type" : "object",
+      "properties" : {
+        "serviceHeader" : {
+          "$ref" : "#/definitions/ServiceHeader"
+        },
+        "transactionInfo" : {
+          "$ref" : "#/definitions/TransactionInfo"
+        },
+        "restraintUnmarkingRequest" : {
+          "type" : "object",
+          "properties" : {
+            "referenceNo" : {
+              "type" : "string"
+            },
+            "version" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "RemoveAccountRestraintResponse" : {
+      "type" : "object",
+      "properties" : {
+        "serviceHeader" : {
+          "$ref" : "#/definitions/ServiceHeader"
+        },
+        "transactionInfo" : {
+          "$ref" : "#/definitions/TransactionInfo"
+        },
+        "responseHeader" : {
+          "$ref" : "#/definitions/ResponseHeader"
+        }
+      }
+    },
+    "AccountRestraintInquiryRequest" : {
+      "type" : "object",
+      "properties" : {
+        "serviceHeader" : {
+          "$ref" : "#/definitions/ServiceHeader"
+        },
+        "transactionInfo" : {
+          "$ref" : "#/definitions/TransactionInfo"
+        },
+        "restraintInquiryRequest" : {
+          "type" : "object",
+          "properties" : {
+            "accountNo" : {
+              "type" : "string"
+            },
+            "restraintType" : {
+              "type" : "string"
+            },
+            "restraintClass" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "AccountRestraintInquiryResponse" : {
+      "type" : "object",
+      "properties" : {
+        "serviceHeader" : {
+          "$ref" : "#/definitions/ServiceHeader"
+        },
+        "transactionInfo" : {
+          "$ref" : "#/definitions/TransactionInfo"
+        },
+        "responseHeader" : {
+          "$ref" : "#/definitions/ResponseHeader"
+        },
+        "restraintInquiryResponse" : {
+          "type" : "object",
+          "properties" : {
+            "accountRestraintList" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/AccountRestraint"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.systemsltd.com/ubl/cbs" xmlns="http://www.systemsltd.com/ubl/cbs">
+	
+	<xsd:include schemaLocation="CBSCommonMessageModel.xsd"></xsd:include>
+	
+	<xsd:element name="RemoveAccountRestraintRequest" type="RemoveAccountRestraintRequest"></xsd:element>
+	<xsd:element name="RemoveAccountRestraintResponse" type="RemoveAccountRestraintResponse"></xsd:element>
+	
+	<xsd:complexType name="RemoveAccountRestraintRequest">
+		<xsd:sequence>
+			<xsd:element name="REQUEST_IN">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HEADER_IN" type="GeneralHeaderIn"></xsd:element>
+						<xsd:element name="DETAIL_IN">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element
+										name="SYM_RB_RESTRAINTS_DEL_IN">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element
+													name="REFERENCE_NO" type="xsd:string">
+												</xsd:element>
+												<xsd:element
+													name="VERSION" type="xsd:string">
+												</xsd:element>
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="RemoveAccountRestraintResponse">
+		<xsd:sequence>
+			<xsd:element name="REQUEST_OUT">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="HEADER_OUT"
+							type="GeneralHeaderOut">
+						</xsd:element>
+						<xsd:element name="ERRORS" type="ERRORS"></xsd:element>
+						<xsd:element name="DETAIL_OUT">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="notGivenInSample"
+										type="xsd:string">
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+</xsd:schema>

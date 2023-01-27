@@ -1,0 +1,19 @@
+BROKER SCHEMA com.systemsltd.ubl.common
+
+
+CREATE COMPUTE MODULE PrepareHostRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot = InputRoot;
+		RETURN TRUE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE CallAndVerifyHostResponse
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot = InputRoot;
+		RETURN TRUE;
+	END;
+END MODULE;

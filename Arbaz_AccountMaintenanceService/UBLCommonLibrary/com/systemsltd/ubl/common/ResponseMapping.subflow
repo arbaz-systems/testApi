@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" 
+xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmFilter.msgnode="ComIbmFilter.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" 
+xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="com/systemsltd/ubl/common/ResponseMapping.subflow" 
+nsPrefix="com_systemsltd_ubl_common_ResponseMapping.subflow">
+<eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true">
+<eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.MappingDatasource" name="MappingDatasource"  defaultValueLiteral="IIBDSN">
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.hostSystem" name="hostSystem" lowerBound="1" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.hostSystemResponseCodePath" name="hostSystemResponseCodePath" lowerBound="1" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.mappedResponseCodePath" name="mappedResponseCodePath" lowerBound="1" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.mappedResponseDescPath" name="mappedResponseDescPath" lowerBound="1" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.loggerName" name="loggerName" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.hostSystemResponseDetailsPath" name="hostSystemResponseDetailsPath" >
+  <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+</eStructuralFeatures>
+<translation xmi:type="utility:TranslatableString" key="ResponseMapping" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+<colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj16/ResponseMapping.gif"/>
+<colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/flowAPIgenerated/icons/full/obj30/ResponseMapping.gif"/>
+<composition>
+<nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="98,105">
+<translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+</nodes>
+<nodes xmi:type="ComIbmFilter.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="247,105" filterExpression="esql://routine/com.systemsltd.ubl.common#MapResponse.Main">
+<translation xmi:type="utility:ConstantString" string="Map Response"/>
+</nodes>
+<nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="439,117">
+<translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+</nodes>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_1" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+<connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.true" targetTerminalName="InTerminal.in"/>
+</composition>
+<propertyOrganizer>
+<propertyDescriptor groupName="Group.Basic" configurable="true" describedAttribute="Property.MappingDatasource">
+<propertyName xmi:type="utility:TranslatableString" key="Property.MappingDatasource" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="UBLCommonLibrary"/>
+<propertyDescriptor groupName="Group.Host" configurable="true" userDefined="true" describedAttribute="Property.hostSystem">
+<propertyName xmi:type="utility:TranslatableString" key="Property.hostSystem" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+<propertyDescriptor groupName="Group.Host" configurable="true" userDefined="true" describedAttribute="Property.hostSystemResponseCodePath">
+<propertyName xmi:type="utility:TranslatableString" key="Property.hostSystemResponseCodePath" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+<propertyDescriptor groupName="Group.Mapping" configurable="true" userDefined="true" describedAttribute="Property.mappedResponseCodePath">
+<propertyName xmi:type="utility:TranslatableString" key="Property.mappedResponseCodePath" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+<propertyDescriptor groupName="Group.Mapping" configurable="true" userDefined="true" describedAttribute="Property.mappedResponseDescPath">
+<propertyName xmi:type="utility:TranslatableString" key="Property.mappedResponseDescPath" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+<propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.loggerName">
+<propertyName xmi:type="utility:TranslatableString" key="Property.loggerName" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+<propertyDescriptor groupName="Group.Host" configurable="true" userDefined="true" describedAttribute="Property.hostSystemResponseDetailsPath">
+<propertyName xmi:type="utility:TranslatableString" key="Property.hostSystemResponseDetailsPath" bundleName="com/systemsltd/ubl/common/ResponseMapping" pluginId="flowAPIgenerated"/>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyDescriptor>
+</propertyOrganizer>
+<attributeLinks promotedAttribute="Property.MappingDatasource" overriddenNodes="FCMComposite_1_1">
+<overriddenAttribute href="ComIbmFilter.msgnode#Property.dataSource"/>
+</attributeLinks>
+<stickyBoard/>
+</eClassifiers>
+</ecore:EPackage>

@@ -1,0 +1,36 @@
+BROKER SCHEMA com.systemsltd.ubl.common.accountValidation
+PATH com.systemsltd.common, com.systemsltd.ubl.common, com.systemsltd.ubl.common.config;
+
+CREATE COMPUTE MODULE CBSAccountValidationResponse
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+		SET OutputRoot.Properties = InputProperties;
+		DECLARE serializedRequest, serializedResponse CHARACTER '';
+		DECLARE cbsSchemaName CHARACTER getCBSSchemaName();
+		DECLARE dsnName CHARACTER 'CBSDSN';
+		
+		SET serializedRequest = serializeMessage(OutputRoot);
+		CALL VALIDATE_ACCT(serializedRequest, serializedResponse) IN Database.{dsnName}.{cbsSchemaName};
+		DECLARE cbsListAccountsResponse BLOB CAST(serializedResponse AS BLOB CCSID InputProperties.CodedCharSetId);
+		
+		DELETE FIELD OutputRoot.XMLNSC;
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') PARSE(cbsListAccountsResponse, InputProperties.Encoding, InputProperties.CodedCharSetId);
+		PROPAGATE TO TERMINAL 'out2' DELETE NONE;
+		
+		IF OutputRoot.XMLNSC.CBS_FINTECH_OUT.HEADER_OUT.RESULT_CODE <> '0' THEN
+			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		END IF;
+		SET OutputRoot = InputRoot;
+		DELETE FIELD OutputRoot.XMLNSC;
+		RETURN TRUE;
+	END;
+END MODULE;
+
+CREATE PROCEDURE VALIDATE_ACCT
+(
+	IN P_XML_IN CHARACTER,
+	OUT P_XML_OUT CHARACTER
+)
+LANGUAGE DATABASE
+EXTERNAL NAME "%.TM_CBS_FINTECH.VALIDATE_LINK_ACCT";

@@ -1,0 +1,64 @@
+BROKER SCHEMA com.systemsltd.ubl.common.accountValidation
+PATH com.systemsltd.common, com.systemsltd.ubl.common.routing;
+
+CREATE COMPUTE MODULE IsAccountValidationRequired
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot = InputRoot;
+		DECLARE iban CHARACTER '';
+		DECLARE acctNo CHARACTER '';
+		DECLARE bankIMD CHARACTER '';
+		DECLARE branchCode CHARACTER '';
+		DECLARE accountType CHARACTER '';
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE channelType CHARACTER transactionRef.channelType;
+		DECLARE acctVerfReqd CHARACTER transactionRef.acctVerfReqd;
+		DECLARE fieldNameValue CHARACTER FIELDNAME(transactionRef.Request.[<]);
+		DECLARE account REFERENCE TO Environment.Variables.Transaction;
+		
+		IF (fieldNameValue = 'fundTransfer') THEN
+			SET account = transactionRef.Request.[<].account;
+		ELSEIF (fieldNameValue = 'titleFetchRequest') THEN
+			SET account = transactionRef.Request.[<].accountDetail;
+		ELSEIF (fieldNameValue = 'balanceInquiryRequest') THEN
+			SET account = transactionRef.Request.[<].accountDetail;
+		ELSEIF (fieldNameValue = 'accountStatementInquiryRequest') THEN
+			SET account = transactionRef.Request.[<].accountDetail;
+		ELSEIF (fieldNameValue = 'activationRequest') THEN
+			SET account = transactionRef.Request.[<];
+		ELSEIF (fieldNameValue = 'deactivationRequest') THEN
+			SET account = transactionRef.Request.[<];
+		ELSEIF (fieldNameValue = 'blockageRequest') THEN
+			SET account = transactionRef.Request.[<];
+		ELSE
+			SET account = NULL;
+		END IF;
+
+		IF (channelType = 'C' AND fieldAndValueExists(account.pan, 'pan') AND acctVerfReqd = 'YES') THEN
+			SET Environment.Variables.pan = account.pan;
+			SET Environment.Variables.cnic = account.cnic;
+			SET Environment.Variables.isMasked = account.isMaskCard;
+			DECLARE host CHARACTER findItemValueInList(InputRoot.[<].[<].transactionInfo.attributeList.Item, 'attributeKey', 'host');
+			IF (host = NULL OR host = '') THEN
+				CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+				CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('attributeList - host');
+			END IF;
+			SET Environment.RouteToHost = host || '_DEBIT_CARD';
+			PROPAGATE TO TERMINAL 'out1';
+			RETURN FALSE;
+		ELSEIF (channelType = 'C' AND fieldAndValueExists(account.[>].accountNumber, 'accountNumber') AND acctVerfReqd = 'YES') THEN
+			SET acctNo = account.[>].accountNumber;
+			SET iban = account.[>].iban;
+			SET bankIMD = account.branchInfo.bankInfo.bankIMD;
+			SET branchCode = account.branchInfo.branchCode;
+			SET accountType = account.accountType;
+			
+			DECLARE countryCode CHARACTER InputRoot.[<].[<].serviceHeader.fromRegionInfo.countryCode;
+			SET Environment.RouteToHost = getUBLHostSystem(bankIMD, branchCode, accountType, iban, countryCode);
+			SET Environment.Variables.accountNo = acctNo;
+			PROPAGATE TO TERMINAL 'out1';
+			RETURN FALSE;
+		END IF;
+		RETURN TRUE;
+	END;
+END MODULE;

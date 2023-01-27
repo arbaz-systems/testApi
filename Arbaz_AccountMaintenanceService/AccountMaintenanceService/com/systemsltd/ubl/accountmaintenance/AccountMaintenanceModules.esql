@@ -1,0 +1,397 @@
+BROKER SCHEMA com.systemsltd.ubl.accountmaintenance
+
+PATH com.systemsltd.common, com.systemsltd.common.logging, com.systemsltd.ubl.cbs, com.systemsltd.ubl.common, com.systemsltd.ubl.common.config;
+
+
+DECLARE ns NAMESPACE 'http://www.systemsltd.com/ubl/cbs';
+
+
+CREATE FILTER MODULE validateApplyAccountRestraintRequest
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO Root.JSON.Data;
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+		
+		CALL validateServiceHeader(inputRef.serviceHeader, transactionRef);
+		CALL validateTransactionInfo(inputRef.transactionInfo, transactionRef, 'ACCOUNT_MAINTENANCE', 'RESTRAINT');
+		
+		IF NOT fieldAndValueExists(inputRef.restraintMarkingRequest.accountNo, 'accountNo') THEN
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('accountNo');
+		END IF;
+		
+--		IF NOT fieldAndValueExists(inputRef.restraintMarkingRequest.certificateNo, 'certificateNo') THEN
+--			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('certificateNo');
+--		END IF;
+		
+--		CALL validateAccountRestraint(inputRef.restraintMarkingRequest.accountRestraint, transactionRef);
+		
+		RETURN EXISTS(transactionRef.Error.Item[]);
+	END;
+END MODULE;
+
+
+CREATE FILTER MODULE validateRemoveAccountRestraintRequest
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO Root.JSON.Data;
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+		
+		CALL validateServiceHeader(inputRef.serviceHeader, transactionRef);
+		CALL validateTransactionInfo(inputRef.transactionInfo, transactionRef, 'ACCOUNT_MAINTENANCE', 'RESTRAINT');
+		
+--		IF NOT EXISTS(inputRef.transactionInfo.attributeList.Item[]) THEN
+--			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('Attribute list');
+--		END IF;
+		
+--		DECLARE attrListItemRef REFERENCE TO inputRef.transactionInfo.attributeList.Item;
+--		CALL validateAttributeListData(attrListItemRef, transactionRef, 'appCode', 'SYSTEMPHASE');
+		
+		RETURN EXISTS(transactionRef.Error.Item[]);
+	END;
+END MODULE;
+
+
+CREATE FILTER MODULE validateAccountRestraintInquiryRequest
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO Root.JSON.Data;
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		CREATE FIELD transactionRef.Error IDENTITY (JSON.Array);
+		
+		CALL validateServiceHeader(inputRef.serviceHeader, transactionRef);
+		CALL validateTransactionInfo(inputRef.transactionInfo, transactionRef, 'ACCOUNT_MAINTENANCE', 'RESTRAINT');
+		
+		IF NOT fieldAndValueExists(inputRef.restraintInquiryRequest.accountNo, 'accountNo') THEN
+			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('accountNo');
+		END IF;
+		
+--		IF NOT fieldAndValueExists(inputRef.restraintInquiryRequest.restraintType, 'restraintType') THEN
+--			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('restraintType');
+--		END IF;
+--		
+--		IF NOT fieldAndValueExists(inputRef.restraintInquiryRequest.restraintClass, 'restraintClass') THEN
+--			CREATE LASTCHILD OF transactionRef.Error TYPE NameValue NAME 'Item' VALUE getValidationErrorMsg('restraintClass');
+--		END IF;
+		
+--		CALL validateAccountRestraint(inputRef.restraintMarkingRequest.accountRestraint, transactionRef);
+		
+		RETURN EXISTS(transactionRef.Error.Item[]);
+	END;
+END MODULE;
+
+
+
+CREATE COMPUTE MODULE PrepareApplyAccountRestraintRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CREATE FIELD OutputRoot.XMLNSC.ns:ApplyAccountRestraintRequest.REQUEST_IN;
+		DECLARE cbsReqRef REFERENCE TO OutputRoot.XMLNSC.ns:ApplyAccountRestraintRequest.REQUEST_IN;
+		
+		SET OutputRoot.Properties = InputProperties;
+--		SET Environment.Variables.Transaction.Request = inputRef;
+				
+		CALL populateCBSMessageHeader(inputRef, cbsReqRef);
+		
+		SET cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINT_INS_IN.HOST_CHECK_FLAG = 'N';
+		SET cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINT_INS_IN.ACCT_NO = inputRef.restraintMarkingRequest.accountNo;
+		SET cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINT_INS_IN.CERTIFICATE_NO = inputRef.restraintMarkingRequest.certificateNo;
+		
+		CREATE FIELD cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINT_INS_IN.RB_RESTRAINT_INS.RB_RESTRAINT_INS_T;
+		DECLARE restraint_Ins_TRef REFERENCE TO cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINT_INS_IN.RB_RESTRAINT_INS.RB_RESTRAINT_INS_T;
+		
+		SET restraint_Ins_TRef.POSITION = inputRef.restraintMarkingRequest.accountRestraint.position;
+		SET restraint_Ins_TRef.START_DATE = CAST( CAST(inputRef.restraintMarkingRequest.accountRestraint.startDate AS DATE FORMAT 'dd-MM-yyyy') AS CHARACTER FORMAT 'dd.MM.yyyy HH.mm.ss');
+		SET restraint_Ins_TRef.END_DATE = CAST( CAST(inputRef.restraintMarkingRequest.accountRestraint.endDate AS DATE FORMAT 'dd-MM-yyyy') AS CHARACTER FORMAT 'dd.MM.yyyy HH.mm.ss');--CAST(inputRef.restraintMarkingRequest.accountRestraint.endDate AS DATE FORMAT 'dd.MM.yyyy HH.mm.ss');
+		SET restraint_Ins_TRef.RESTRAINT_TYPE = inputRef.restraintMarkingRequest.accountRestraint.restraintType;
+		SET restraint_Ins_TRef.PLEDGED_AMT = inputRef.restraintMarkingRequest.accountRestraint.pledgedAmount;
+		
+		SET restraint_Ins_TRef.START_CHEQUE_NO = inputRef.restraintMarkingRequest.accountRestraint.startChequeNo;
+		SET restraint_Ins_TRef.END_CHEQUE_NO = inputRef.restraintMarkingRequest.accountRestraint.endChequeNo;
+		SET restraint_Ins_TRef.LAST_CHANGE_OFFICER = inputRef.restraintMarkingRequest.accountRestraint.lastChangeOfficer;
+		SET restraint_Ins_TRef.LAST_CHANGE_DATE = inputRef.restraintMarkingRequest.accountRestraint.lastChangeDate;
+		SET restraint_Ins_TRef.PLEDGED_ACCT_TYPE = inputRef.restraintMarkingRequest.accountRestraint.pledgedAccountType;
+		SET restraint_Ins_TRef.NARRATIVE = inputRef.restraintMarkingRequest.accountRestraint.narrative;
+		SET restraint_Ins_TRef.PLEDGED_ACCT_NO = inputRef.restraintMarkingRequest.accountRestraint.pledgedAccountNo;
+		SET restraint_Ins_TRef.STL_SEQ_NO = inputRef.restraintMarkingRequest.accountRestraint.stlSequenceNo;
+		SET restraint_Ins_TRef.FORCE_FH = inputRef.restraintMarkingRequest.accountRestraint.forceFH;
+		SET restraint_Ins_TRef.CCY = inputRef.restraintMarkingRequest.accountRestraint.ccy;
+		
+		SET OutputRoot.XMLNSC = OutputRoot.XMLNSC.ns:ApplyAccountRestraintRequest;
+		RETURN TRUE;
+	END;	
+END MODULE;
+
+
+CREATE COMPUTE MODULE CallApplyAccountRestraint
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE serializedRequest, serializedResponse CHARACTER '';
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;		
+		DECLARE cbsSchemaName CHARACTER getCBSSchemaName();
+		
+		SET OutputRoot.Properties = InputProperties;
+		SET serializedRequest = serializeMessage(InputRoot);
+		CALL PROCESS_INQ(serializedRequest, serializedResponse) EXTERNAL SCHEMA cbsSchemaName;
+		
+		DECLARE cbsAppyRestraintResponse BLOB 
+		CAST(serializedResponse AS BLOB CCSID InputProperties.CodedCharSetId);
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') 
+		PARSE(cbsAppyRestraintResponse, InputProperties.Encoding, InputProperties.CodedCharSetId);
+		
+		DECLARE requestOut REFERENCE TO OutputRoot.XMLNSC.REQUEST_OUT;
+		
+		IF cbsTransactionSuccessfull(requestOut.HEADER_OUT.RESULT_CODE) THEN
+			SET transactionRef.HostResponse.ErrorCode = getSuccessResponseCode();
+		ELSE
+			PROPAGATE TO TERMINAL 1 DELETE NONE;
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+
+CREATE COMPUTE MODULE PrepareApplyAccountRestraintResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE cbsRespRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE requestOutRef REFERENCE TO InputRoot.XMLNSC.REQUEST_OUT.DETAIL_OUT.SYM_RB_RESTRAINT_INS_OUT.RB_RESTRAINT_DTLS.RB_RESTRAINT_DTLS_T;
+		
+		CALL copyAndConvertServiceHeader(transactionRef.Request.serviceHeader, cbsRespRef);
+		CALL copyAndConvertTransactionInfo(transactionRef.Request.transactionInfo, cbsRespRef);
+		
+		CALL PopulateSuccessResponseHeader(cbsRespRef, getTransactionStatusSuccess());
+		
+		IF transactionRef.HostResponse.ErrorCode <> getSuccessResponseCode() THEN
+			SET cbsRespRef.responseHeader.responseCode = transactionRef.HostResponse.ErrorCode;
+			SET cbsRespRef.responseHeader.responseDetails = transactionRef.HostResponse.Error;
+		ELSE
+			SET cbsRespRef.restraintMarkingResponse.referenceNo = requestOutRef.REFERENCE_NO;
+			SET cbsRespRef.restraintMarkingResponse.version = requestOutRef.VERSION;
+			
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+--------------------------------------
+
+CREATE COMPUTE MODULE PrepareRemoveAccountRestraintRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CREATE FIELD OutputRoot.XMLNSC.ns:RemoveAccountRestraintRequest.REQUEST_IN;
+		DECLARE cbsReqRef REFERENCE TO OutputRoot.XMLNSC.ns:RemoveAccountRestraintRequest.REQUEST_IN;
+		
+		SET OutputRoot.Properties = InputProperties;
+				
+		CALL populateCBSMessageHeader(inputRef, cbsReqRef);
+		
+		SET cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINTS_DEL_IN.REFERENCE_NO = inputRef.restraintUnmarkingRequest.referenceNo;
+		SET cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINTS_DEL_IN.VERSION = inputRef.restraintUnmarkingRequest.version;
+		
+		SET OutputRoot.XMLNSC = OutputRoot.XMLNSC.ns:RemoveAccountRestraintRequest;
+		
+		RETURN TRUE;
+	END;	
+END MODULE;
+
+
+CREATE COMPUTE MODULE CallRemoveAccountRestraint
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE serializedRequest, serializedResponse CHARACTER '';
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;		
+		DECLARE cbsSchemaName CHARACTER getCBSSchemaName();
+		
+		SET OutputRoot.Properties = InputProperties;
+		SET serializedRequest = serializeMessage(InputRoot);
+		CALL PROCESS_INQ(serializedRequest, serializedResponse) EXTERNAL SCHEMA cbsSchemaName;
+		
+		DECLARE cbsRemoveRestraintResponse BLOB 
+		CAST(serializedResponse AS BLOB CCSID InputProperties.CodedCharSetId);
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') 
+		PARSE(cbsRemoveRestraintResponse, InputProperties.Encoding, InputProperties.CodedCharSetId);
+		
+		DECLARE requestOut REFERENCE TO OutputRoot.XMLNSC.REQUEST_OUT;
+		
+		IF cbsTransactionSuccessfull(requestOut.HEADER_OUT.RESULT_CODE) THEN
+			SET  transactionRef.HostResponse.ErrorCode = getSuccessResponseCode();
+		ELSE
+			PROPAGATE TO TERMINAL 1 DELETE NONE;
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareRemoveAccountRestraintResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE cbsRespRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE requestOutRef REFERENCE TO InputRoot.XMLNSC.REQUEST_OUT;
+		
+		CALL copyAndConvertServiceHeader(transactionRef.Request.serviceHeader, cbsRespRef);
+		CALL copyAndConvertTransactionInfo(transactionRef.Request.transactionInfo, cbsRespRef);
+		
+		CALL PopulateSuccessResponseHeader(cbsRespRef, getTransactionStatusSuccess());
+		
+		IF transactionRef.HostResponse.ErrorCode <> getSuccessResponseCode() THEN
+			SET cbsRespRef.responseHeader.responseCode = transactionRef.HostResponse.ErrorCode;
+			SET cbsRespRef.responseHeader.responseDetails = transactionRef.HostResponse.Error;
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+--------------------------------------------------------------------
+
+
+CREATE COMPUTE MODULE PrepareAccountRestraintInquiryRequest
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CREATE FIELD OutputRoot.XMLNSC.ns:AccountRestraintInquiryRequest.REQUEST_IN;
+		DECLARE cbsReqRef REFERENCE TO OutputRoot.XMLNSC.ns:AccountRestraintInquiryRequest.REQUEST_IN;
+		
+		SET OutputRoot.Properties = InputProperties;
+				
+		CALL populateCBSMessageHeader(inputRef, cbsReqRef);
+		
+		
+		-- Start Code Commented out by Samia 30-09-2020
+		
+		-- SET cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINT_QRY_IN.ACCT_NO = inputRef.restraintInquiryRequest.accountNo;
+		-- SET cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINT_QRY_IN.RESTRAINT_TYPE = inputRef.restraintInquiryRequest.restraintType;
+		-- SET cbsReqRef.DETAIL_IN.SYM_RB_RESTRAINT_QRY_IN.RESTRAINT_CLASS = inputRef.restraintInquiryRequest.restraintClass;
+		
+		-- End Code Commented Out by Samia 30-09-2020
+		
+	       -- Start Code Added by Samia 9/30/2020
+		   
+	       SET cbsReqRef.DETAIL_IN.ACCT_NO = inputRef.restraintInquiryRequest.accountNo;
+	       SET cbsReqRef.DETAIL_IN.RESTRAINT_TYPE = inputRef.restraintInquiryRequest.restraintType;
+	       SET cbsReqRef.DETAIL_IN.START_CHQ_NO = inputRef.restraintInquiryRequest.startChqNo;
+	       SET cbsReqRef.DETAIL_IN.END_CHQ_NO = inputRef.restraintInquiryRequest.endChqNo;
+	       
+	      -- End Code Added by Samia 9/30/2020
+		
+		SET OutputRoot.XMLNSC = OutputRoot.XMLNSC.ns:AccountRestraintInquiryRequest;
+		
+		RETURN TRUE;
+	END;	
+END MODULE;
+
+
+CREATE COMPUTE MODULE CallAccountRestraintInquiry
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		DECLARE serializedRequest, serializedResponse CHARACTER '';
+		
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;		
+		DECLARE cbsSchemaName CHARACTER getCBSSchemaName();
+		
+		SET OutputRoot.Properties = InputProperties;
+		SET serializedRequest = serializeMessage(InputRoot);
+		CALL PROCESS_INQ(serializedRequest, serializedResponse) EXTERNAL SCHEMA cbsSchemaName;
+		
+		DECLARE cbsRestraintInquiryResponse BLOB 
+		CAST(serializedResponse AS BLOB CCSID InputProperties.CodedCharSetId);
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN('XMLNSC') 
+		PARSE(cbsRestraintInquiryResponse, InputProperties.Encoding, InputProperties.CodedCharSetId);
+		
+		DECLARE requestOut REFERENCE TO OutputRoot.XMLNSC.REQUEST_OUT;
+		
+		IF cbsTransactionSuccessfull(requestOut.HEADER_OUT.RESULT_CODE) THEN
+			SET  transactionRef.HostResponse.ErrorCode = getSuccessResponseCode();
+		ELSE
+			PROPAGATE TO TERMINAL 1 DELETE NONE;
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
+
+
+CREATE COMPUTE MODULE PrepareAccountRestraintInquiryResponse
+	CREATE FUNCTION Main () RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.Properties = InputProperties;
+		CREATE FIELD OutputRoot.JSON.Data;
+		DECLARE cbsRespRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE transactionRef REFERENCE TO Environment.Variables.Transaction;
+		DECLARE requestOutRef REFERENCE TO InputRoot.XMLNSC.REQUEST_OUT;
+		
+		CALL copyAndConvertServiceHeader(transactionRef.Request.serviceHeader, cbsRespRef);
+		CALL copyAndConvertTransactionInfo(transactionRef.Request.transactionInfo, cbsRespRef);
+		
+		CALL PopulateSuccessResponseHeader(cbsRespRef, getTransactionStatusSuccess());
+		
+		IF transactionRef.HostResponse.ErrorCode <> getSuccessResponseCode() THEN
+			SET cbsRespRef.responseHeader.responseCode = transactionRef.HostResponse.ErrorCode;
+			SET cbsRespRef.responseHeader.responseDetails = transactionRef.HostResponse.Error;
+		ELSE
+			
+			-- Start Code Commented out by Samia 30-09-2020
+			--DECLARE restraintInquiryResult REFERENCE TO requestOutRef.DETAIL_OUT.SYM_RB_RESTRAINT_QRY_OUT.RESTRAINT_DTLS.RB_RESTRAINT_QRY_T;
+
+
+			--DECLARE pageOutRef REFERENCE TO requestOutRef.DETAIL_OUT.SYM_RB_RESTRAINT_QRY_OUT.PAGE_OUT;
+			
+			--SET cbsRespRef.restraintInquiryResponse.pageOut.rowsPerPage = CAST(pageOutRef.ROWS_PER_PAGE AS INTEGER);
+			--SET cbsRespRef.restraintInquiryResponse.pageOut.page = CAST(pageOutRef.PAGE AS INTEGER);
+			--SET cbsRespRef.restraintInquiryResponse.pageOut.totalRows = CAST(pageOutRef.TOTAL_ROWS AS INTEGER);
+			
+			--CREATE FIELD cbsRespRef.restraintInquiryResponse.accountRestraintList IDENTITY (JSON.Array)accountRestraintList;
+			--DECLARE restraintListRef REFERENCE TO cbsRespRef.restraintInquiryResponse.accountRestraintList;
+			
+			--DECLARE restraintListItemRef REFERENCE TO restraintListRef.Item;
+			
+		--	WHILE LASTMOVE(restraintInquiryResult) DO
+			--	CREATE LASTCHILD OF restraintListRef AS restraintListItemRef NAME ('Item');
+				
+				--SET restraintListItemRef = restraintInquiryResult;
+				
+				--MOVE restraintInquiryResult NEXTSIBLING;
+			--END WHILE;
+		-- End Code Commented out by samia 30-09-2020
+		
+		  DECLARE restraintInquiryResult REFERENCE TO requestOutRef.DETAIL_OUT;
+		  SET cbsRespRef.restraintInquiryResponse.ACCT_NO = restraintInquiryResult.ACCT_NO;
+		  SET cbsRespRef.restraintInquiryResponse.RESTRAINT_TYPE = restraintInquiryResult.RESTRAINT_TYPE;
+		  SET cbsRespRef.restraintInquiryResponse.REFERENCE_NO = restraintInquiryResult.REFERENCE_NO;
+		  SET cbsRespRef.restraintInquiryResponse.VERSION = restraintInquiryResult.VERSION;
+		  SET cbsRespRef.restraintInquiryResponse.START_CHQ_NO = restraintInquiryResult.START_CHQ_NO;
+		  SET cbsRespRef.restraintInquiryResponse.END_CHQ_NO = restraintInquiryResult.END_CHQ_NO;
+		  
+		
+		END IF;
+		
+		RETURN TRUE;
+	END; 
+END MODULE;
