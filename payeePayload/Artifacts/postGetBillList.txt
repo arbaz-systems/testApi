@@ -1,12 +1,12 @@
 {
     "serviceHeader": {
-        "channel": "IVR",
+        "channel": "DCPRTL",
         "processingType": "SYNCHRONOUS",
         "authInfo": {
-            "username": "SOA",
-            "password": "ksnFBDv1tl0qKfcwc2n1GesSbE+Uwv2euzWiUd+gIcMqmJOd3lBHE28gtgb66eMz",
+            "username": "DCPOMNI",
+            "password": "bhnCjnlYpwhrnKLwtk6joxQL3Jm33SFCIJyQVcaJ68et7UvOnblBkglaj5KeI8tW",
             "authenticationType": "PASSWORD",
-            "authKey": "QiB92fuXtWbZD7ruEUbFqM7wO084ae/larbeGvdEao0SRu9ncvDiaCcXxX9wABz1dTQ/NlSlgcihQr8spUgIfd5d7k3iZzmJIVsQ8p8vo1igdPYmSor7rFZth6ZhZ0M5O5ntRZM/S8DqOrIIh60VkHan2VtrRPCHklbXVGX9x3k="
+            "authKey": "AfNKoTQZmSPeph97ZBDIcSweLv7pRNwQ1x0PplszgIjHijWGin3R9xAjSZYHI8pJS4jMolqjKY5aQubwcrT9cHusN2V6+jzhS3wJth09wGW8uvZAG5X21fVIuviLHYRijh0j2Bs8nSaUQIvq/fa8e6Zumdgo2YtKAZr4+pKv5bI="
         },
         "fromRegionInfo": {
             "bicCode": "UNILPKKA",
@@ -16,10 +16,10 @@
     "transactionInfo": {
         "transactionType": "PAYEELIST",
         "transactionSubType": "GETBILLLIST",
-        "referenceId": "bf4a77ef-1201-446c-83ea-eb7bdf45b764",
+        "referenceId": "2e71285t-52rt-3u1b-1b95-9781595700200",
         "transactionDate": "2020-03-11",
         "transactionTime": "16:56:00",
-        "stan": "811163",
+        "stan": "819963",
         "transmissionDateTime": "2020-03-11T16:56:00"
     },
     "getBillListRequest": {

@@ -1,28 +1,28 @@
 {
-    "serviceHeader": {
-        "channel": "IVR",
-        "processingType": "SYNCHRONOUS",
-        "authInfo": {
-            "username": "SOA",
-            "password": "56WtUz98yEH0S+y6ObPCNXdErLR5wDGdsKjFV/YuD1JoXHK0pyO/dyOBYVVr/r2d",
-            "authenticationType": "PASSWORD",
-            "authKey": "mgv0uD8P6R6Ad//WKnEzDd79gQpkeNsyD6+OOovRezW1qmLaFvXuLy9i8W9CxTBggPiCU2swjBl57VHZRFoRPxpLCZCh+uUIX2023q9SsbQqV2CLxQacrzQzNJCRGb8BwIb6S9W6vrWUvB9IMvJp02J5OnXSyQKiet8WBqXwJxQ="
-        },
-        "fromRegionInfo": {
-            "bicCode": "UNILPKKA",
-            "countryCode": "PAKISTAN"
-        }
+  "serviceHeader": {
+    "channel": "IVR",
+    "processingType": "SYNCHRONOUS",
+    "authInfo": {
+      "username": "SOA",
+      "password": "sp0GYF141+58kvU6HT0azKn2GAKZ5nWry+PVEjwBMM1m38BmeZve+wewPgQQaUg8TnslQAQH8yhlHX3qX30y4w==",
+      "authenticationType": "PASSWORD",
+      "authKey": "Tdg6kn+7HMKil+aw3NSBABSO1oHUnikQkcn+2nHiqZfxibBqD2vCOWeiLclPkPrlzA42NdyoZ+CO1KSn66IY/G2c17j713Iym3se+uxZ2F6gAK4fugGPjbx8+ReBwMZj93pQq/J4yIxR7eaf5GgnWnW6QEAPZIPS7rtt0yjeBMM="
     },
-    "transactionInfo": {
-        "transactionType": "PAYEELIST",
-        "transactionSubType": "GETPAYEELIST",
-        "referenceId": "d6747b46-85aa-44c4-8235-235f813716d0",
-        "transactionDate": "2020-03-11",
-        "transactionTime": "16:56:00",
-        "stan": "811163",
-        "transmissionDateTime": "2020-03-11T16:56:00"
-    },
-    "getPayeeListRequest": {
-        "fromAccountNo": "129710149688"
+    "fromRegionInfo": {
+      "bicCode": "UNILPKKA",
+      "countryCode": "PAKISTAN"
     }
+  },
+  "transactionInfo": {
+    "transactionType": "PAYEELIST",
+    "transactionSubType": "GETPAYEELIST",
+    "referenceId": "2e71285t-52rt-3ubl-1b54-978198769299",
+    "transactionDate": "2020-03-11",
+    "transactionTime": "16:56:00",
+    "stan": "929875",
+    "transmissionDateTime": "2020-03-11T16:56:00"
+  },
+  "getPayeeListRequest": {
+    "fromAccountNo": "129710149688"
+  }
 }
