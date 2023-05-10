@@ -1,3 +1,0 @@
- "password": "1riqvVKwgrZv13mO19chqkDUPZAI8MDPRFzF5hy8HNz5NrqNekE8aOzB50bO2qF0",            
-"authKey": "lzAGGujZVymalt2UUZRwhR6uRI4DU7gpMoUQGbEja7rxdP5r7PSPkDijnRETG3QTWLoRtQv2s8/9re9ngEIpuyj64Tl7vBN9/MIM5bv+H1WIyIpHiBahZwbTlQ4Y9m1pHQtVXqMe6IDqvbpUF9AZf1ZZ5Ca1lUHBV7VapC0nMl8="         
-"referenceId": "a62dc560-234fsder234234324e",
