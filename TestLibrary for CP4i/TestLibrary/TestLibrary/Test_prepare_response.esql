@@ -1,0 +1,11 @@
+BROKER SCHEMA TestLibrary
+
+
+CREATE COMPUTE MODULE Test_prepare_response
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CREATE FIELD OutputRoot.JSON.Data;
+		SET OutputRoot.JSON.Data.Status = 'Test Library called Successfully';
+		RETURN TRUE;
+	END;
+END MODULE;
